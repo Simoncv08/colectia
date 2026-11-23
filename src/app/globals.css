@@ -54,6 +54,17 @@
   --shadow-lg: 0 12px 32px rgb(16 24 40 / 0.14);
 
   --ease-colectia: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Colores de la marca Colectia (la abeja). Solo en las páginas propias de Colectia (página de
+     inicio) y en el logo; dentro de cada institución manda su paleta. El miel nunca va como
+     color de texto sobre blanco (1,6:1): sobre miel el texto es tinta (9,7:1). */
+  --color-miel: #f5c400;
+  --color-miel-hover: #e0b300;
+  --color-miel-suave: #fff3c4;
+  --color-miel-claro: #fffbeb;
+  --color-miel-oscuro: #7a5c00; /* texto miel sobre blanco o claros: 6:1 */
+  --color-tinta: #14213d; /* azul noche: 16:1 sobre blanco */
+  --color-tinta-suave: #c8d0e0; /* texto secundario sobre tinta: 10:1 */
 }
 
 html {

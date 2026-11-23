@@ -61,6 +61,20 @@ Todo valor visual sale de un token definido en `src/app/globals.css`. No escriba
 
 **Marca: el color de cada colegio.** Cada institución elige su paleta en Personalización (`src/lib/paletas.ts`) y esa paleta es el color de marca (`primario`, `primario-hover`, `primario-suave`, `primario-borde`): botón primario, enlaces, foco, selección y pestaña activa. Todas las paletas pasan 4,5:1 con texto blanco. La paleta por defecto es la azul. **No hay paleta verde**: el verde está reservado para "Pagado".
 
+**Colores de la marca Colectia** (tokens en `globals.css`), para las páginas propias de Colectia, como la página de inicio, y para el logo:
+
+| Token | Hex | Uso |
+|---|---|---|
+| `miel` | `#F5C400` | La abeja, la portada, botones de llamado (con texto tinta) |
+| `miel-hover` | `#E0B300` | Hover de los botones miel |
+| `miel-suave` | `#FFF3C4` | Fondos de íconos y recuadros |
+| `miel-claro` | `#FFFBEB` | Franjas claras |
+| `miel-oscuro` | `#7A5C00` | Texto miel sobre blanco o claros (6:1) |
+| `tinta` | `#14213D` | Texto, botones oscuros, franjas oscuras (16:1 sobre blanco, 9,7:1 sobre miel) |
+| `tinta-suave` | `#C8D0E0` | Texto secundario sobre tinta (10:1) |
+
+El miel **nunca** va como color de texto sobre blanco (1,6:1). Sobre miel, el texto es tinta, nunca blanco.
+
 **Semánticos, iguales en todos los colegios:**
 
 | Token | Texto | Fondo | Uso |
@@ -143,7 +157,7 @@ Están en `src/components` y las clases repetidas en `ui` (`src/lib/ui.ts`). Si 
 - **Confirmación** (`ConfirmSubmitButton`): ventana con la pregunta, la consecuencia, "Cancelar" y el botón de la acción. En celular sale como hoja desde abajo.
 - **Ventanas** (`Ventana`) y **menús** (`MenuDesplegable`): se cierran con Escape y con un clic afuera. En celular la ventana sale como hoja desde abajo, con el título fijo y solo el contenido desplazándose; mientras está abierta, la página de atrás no se mueve. Los campos miden 16 px en celular para que el iPhone no haga zoom al tocarlos.
 - **Estados vacío, carga y error:** ícono pequeño + frase + acción para salir de ahí; esqueletos al cargar; errores en lenguaje claro con "Intentar de nuevo". Nunca mensajes técnicos de Supabase o Postgres.
-- **Marca** (`Marca`): la abeja de Colectia (`LogoAbeja`, que usa `currentColor`) con `text-primario`, así toma el color de la paleta de cada institución, y "Colectia" en Manrope 700. Dentro de una institución, el nombre del colegio la acompaña, nunca la reemplaza. El archivo original está en `public/colectia-abeja.svg`. El ícono de la pestaña del navegador (`src/app/icon.svg`), el de la pantalla de inicio del iPhone (`src/app/apple-icon.png`) y el de los correos (`public/colectia-abeja-correo.png`) usan el azul de la paleta por defecto, porque ahí no se puede saber la institución.
+- **Marca** (`Marca`): la abeja de Colectia (`LogoAbeja`, que usa `currentColor`) siempre en **miel** (`text-miel`, #f5c400), en todas las pantallas, y "Colectia" en Manrope 700 (gris oscuro, o blanco con `claro` sobre fondos oscuros). Dentro de una institución, el nombre del colegio la acompaña, nunca la reemplaza; los botones y enlaces siguen la paleta de la institución. El archivo original está en `public/colectia-abeja.svg`. El ícono de la pestaña (`src/app/icon.svg`) es la abeja miel; el de la pantalla de inicio del iPhone (`src/app/apple-icon.png`), la abeja miel sobre tinta; y el de los correos (`public/colectia-abeja-correo.png`), la abeja miel.
 - **Íconos:** Lucide (`lucide-react`), trazo 1,75; 16 px junto a texto y 20 px en botones y navegación (`src/lib/iconos.ts`).
 
 ---

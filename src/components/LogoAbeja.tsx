@@ -1,5 +1,5 @@
-// Logo de Colectia (la abeja). Usa currentColor: toma el color del texto, así que con
-// text-primario se pinta con la paleta de cada institución. El archivo original está en
+// Logo de Colectia (la abeja). Usa currentColor: toma el color del texto. Su color es el miel
+// de la marca (text-miel, #f5c400); Marca ya lo aplica. El archivo original está en
 // public/colectia-abeja.svg.
 const TRAZOS = [
   'M30.79 61.64 L27.94 62.93 L25.02 63.91 L22.10 64.54 L19.25 64.82 L16.54 64.73 L14.04 64.28 L11.80 63.47 L9.90 62.34 L8.36 60.90 L7.24 59.19 L6.55 57.25 L6.32 55.14 L6.54 52.90 L7.22 50.59 L8.34 48.27 L9.87 45.98 L11.77 43.80 L14.00 41.77 L16.50 39.94 L19.21 38.36 L22.06 37.07 L24.98 36.09 L27.90 35.46 L30.75 35.18 L33.46 35.27 L35.96 35.72 L37.73 36.32 L37.92 36.46 L36.19 38.05 L34.53 40.10 L33.17 42.35 L32.09 44.78 L31.22 47.64 L30.66 50.64 L30.40 53.77 L30.44 57.31 L30.82 60.90 L30.92 61.54 Z',
