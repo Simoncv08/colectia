@@ -166,7 +166,7 @@ Activa (`exito`), En prueba (`alerta`), Suspendida (`peligro`), Cancelada (`neut
 
 - **Moneda:** pesos sin decimales, `$ 45.000`, siempre con `pesos()` de `src/lib/formato.ts` (`Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' })`).
 - **Fechas:** `22 nov. 2026` con `formatearFecha()`; `22 nov. 2026, 3:45 p. m.` en registros de pago con `formatearFechaHora()`. Zona horaria `America/Bogota`. El Excel usa `22/11/2026`.
-- **Número de documento del estudiante:** solo lo ve el **administrador de la institución** (ficha del estudiante y búsqueda). Nunca aparece para acudientes ni recaudadores.
+- **Número de documento del estudiante:** solo lo ve el **administrador de la institución** (ficha del estudiante y búsqueda). Nunca aparece para acudientes ni recaudadores, y la base de datos tampoco se lo deja leer (`22_seguridad_fase2.sql`): el administrador lo lee con `documento_estudiante` y `documentos_de_institucion`.
 
 ---
 

@@ -19,7 +19,6 @@ const POR_PAGINA = 50
 type Estudiante = {
   id: string
   codigo_institucional: string
-  numero_documento: string | null
   nombres: string
   apellidos: string
   curso_grado: string | null
@@ -36,11 +35,18 @@ export default async function EstudiantesPage({ searchParams }: Params) {
   const { data: todos, error } = await traerTodasLasFilas<Estudiante>((desde, hasta) =>
     supabase
       .from('estudiantes')
-      .select('id, codigo_institucional, numero_documento, nombres, apellidos, curso_grado')
+      .select('id, codigo_institucional, nombres, apellidos, curso_grado')
       .eq('institucion_id', institucionId)
       .order('id', { ascending: true })
       .range(desde, hasta)
   )
+
+  // El número de documento solo lo puede leer el administrador (22_seguridad_fase2.sql),
+  // así que solo él busca por documento.
+  const { data: filasDocumento } = esAdmin
+    ? await supabase.rpc('documentos_de_institucion', { p_institucion_id: institucionId })
+    : { data: [] }
+  const documentos = new Map((filasDocumento ?? []).map((d) => [d.id, d.numero_documento]))
 
   const { data: gradosCrudos } = await supabase
     .from('grados')
@@ -54,8 +60,7 @@ export default async function EstudiantesPage({ searchParams }: Params) {
   const filtrados = todos.filter((e) => {
     if (curso && (e.curso_grado ?? '') !== (curso === SIN_CURSO ? '' : curso)) return false
     if (!busqueda) return true
-    // El número de documento solo lo ve el administrador, así que solo él busca por documento.
-    const documento = esAdmin ? (e.numero_documento ?? '') : ''
+    const documento = documentos.get(e.id) ?? ''
     return normalizar(
       `${e.nombres} ${e.apellidos} ${e.apellidos} ${e.nombres} ${e.codigo_institucional} ${documento}`
     ).includes(busqueda)

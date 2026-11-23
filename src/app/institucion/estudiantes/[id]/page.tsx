@@ -31,7 +31,7 @@ export default async function EditarEstudiantePage({ params }: Params) {
   const { data: estudiante } = await supabase
     .from('estudiantes')
     .select(
-      'id, institucion_id, codigo_institucional, nombres, apellidos, curso_grado, numero_documento, fecha_nacimiento'
+      'id, institucion_id, codigo_institucional, nombres, apellidos, curso_grado, fecha_nacimiento'
     )
     .eq('id', id)
     .eq('institucion_id', sesion.institucionId)
@@ -40,6 +40,9 @@ export default async function EditarEstudiantePage({ params }: Params) {
   if (!estudiante) {
     notFound()
   }
+
+  // Solo el administrador puede leer el documento (22_seguridad_fase2.sql).
+  const { data: documento } = await supabase.rpc('documento_estudiante', { p_estudiante_id: estudiante.id })
 
   const { data: gradosCrudos } = await supabase
     .from('grados')
@@ -115,7 +118,7 @@ export default async function EditarEstudiantePage({ params }: Params) {
           Número de documento
           <input
             name="numero_documento"
-            defaultValue={estudiante.numero_documento ?? ''}
+            defaultValue={documento ?? ''}
             required
             className={ui.campo}
           />

@@ -611,6 +611,17 @@ export type Database = {
         Returns: string
       }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      documento_estudiante: {
+        Args: { p_estudiante_id: string }
+        Returns: string
+      }
+      documentos_de_institucion: {
+        Args: { p_institucion_id: string }
+        Returns: {
+          id: string
+          numero_documento: string
+        }[]
+      }
       es_acudiente_de: { Args: { p_estudiante_id: string }; Returns: boolean }
       es_personal_de: {
         Args: { p_institucion_id: string; p_roles: string[] }
