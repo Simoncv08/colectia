@@ -116,24 +116,6 @@ body {
     max-width: 100%;
   }
 
-  @supports (-webkit-touch-callout: none) {
-    input[type="date"],
-    input[type="time"],
-    input[type="datetime-local"] {
-      -webkit-appearance: none;
-      appearance: none;
-      display: block;
-    }
-
-    /* Sin esto, la fecha queda centrada, el campo vacío pierde su alto y el margen que el iPhone
-       le deja a la flecha (que ya no se muestra) lo ensancha. */
-    input::-webkit-date-and-time-value {
-      min-height: 1.5em;
-      margin: 0;
-      text-align: left;
-    }
-  }
-
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -142,6 +124,30 @@ body {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
     }
+  }
+}
+
+/* Fuera de @layer para que gane sobre el py-2 de ui.campo: solo en iPhone y iPad. */
+@supports (-webkit-touch-callout: none) {
+  /* Alto fijo de 44 px como los demás campos: el iPhone le suma su propio alto interno. */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    height: 2.75rem;
+    padding-block: 0;
+    line-height: calc(2.75rem - 2px);
+  }
+
+  /* Sin esto, la fecha queda centrada y el margen que el iPhone le deja a la flecha (que ya no
+     se muestra) ensancha el campo. */
+  input::-webkit-date-and-time-value {
+    margin: 0;
+    padding: 0;
+    line-height: inherit;
+    text-align: left;
   }
 }
 

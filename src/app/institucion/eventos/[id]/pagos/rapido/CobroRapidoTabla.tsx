@@ -8,6 +8,7 @@ import { MOTIVO_SOLO_LECTURA, useSoloLectura } from '@/components/SoloLectura'
 import { SIN_CURSO, pesos } from '@/lib/formato'
 import type { Resultado } from '@/lib/resultado'
 import { useAvisos } from '@/components/Avisos'
+import CampoPesos from '@/components/CampoPesos'
 import { marcarDevueltaEntregada } from '../actions'
 
 type Producto = {
@@ -371,14 +372,14 @@ export default function CobroRapidoTabla({
                     </div>
                   </td>
                   <td className={`${ui.celdaDebajo} pt-3`}>
-                    {sel && <span className={`${ui.etiquetaMovil} w-full`}>Cantidad</span>}
+                    {sel && <span className={ui.etiquetaMovil}>Cantidad</span>}
                     {sel &&
                       (opcionesCantidad ? (
                         <select
                           aria-label={`Cantidad para ${e.nombres} ${e.apellidos}`}
                           value={sel.cantidad}
                           onChange={(ev) => cambiarCantidad(e.id, Number(ev.target.value))}
-                          className={`${ui.campoCompacto} w-full sm:w-auto`}
+                          className={ui.campoCompacto}
                         >
                           {opcionesCantidad.map((n) => (
                             <option key={n} value={n}>
@@ -416,13 +417,9 @@ export default function CobroRapidoTabla({
                           <span className="sm:hidden">Se le debe devuelta</span>
                         </label>
                         {sel.devuelta && (
-                          <input
-                            type="number"
-                            inputMode="numeric"
-                            min={1}
-                            step="1"
+                          <CampoPesos
                             value={sel.monto}
-                            onChange={(ev) => cambiarMontoDevuelta(e.id, ev.target.value)}
+                            onValueChange={(digitos) => cambiarMontoDevuelta(e.id, digitos)}
                             aria-label={`Valor que se le debe a ${e.nombres} ${e.apellidos}`}
                             placeholder="¿Cuánto se le debe?"
                             className={`${ui.campoCompacto} w-full sm:w-44`}

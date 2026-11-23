@@ -1,6 +1,7 @@
 import ConfirmSubmitButton from '@/components/ConfirmSubmitButton'
 import FormularioAccion from '@/components/FormularioAccion'
 import Ventana from '@/components/Ventana'
+import CampoPesos from '@/components/CampoPesos'
 import { pesos } from '@/lib/formato'
 import { ui } from '@/lib/ui'
 import { crearProducto, eliminarProducto } from '../actions'
@@ -50,8 +51,8 @@ export default function SeccionProductos({
               </label>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <label className={ui.etiqueta}>
-                  Precio (COP)
-                  <input name="precio_unitario" type="number" inputMode="numeric" min="1" step="1" required className={ui.campo} />
+                  Precio
+                  <CampoPesos name="precio_unitario" required placeholder="$ 0" className={ui.campo} />
                 </label>
                 <label className={ui.etiqueta}>
                   Máximo por estudiante (opcional)
