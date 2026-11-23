@@ -21,3 +21,7 @@ Los que dicen "Se puede correr más de una vez sin problema" se pueden repetir s
 
 Un cambio nuevo va en un archivo nuevo con el número siguiente. Los archivos ya
 corridos no se editan: si algo quedó mal, el arreglo va en un script nuevo.
+
+## Correos
+
+Las plantillas de correo en español y los pasos para el servicio de correo propio están en `correos/README.md`.
