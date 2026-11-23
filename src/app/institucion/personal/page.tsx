@@ -36,41 +36,43 @@ export default async function PersonalPage() {
             Las personas que pueden registrar pagos y administrar la institución.
           </p>
         </div>
-        <Ventana textoBoton={
-              <>
-                <Plus {...iconoGrande} />
-                Invitar persona
-              </>
-            } titulo="Invitar persona al personal">
-          <FormularioAccion action={invitarMiembro} className="flex flex-col gap-4">
-            <label className={ui.etiqueta}>
-              Correo con el que entra a Colectia
-              <input name="correo" type="email" required className={ui.campo} />
-            </label>
-            <label className={ui.etiqueta}>
-              Rol
-              <select name="rol" required className={ui.campo}>
-                <option value="recaudador">Recaudador (registra pagos)</option>
-                <option value="admin_institucion">Administrador (puede hacer todo)</option>
-              </select>
-            </label>
-            <p className={ui.ayuda}>
-              La persona debe haber entrado una vez a Colectia y confirmado su correo. Si ya está
-              en el personal con otro rol, se le cambia el rol.
-            </p>
-            <button type="submit" className={`${ui.botonPrimario} self-start`}>
-              Invitar
-            </button>
-          </FormularioAccion>
-        </Ventana>
+        <div className={ui.accionesPagina}>
+          <Ventana textoBoton={
+                <>
+                  <Plus {...iconoGrande} />
+                  Invitar persona
+                </>
+              } titulo="Invitar persona al personal">
+            <FormularioAccion action={invitarMiembro} className="flex flex-col gap-4">
+              <label className={ui.etiqueta}>
+                Correo con el que entra a Colectia
+                <input name="correo" type="email" required className={ui.campo} />
+              </label>
+              <label className={ui.etiqueta}>
+                Rol
+                <select name="rol" required className={ui.campo}>
+                  <option value="recaudador">Recaudador (registra pagos)</option>
+                  <option value="admin_institucion">Administrador (puede hacer todo)</option>
+                </select>
+              </label>
+              <p className={ui.ayuda}>
+                La persona debe haber entrado una vez a Colectia y confirmado su correo. Si ya está
+                en el personal con otro rol, se le cambia el rol.
+              </p>
+              <button type="submit" className={`${ui.botonPrimario} self-start`}>
+                Invitar
+              </button>
+            </FormularioAccion>
+          </Ventana>
+        </div>
       </div>
 
       <ul className={`${ui.tarjeta} divide-y divide-gray-100 p-0`}>
         {miembros.map((m) => {
           const nombre = nombrePersona(m.personas)
           return (
-            <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
-              <div>
+            <li key={m.id} className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
+              <div className="min-w-0 flex-1">
                 <p className="font-medium text-gray-900">
                   {nombre}
                   {m.persona_id === sesion.userId && (
@@ -78,12 +80,12 @@ export default async function PersonalPage() {
                   )}
                 </p>
                 {m.personas?.correo && nombre !== m.personas.correo && (
-                  <p className="text-sm text-gray-600">{m.personas.correo}</p>
+                  <p className="text-sm text-gray-600 [overflow-wrap:anywhere]">{m.personas.correo}</p>
                 )}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex shrink-0 flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-3">
                 <span
-                  className={`rounded px-2 py-0.5 text-xs font-medium ${
+                  className={`${ui.pildora} ${
                     m.rol === 'admin_institucion'
                       ? 'bg-primario-suave text-primario'
                       : 'bg-gray-100 text-gray-800'

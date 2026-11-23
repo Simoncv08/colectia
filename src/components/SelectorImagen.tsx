@@ -225,7 +225,7 @@ export default function SelectorImagen({
               }
             }}
             aria-label="Enlace de una imagen de internet"
-            placeholder="O pega el enlace de una imagen de internet"
+            placeholder="O pega el enlace de una imagen"
             className={`${ui.campo} min-w-0 flex-1 basis-56`}
           />
           <button

@@ -107,6 +107,31 @@ body {
     accent-color: var(--primario);
   }
 
+  /* En iPhone los campos de fecha tienen un ancho propio que ignora w-full, y se salen del
+     formulario o se montan sobre el campo de al lado. */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  @supports (-webkit-touch-callout: none) {
+    input[type="date"],
+    input[type="time"],
+    input[type="datetime-local"] {
+      -webkit-appearance: none;
+      appearance: none;
+      display: block;
+    }
+
+    /* Sin esto, la fecha queda centrada y el campo vacío pierde su alto. */
+    input::-webkit-date-and-time-value {
+      min-height: 1.5em;
+      text-align: left;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

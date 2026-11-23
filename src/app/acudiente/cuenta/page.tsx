@@ -65,7 +65,7 @@ export default async function CuentaAcudientePage() {
               return (
                 <li
                   key={v.id}
-                  className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                  className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
                     <p className="font-medium text-gray-900">
@@ -79,7 +79,7 @@ export default async function CuentaAcudientePage() {
                   <FormularioAccion action={desvincularEstudiante.bind(null, v.id)}>
                     <ConfirmSubmitButton
                       confirmMessage={`¿Quitar a ${e.nombres} ${e.apellidos} de tu cuenta? Dejarás de ver sus actividades. Puedes volver a vincularlo cuando quieras.`}
-                      className={ui.botonPeligro}
+                      className={`${ui.botonPeligro} w-full sm:w-auto`}
                     >
                       Quitar de mi cuenta
                     </ConfirmSubmitButton>

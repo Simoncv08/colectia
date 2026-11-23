@@ -252,19 +252,24 @@ export default async function EstudiantesPage({ searchParams }: Params) {
             </thead>
             <tbody className={ui.cuerpoResponsivo}>
               {enPagina.map((e) => (
-                <tr key={e.id} className={ui.filaResponsiva}>
-                  <td className={ui.celdaTitulo}>
-                    {e.apellidos} {e.nombres}
+                <tr key={e.id} className={ui.filaLista}>
+                  <td className={ui.celdaPrincipal}>
+                    <span className={ui.nombreFila}>
+                      {e.apellidos} {e.nombres}
+                    </span>
+                    <span className={ui.detalleMovil}>
+                      {nombreCurso(e.curso_grado)} · Código {e.codigo_institucional}
+                    </span>
                   </td>
-                  <td data-titulo="Código" className={`${ui.celdaResponsiva} text-gray-600`}>
-                    {e.codigo_institucional}
-                  </td>
-                  <td data-titulo="Curso" className={`${ui.celdaResponsiva} text-gray-600`}>
-                    {nombreCurso(e.curso_grado)}
-                  </td>
+                  <td className={`${ui.celdaEscritorio} text-gray-600`}>{e.codigo_institucional}</td>
+                  <td className={`${ui.celdaEscritorio} text-gray-600`}>{nombreCurso(e.curso_grado)}</td>
                   {esAdmin && (
-                    <td className={ui.celdaAccion}>
-                      <Link href={`/institucion/estudiantes/${e.id}`} className={ui.enlace}>
+                    <td className={ui.celdaFinal}>
+                      <Link
+                        href={`/institucion/estudiantes/${e.id}`}
+                        aria-label={`Editar a ${e.apellidos} ${e.nombres}`}
+                        className={ui.enlaceFila}
+                      >
                         Editar
                       </Link>
                     </td>

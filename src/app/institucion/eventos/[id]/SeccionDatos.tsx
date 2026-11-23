@@ -32,18 +32,20 @@ export default function SeccionDatos({
     <section className={`${ui.tarjeta} flex flex-col gap-4`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h2 className={ui.subtitulo}>Datos del evento</h2>
-        <Ventana textoBoton="Editar datos" titulo="Editar evento" variante="secundario" tamano="lg">
-          <FormularioAccion
-            action={actualizarEvento.bind(null, evento.id)}
-            vaciarAlTerminar={false}
-            className="flex flex-col gap-4"
-          >
-            <CamposEvento institucionId={institucionId} evento={evento} />
-            <button type="submit" className={`${ui.botonPrimario} self-start`}>
-              Guardar cambios
-            </button>
-          </FormularioAccion>
-        </Ventana>
+        <div className={ui.accionesPagina}>
+          <Ventana textoBoton="Editar datos" titulo="Editar evento" variante="secundario" tamano="lg">
+            <FormularioAccion
+              action={actualizarEvento.bind(null, evento.id)}
+              vaciarAlTerminar={false}
+              className="flex flex-col gap-4"
+            >
+              <CamposEvento institucionId={institucionId} evento={evento} />
+              <button type="submit" className={`${ui.botonPrimario} self-start`}>
+                Guardar cambios
+              </button>
+            </FormularioAccion>
+          </Ventana>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-4">

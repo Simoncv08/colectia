@@ -163,9 +163,11 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
             {evento.fecha_limite_pago && ` · pago hasta el ${formatearFecha(evento.fecha_limite_pago)}`}
           </p>
         </div>
-        <Link href={`/institucion/eventos/${evento.id}/pagos/rapido`} className={ui.botonPrimario}>
-          Cobro por salón
-        </Link>
+        <div className={ui.accionesPagina}>
+          <Link href={`/institucion/eventos/${evento.id}/pagos/rapido`} className={ui.botonPrimario}>
+            Cobro por salón
+          </Link>
+        </div>
       </div>
 
       {estado === 'finalizado' && (
@@ -242,7 +244,7 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
             open={soloDevueltas}
             className="group rounded-xl border border-gray-200 bg-white shadow-xs"
           >
-            <summary className="flex min-h-14 cursor-pointer list-none flex-wrap items-center justify-between gap-2 rounded-xl px-5 py-3 hover:bg-gray-50">
+            <summary className="flex min-h-14 cursor-pointer list-none flex-wrap items-center justify-between gap-2 rounded-xl px-4 py-3 hover:bg-gray-50 sm:px-5">
               <span className="font-semibold text-gray-900">{nombreCurso(s.salon)}</span>
               <span className="flex items-center gap-3 text-sm text-gray-700">
                 <span>
@@ -263,12 +265,12 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
                 const todos = gruposDe(e.id)
                 const visibles = soloDevueltas ? todos.filter((g) => g.devueltaPendiente) : todos
                 return (
-                  <li key={e.id} className="px-5 py-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="font-medium text-gray-900">
+                  <li key={e.id} className="px-4 py-3 sm:px-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="min-w-0 flex-1 pt-0.5 font-medium text-gray-900">
                         {e.apellidos} {e.nombres}
                       </p>
-                      <span className="flex items-center gap-3">
+                      <span className="flex shrink-0 flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-3">
                         <EstadoPago estado={todos.length ? 'pagado_efectivo' : 'sin_pago'} />
                         {todos.length > 0 && (
                           <span className={`${ui.monto} text-gray-900`}>{pesos(totalDe(e.id))}</span>
@@ -279,8 +281,8 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
                       <ul className="mt-1 flex flex-col gap-1">
                         {visibles.map((g) => (
                           <li key={g.grupoPagoId} className="text-sm text-gray-700">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <span>
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="min-w-0 flex-1 pt-1">
                                 {g.lineas
                                   .map(
                                     (l) =>

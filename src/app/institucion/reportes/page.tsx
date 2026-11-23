@@ -155,7 +155,7 @@ export default async function ReportesPage({ searchParams }: Params) {
               />
             </label>
             <label className={ui.etiqueta}>
-              hasta
+              Pagos hasta
               <input
                 type="date"
                 name="hasta"
@@ -246,7 +246,7 @@ function VistaEventos({ datos, f }: PropsVista) {
       <ul className="flex flex-col gap-3">
         {filas.map((x) => {
           return (
-            <li key={x.evento.id} className="rounded-xl border border-gray-200 bg-white p-5 text-gray-900 shadow-xs">
+            <li key={x.evento.id} className="rounded-xl border border-gray-200 bg-white p-4 text-gray-900 shadow-xs sm:p-5">
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href={`/institucion/eventos/${x.evento.id}/pagos`}
@@ -309,42 +309,40 @@ function VistaEventos({ datos, f }: PropsVista) {
 }
 
 // Barras horizontales del porcentaje con pago por curso, con su número escrito al lado (DESIGN.md 7.7).
+// En celular cada curso ocupa dos líneas: el curso y lo recaudado, y debajo la barra.
 function PorCurso({ cursos }: { cursos: FilaEvento['cursos'] }) {
+  const columnas = 'grid grid-cols-[1fr_auto] items-center gap-x-3 sm:grid-cols-[minmax(3rem,7rem)_1fr_7rem]'
   return (
-    <table className="mt-2 w-full text-left text-sm">
-      <thead className="text-[13px] text-gray-600">
-        <tr>
-          <th scope="col" className="py-2 pr-3 font-medium">Curso</th>
-          <th scope="col" className="w-1/2 py-2 pr-3 font-medium">Estudiantes con pago</th>
-          <th scope="col" className="py-2 text-right font-medium">Recaudado</th>
-        </tr>
-      </thead>
-      <tbody>
+    <div className="mt-2 text-sm">
+      <div aria-hidden="true" className={`${columnas} hidden py-2 text-[13px] font-medium text-gray-600 sm:grid`}>
+        <span>Curso</span>
+        <span>Estudiantes con pago</span>
+        <span className="text-right">Recaudado</span>
+      </div>
+      <ul>
         {cursos.map((c) => {
           const porcentaje = c.estudiantes ? Math.round((c.pagaron / c.estudiantes) * 100) : 0
           return (
-            <tr
+            <li
               key={c.curso || SIN_CURSO}
               title={`${nombreCurso(c.curso)}: ${c.pagaron} de ${c.estudiantes} con pago (${porcentaje}%)`}
-              className="border-t border-gray-200 hover:bg-gray-50"
+              className={`${columnas} gap-y-1.5 border-t border-gray-200 py-2.5 sm:py-2`}
             >
-              <td className="py-2 pr-3 font-medium text-gray-900">{nombreCurso(c.curso)}</td>
-              <td className="py-2 pr-3">
-                <div className="flex items-center gap-3">
-                  <div aria-hidden="true" className="h-2 flex-1 overflow-hidden rounded bg-gray-100">
-                    <div className="h-full rounded bg-primario" style={{ width: `${porcentaje}%` }} />
-                  </div>
-                  <span className="w-28 shrink-0 text-right text-gray-700">
-                    {c.pagaron} de {c.estudiantes} <span className="text-gray-600">({porcentaje}%)</span>
-                  </span>
+              <span className="font-medium text-gray-900">{nombreCurso(c.curso)}</span>
+              <span className={`${ui.monto} text-right sm:order-last`}>{pesos(c.recaudado)}</span>
+              <div className="col-span-2 flex items-center gap-3 sm:col-span-1">
+                <div aria-hidden="true" className="h-2 flex-1 overflow-hidden rounded bg-gray-100">
+                  <div className="h-full rounded bg-primario" style={{ width: `${porcentaje}%` }} />
                 </div>
-              </td>
-              <td className={`py-2 text-right ${ui.monto}`}>{pesos(c.recaudado)}</td>
-            </tr>
+                <span className="shrink-0 text-right text-gray-700">
+                  {c.pagaron} de {c.estudiantes} <span className="text-gray-600">({porcentaje}%)</span>
+                </span>
+              </div>
+            </li>
           )
         })}
-      </tbody>
-    </table>
+      </ul>
+    </div>
   )
 }
 
@@ -367,7 +365,7 @@ function VistaRecaudo({ datos, f }: PropsVista) {
 
       <ul className="flex flex-col gap-3">
         {filas.map((x) => (
-          <li key={x.personaId || 'sin'} className="rounded-xl border border-gray-200 bg-white p-5 text-gray-900 shadow-xs">
+          <li key={x.personaId || 'sin'} className="rounded-xl border border-gray-200 bg-white p-4 text-gray-900 shadow-xs sm:p-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="font-medium">{x.nombre}</p>
               <p className="text-lg font-semibold">{pesos(x.total)}</p>
@@ -441,7 +439,7 @@ function VistaPendientes({ filas }: { filas: FilaPendiente[] }) {
         <span className="font-semibold">{filas.length}</span> pendiente(s) de pago.
       </p>
       {porEvento.map((g) => (
-        <section key={g.evento.id} className="rounded-xl border border-gray-200 bg-white p-5 text-gray-900 shadow-xs">
+        <section key={g.evento.id} className="rounded-xl border border-gray-200 bg-white p-4 text-gray-900 shadow-xs sm:p-5">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <p className="font-medium">
               {g.evento.nombre}{' '}

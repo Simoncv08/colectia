@@ -45,81 +45,83 @@ export default function SeccionDirigidoA({
           <h2 className={ui.subtitulo}>Dirigido a</h2>
           <p className={ui.ayuda}>Solo los acudientes de estos estudiantes ven el evento.</p>
         </div>
-        <Ventana textoBoton={
-              <>
-                <Plus {...iconoGrande} />
-                Agregar
-              </>
-            } titulo="¿A quién va dirigido?" variante="secundario">
-          <div className="flex flex-col gap-5">
-            {gruposCurso.length > 0 && (
+        <div className={ui.accionesPagina}>
+          <Ventana textoBoton={
+                <>
+                  <Plus {...iconoGrande} />
+                  Agregar
+                </>
+              } titulo="¿A quién va dirigido?" variante="secundario">
+            <div className="flex flex-col gap-5">
+              {gruposCurso.length > 0 && (
+                <FormularioAccion
+                  action={agregarGrupoPorGrupoDeCursos.bind(null, eventoId)}
+                  className="flex flex-col gap-2"
+                >
+                  <label className={ui.etiqueta}>
+                    Un grupo de cursos (ej.: Primaria)
+                    <select name="grupo_curso_id" required defaultValue="" className={ui.campo}>
+                      <option value="" disabled>
+                        Selecciona un grupo
+                      </option>
+                      {gruposCurso.map((gc) => (
+                        <option key={gc.id} value={gc.id}>
+                          {gc.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button type="submit" className={`${ui.botonPrimario} self-start`}>
+                    Agregar grupo
+                  </button>
+                </FormularioAccion>
+              )}
               <FormularioAccion
-                action={agregarGrupoPorGrupoDeCursos.bind(null, eventoId)}
-                className="flex flex-col gap-2"
+                action={agregarGrupoPorCurso.bind(null, eventoId)}
+                className="flex flex-col gap-2 border-t border-gray-200 pt-4 first:border-0 first:pt-0"
               >
                 <label className={ui.etiqueta}>
-                  Un grupo de cursos (ej.: Primaria)
-                  <select name="grupo_curso_id" required defaultValue="" className={ui.campo}>
+                  Un curso completo
+                  <select name="curso_grado" required defaultValue="" className={ui.campo}>
                     <option value="" disabled>
-                      Selecciona un grupo
+                      Selecciona un curso
                     </option>
-                    {gruposCurso.map((gc) => (
-                      <option key={gc.id} value={gc.id}>
-                        {gc.nombre}
+                    {grados.map((g) => (
+                      <option key={g.id} value={g.nombre}>
+                        {g.nombre}
                       </option>
                     ))}
                   </select>
                 </label>
                 <button type="submit" className={`${ui.botonPrimario} self-start`}>
-                  Agregar grupo
+                  Agregar curso
                 </button>
               </FormularioAccion>
-            )}
-            <FormularioAccion
-              action={agregarGrupoPorCurso.bind(null, eventoId)}
-              className="flex flex-col gap-2 border-t border-gray-200 pt-4 first:border-0 first:pt-0"
-            >
-              <label className={ui.etiqueta}>
-                Un curso completo
-                <select name="curso_grado" required defaultValue="" className={ui.campo}>
-                  <option value="" disabled>
-                    Selecciona un curso
-                  </option>
-                  {grados.map((g) => (
-                    <option key={g.id} value={g.nombre}>
-                      {g.nombre}
+              <FormularioAccion
+                action={agregarGrupoPorEstudiante.bind(null, eventoId)}
+                className="flex flex-col gap-2 border-t border-gray-200 pt-4"
+              >
+                <label className={ui.etiqueta}>
+                  Un estudiante puntual
+                  <select name="estudiante_id" required defaultValue="" className={ui.campo}>
+                    <option value="" disabled>
+                      Selecciona un estudiante
                     </option>
-                  ))}
-                </select>
-              </label>
-              <button type="submit" className={`${ui.botonPrimario} self-start`}>
-                Agregar curso
-              </button>
-            </FormularioAccion>
-            <FormularioAccion
-              action={agregarGrupoPorEstudiante.bind(null, eventoId)}
-              className="flex flex-col gap-2 border-t border-gray-200 pt-4"
-            >
-              <label className={ui.etiqueta}>
-                Un estudiante puntual
-                <select name="estudiante_id" required defaultValue="" className={ui.campo}>
-                  <option value="" disabled>
-                    Selecciona un estudiante
-                  </option>
-                  {estudiantes.map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.apellidos} {e.nombres}
-                      {conCurso(e)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button type="submit" className={`${ui.botonPrimario} self-start`}>
-                Agregar estudiante
-              </button>
-            </FormularioAccion>
-          </div>
-        </Ventana>
+                    {estudiantes.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.apellidos} {e.nombres}
+                        {conCurso(e)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button type="submit" className={`${ui.botonPrimario} self-start`}>
+                  Agregar estudiante
+                </button>
+              </FormularioAccion>
+            </div>
+          </Ventana>
+        </div>
       </div>
 
       {!grupos.length ? (

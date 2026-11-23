@@ -29,53 +29,55 @@ export default function SeccionProductos({
           <h2 className={ui.subtitulo}>Productos</h2>
           <p className={ui.ayuda}>Lo que se paga en este evento (entrada, camiseta, etc.).</p>
         </div>
-        <Ventana textoBoton={
-              <>
-                <Plus {...iconoGrande} />
+        <div className={ui.accionesPagina}>
+          <Ventana textoBoton={
+                <>
+                  <Plus {...iconoGrande} />
+                  Agregar producto
+                </>
+              } titulo="Agregar producto" variante="secundario">
+            <FormularioAccion action={crearProducto.bind(null, eventoId)} className="flex flex-col gap-4">
+              <label className={ui.etiqueta}>
+                Nombre
+                <input name="nombre" required placeholder="Ej.: Entrada" className={ui.campo} />
+              </label>
+              <label className={ui.etiqueta}>
+                Tipo
+                <select name="tipo" required className={ui.campo}>
+                  <option value="precio_unico">Precio único (una compra por estudiante)</option>
+                  <option value="precio_variable">Precio variable (pueden comprar varias)</option>
+                </select>
+              </label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className={ui.etiqueta}>
+                  Precio (COP)
+                  <input name="precio_unitario" type="number" inputMode="numeric" min="1" step="1" required className={ui.campo} />
+                </label>
+                <label className={ui.etiqueta}>
+                  Máximo por estudiante (opcional)
+                  <input
+                    name="cantidad_maxima_por_estudiante"
+                    type="number"
+                    inputMode="numeric"
+                    min="1"
+                    step="1"
+                    className={ui.campo}
+                  />
+                </label>
+              </div>
+              <button type="submit" className={`${ui.botonPrimario} self-start`}>
                 Agregar producto
-              </>
-            } titulo="Agregar producto" variante="secundario">
-          <FormularioAccion action={crearProducto.bind(null, eventoId)} className="flex flex-col gap-4">
-            <label className={ui.etiqueta}>
-              Nombre
-              <input name="nombre" required placeholder="Ej.: Entrada" className={ui.campo} />
-            </label>
-            <label className={ui.etiqueta}>
-              Tipo
-              <select name="tipo" required className={ui.campo}>
-                <option value="precio_unico">Precio único (una compra por estudiante)</option>
-                <option value="precio_variable">Precio variable (pueden comprar varias)</option>
-              </select>
-            </label>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className={ui.etiqueta}>
-                Precio (COP)
-                <input name="precio_unitario" type="number" inputMode="numeric" min="1" step="1" required className={ui.campo} />
-              </label>
-              <label className={ui.etiqueta}>
-                Máximo por estudiante (opcional)
-                <input
-                  name="cantidad_maxima_por_estudiante"
-                  type="number"
-                  inputMode="numeric"
-                  min="1"
-                  step="1"
-                  className={ui.campo}
-                />
-              </label>
-            </div>
-            <button type="submit" className={`${ui.botonPrimario} self-start`}>
-              Agregar producto
-            </button>
-          </FormularioAccion>
-        </Ventana>
+              </button>
+            </FormularioAccion>
+          </Ventana>
+        </div>
       </div>
 
       {productos.length ? (
         <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200">
           {productos.map((p) => (
-            <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-              <div>
+            <li key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
+              <div className="min-w-0 flex-1">
                 <p className="font-medium text-gray-900">{p.nombre}</p>
                 <p className="text-sm text-gray-700">
                   {pesos(Number(p.precio_unitario))}

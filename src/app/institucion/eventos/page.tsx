@@ -45,7 +45,7 @@ export default async function EventosPage() {
     return (
       <li
         key={ev.id}
-        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-xs"
+        className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white px-4 py-4 shadow-xs sm:flex-row sm:items-center sm:justify-between sm:px-5"
       >
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -60,7 +60,7 @@ export default async function EventosPage() {
             </p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="grid shrink-0 grid-cols-2 gap-2 sm:flex">
           <Link href={`/institucion/eventos/${ev.id}`} className={ui.botonSecundario}>
             Configurar
           </Link>
@@ -80,26 +80,28 @@ export default async function EventosPage() {
           <p className={ui.textoSecundario}>{vigentes.length} evento(s) vigente(s)</p>
         </div>
         {institucionActiva ? (
-          <Ventana textoBoton={
-              <>
-                <Plus {...iconoGrande} />
-                Crear evento
-              </>
-            } titulo="Crear evento" tamano="lg">
-            <FormularioAccion
-              action={crearEvento}
-              className="flex flex-col gap-4"
-            >
-              <CamposEvento institucionId={institucionId} />
-              <p className={ui.ayuda}>
-                Después de crearlo, entra a <strong>Configurar</strong> para elegir a qué cursos va
-                dirigido y agregar sus productos.
-              </p>
-              <button type="submit" className={`${ui.botonPrimario} self-start`}>
-                Crear evento
-              </button>
-            </FormularioAccion>
-          </Ventana>
+          <div className={ui.accionesPagina}>
+            <Ventana textoBoton={
+                <>
+                  <Plus {...iconoGrande} />
+                  Crear evento
+                </>
+              } titulo="Crear evento" tamano="lg">
+              <FormularioAccion
+                action={crearEvento}
+                className="flex flex-col gap-4"
+              >
+                <CamposEvento institucionId={institucionId} />
+                <p className={ui.ayuda}>
+                  Después de crearlo, entra a <strong>Configurar</strong> para elegir a qué cursos va
+                  dirigido y agregar sus productos.
+                </p>
+                <button type="submit" className={`${ui.botonPrimario} self-start`}>
+                  Crear evento
+                </button>
+              </FormularioAccion>
+            </Ventana>
+          </div>
         ) : (
           <p className={ui.avisoAmbar}>Tu institución no está activa, así que no puedes crear eventos.</p>
         )}

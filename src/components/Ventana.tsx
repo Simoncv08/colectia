@@ -17,7 +17,7 @@ export default function Ventana({
   textoBoton: ReactNode
   titulo: string
   children: ReactNode
-  variante?: 'primario' | 'secundario' | 'fantasma' | 'peligro' | 'enlace'
+  variante?: 'primario' | 'secundario' | 'fantasma' | 'peligro' | 'enlace' | 'enlaceFila'
   tamano?: 'md' | 'lg'
 }) {
   const ref = useRef<HTMLDialogElement>(null)
@@ -30,6 +30,8 @@ export default function Ventana({
     fantasma: ui.botonFantasma,
     peligro: ui.botonPeligro,
     enlace: `${ui.enlace} text-sm`,
+    // "Editar" a la derecha de un elemento de lista.
+    enlaceFila: `${ui.enlaceFila} shrink-0 text-sm`,
   }[variante]
 
   return (

@@ -50,17 +50,35 @@ export const ui = {
     'relative block border-t border-gray-200 px-4 py-3 first:border-t-0 sm:table-row sm:p-0 sm:first:border-t sm:hover:bg-gray-50',
   // En celular: el título de la fila (nombre) arriba, sin etiqueta.
   celdaTitulo:
-    'block pb-1 pr-24 text-[15px] font-semibold text-gray-900 sm:table-cell sm:px-4 sm:py-3 sm:pr-4 sm:text-sm',
+    'block pb-1 text-[15px] font-semibold text-gray-900 sm:table-cell sm:px-4 sm:py-3 sm:pr-4 sm:text-sm',
   // En celular: un dato con su etiqueta al lado, en una línea.
   celdaResponsiva:
     'flex min-h-8 items-center gap-3 py-0.5 text-sm before:w-28 before:shrink-0 before:text-[13px] before:font-medium before:text-gray-600 before:content-[attr(data-titulo)] empty:hidden sm:table-cell sm:px-4 sm:py-3 sm:before:content-none sm:empty:table-cell',
   // En celular: un dato con su etiqueta encima (formularios dentro de la fila).
   celdaBloque:
     'flex flex-col items-start gap-1 py-1.5 text-sm before:text-[13px] before:font-medium before:text-gray-600 before:content-[attr(data-titulo)] empty:hidden sm:table-cell sm:px-4 sm:py-3 sm:before:content-none sm:empty:table-cell',
-  // En celular: la acción de la fila (Editar) arriba a la derecha.
-  celdaAccion: 'absolute right-2 top-1.5 sm:static sm:table-cell sm:px-4 sm:py-3 sm:text-right',
-  // En celular: la casilla de marcar, a la izquierda del nombre (la fila lleva pl-14).
-  celdaCasilla: 'absolute left-3 top-1.5 sm:static sm:table-cell sm:px-4 sm:py-3',
+
+  // Lista de personas: en celular, una fila simple con el nombre y su detalle a la izquierda y la
+  // acción a la derecha, centrada; desde sm, una tabla con sus columnas.
+  filaLista:
+    'flex items-center gap-3 border-t border-gray-200 px-4 py-3 first:border-t-0 sm:table-row sm:p-0 sm:first:border-t sm:hover:bg-gray-50',
+  celdaPrincipal: 'min-w-0 flex-1 sm:table-cell sm:px-4 sm:py-3',
+  // El nombre dentro de celdaPrincipal, y debajo el detalle que en computador va en sus columnas.
+  nombreFila: 'block text-[15px] font-semibold text-gray-900 sm:text-sm',
+  detalleMovil: 'mt-0.5 block text-[13px] text-gray-600 sm:hidden',
+  celdaEscritorio: 'hidden sm:table-cell sm:px-4 sm:py-3',
+  celdaFinal: 'shrink-0 sm:table-cell sm:px-4 sm:py-3 sm:text-right',
+  // Lista con casilla de marcar: la casilla a la izquierda del nombre, y el estado y los campos
+  // debajo del nombre, alineados con él.
+  filaMarcable:
+    'flex flex-wrap items-start gap-x-3 border-t border-gray-200 px-4 py-3 first:border-t-0 sm:table-row sm:p-0 sm:first:border-t sm:hover:bg-gray-50',
+  celdaMarcar: 'block w-6 shrink-0 pt-px sm:table-cell sm:w-auto sm:px-4 sm:py-3',
+  celdaDebajo:
+    'flex w-full flex-wrap items-center gap-x-3 gap-y-1 pl-9 pt-2 text-sm empty:hidden sm:table-cell sm:w-auto sm:px-4 sm:py-3 sm:empty:table-cell',
+  // La etiqueta de un dato dentro de celdaDebajo; en computador la da el encabezado de la tabla.
+  etiquetaMovil: 'text-[13px] font-medium text-gray-600 sm:hidden',
+  // La acción de un elemento de lista con 44 px de área táctil en celular.
+  enlaceFila: 'inline-flex min-h-11 items-center px-1 font-semibold text-primario underline-offset-2 hover:underline sm:min-h-0',
 
   chip: 'inline-flex items-center gap-2 rounded-full border border-primario-borde bg-primario-suave px-3 py-1 text-sm font-medium text-primario',
   // La "×" de un chip: 44 px de área táctil sin agrandar el chip.

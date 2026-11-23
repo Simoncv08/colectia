@@ -73,29 +73,31 @@ export default async function CursosPage() {
             <p className={ui.textoSecundario}>{grados.length} curso(s)</p>
           </div>
           {esAdmin && (
-            <Ventana textoBoton={
-              <>
-                <Plus {...iconoGrande} />
-                Agregar cursos
-              </>
-            } titulo="Agregar cursos">
-              <FormularioAccion action={agregarGrados} className="flex flex-col gap-4">
-                <label className={ui.etiqueta}>
-                  Un curso por línea (o separados por comas)
-                  <textarea
-                    name="nombres"
-                    rows={6}
-                    required
-                    placeholder={'1A\n1B\n2A\n…'}
-                    className={`${ui.campo} font-mono`}
-                  />
-                </label>
-                <p className={ui.ayuda}>Si alguno ya existe, no se duplica.</p>
-                <button type="submit" className={`${ui.botonPrimario} self-start`}>
-                  Agregar
-                </button>
-              </FormularioAccion>
-            </Ventana>
+            <div className={ui.accionesPagina}>
+              <Ventana textoBoton={
+                <>
+                  <Plus {...iconoGrande} />
+                  Agregar cursos
+                </>
+              } titulo="Agregar cursos">
+                <FormularioAccion action={agregarGrados} className="flex flex-col gap-4">
+                  <label className={ui.etiqueta}>
+                    Un curso por línea (o separados por comas)
+                    <textarea
+                      name="nombres"
+                      rows={6}
+                      required
+                      placeholder={'1A\n1B\n2A\n…'}
+                      className={`${ui.campo} font-mono`}
+                    />
+                  </label>
+                  <p className={ui.ayuda}>Si alguno ya existe, no se duplica.</p>
+                  <button type="submit" className={`${ui.botonPrimario} self-start`}>
+                    Agregar
+                  </button>
+                </FormularioAccion>
+              </Ventana>
+            </div>
           )}
         </div>
 
@@ -132,26 +134,28 @@ export default async function CursosPage() {
             </p>
           </div>
           {esAdmin && grados.length > 0 && (
-            <Ventana textoBoton={
-              <>
-                <Plus {...iconoGrande} />
-                Crear grupo
-              </>
-            } titulo="Crear grupo de cursos" variante="secundario">
-              <FormularioAccion action={crearGrupoCurso} className="flex flex-col gap-4">
-                <label className={ui.etiqueta}>
-                  Nombre del grupo
-                  <input name="nombre" required placeholder="Ej.: Primaria" className={ui.campo} />
-                </label>
-                <div className="flex flex-col gap-2">
-                  <p className="text-sm font-medium text-gray-800">Cursos que incluye</p>
-                  <CasillasCursos cursos={grados} />
-                </div>
-                <button type="submit" className={`${ui.botonPrimario} self-start`}>
+            <div className={ui.accionesPagina}>
+              <Ventana textoBoton={
+                <>
+                  <Plus {...iconoGrande} />
                   Crear grupo
-                </button>
-              </FormularioAccion>
-            </Ventana>
+                </>
+              } titulo="Crear grupo de cursos" variante="secundario">
+                <FormularioAccion action={crearGrupoCurso} className="flex flex-col gap-4">
+                  <label className={ui.etiqueta}>
+                    Nombre del grupo
+                    <input name="nombre" required placeholder="Ej.: Primaria" className={ui.campo} />
+                  </label>
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm font-medium text-gray-800">Cursos que incluye</p>
+                    <CasillasCursos cursos={grados} />
+                  </div>
+                  <button type="submit" className={`${ui.botonPrimario} self-start`}>
+                    Crear grupo
+                  </button>
+                </FormularioAccion>
+              </Ventana>
+            </div>
           )}
         </div>
 
@@ -163,9 +167,9 @@ export default async function CursosPage() {
             return (
               <li
                 key={grupo.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-5 py-3 shadow-xs"
+                className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-xs sm:px-5"
               >
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="font-semibold text-gray-900">{grupo.nombre}</p>
                   <p className="text-sm text-gray-700">
                     {grupo.miembros.length
@@ -174,7 +178,7 @@ export default async function CursosPage() {
                   </p>
                 </div>
                 {esAdmin && (
-                  <Ventana textoBoton="Editar" titulo={`Grupo "${grupo.nombre}"`} variante="secundario">
+                  <Ventana textoBoton="Editar" titulo={`Grupo "${grupo.nombre}"`} variante="enlaceFila">
                     <div className="flex flex-col gap-5">
                       <div>
                         <p className="mb-2 text-sm font-medium text-gray-800">Cursos del grupo</p>

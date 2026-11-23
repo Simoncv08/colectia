@@ -315,10 +315,10 @@ export default function CobroRapidoTabla({
               const pagado = pagadoDe(e.id)
               const sel = seleccion[e.id]
               return (
-                <tr key={e.id} className={`${ui.filaResponsiva} text-gray-900`}>
-                  <td className={ui.celdaCasilla}>
+                <tr key={e.id} className={`${ui.filaMarcable} text-gray-900`}>
+                  <td className={ui.celdaMarcar}>
                     {pagado === 0 && (
-                      <label className="-m-3 inline-flex p-3">
+                      <label className="-m-3 flex p-3">
                         <input
                           type="checkbox"
                           aria-label={`Cobrar a ${e.nombres} ${e.apellidos}`}
@@ -329,13 +329,15 @@ export default function CobroRapidoTabla({
                       </label>
                     )}
                   </td>
-                  <td className={`${ui.celdaTitulo} pl-10 sm:pl-4`}>
-                    {e.apellidos} {e.nombres}
-                    {curso === TODOS && e.curso_grado && (
-                      <span className="ml-1 text-gray-600">({e.curso_grado})</span>
-                    )}
+                  <td className={ui.celdaPrincipal}>
+                    <span className={ui.nombreFila}>
+                      {e.apellidos} {e.nombres}
+                      {curso === TODOS && e.curso_grado && (
+                        <span className="ml-1 font-normal text-gray-600">({e.curso_grado})</span>
+                      )}
+                    </span>
                   </td>
-                  <td data-titulo="Estado" className={ui.celdaResponsiva}>
+                  <td className={ui.celdaDebajo}>
                     <div className="flex flex-col items-start gap-1">
                     {pagado > 0 ? (
                       <EstadoPago
@@ -366,7 +368,8 @@ export default function CobroRapidoTabla({
                     ))}
                     </div>
                   </td>
-                  <td data-titulo="Cantidad" className={ui.celdaResponsiva}>
+                  <td className={ui.celdaDebajo}>
+                    {sel && <span className={`${ui.etiquetaMovil} w-full`}>Cantidad</span>}
                     {sel &&
                       (opcionesCantidad ? (
                         <select
@@ -396,7 +399,8 @@ export default function CobroRapidoTabla({
                         />
                       ))}
                   </td>
-                  <td data-titulo="Devuelta pendiente" className={ui.celdaResponsiva}>
+                  <td className={ui.celdaDebajo}>
+                    {sel && <span className={`${ui.etiquetaMovil} w-full`}>Devuelta pendiente</span>}
                     {sel && (
                       <div className="flex items-center gap-2">
                         <label className="-m-3 inline-flex p-3">
@@ -418,7 +422,7 @@ export default function CobroRapidoTabla({
                             onChange={(ev) => cambiarMontoDevuelta(e.id, ev.target.value)}
                             aria-label={`Valor que se le debe a ${e.nombres} ${e.apellidos}`}
                             placeholder="$ que se le debe"
-                            className={`${ui.campoCompacto} w-32`}
+                            className={`${ui.campoCompacto} w-40`}
                           />
                         )}
                       </div>
