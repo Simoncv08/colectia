@@ -15,6 +15,8 @@ En Supabase: **Authentication → Emails → Templates** (en el proyecto `kbxswl
 | Reset password | Crea una contraseña nueva para Colectia | `5_restablecer_contrasena.html` |
 | Reauthentication | Tu código de verificación de Colectia | `6_reautenticacion.html` |
 
+El logo (la abeja) se carga desde `https://www.colectia.org/colectia-abeja-correo.png`, así que el cambio debe estar publicado en Vercel para que se vea.
+
 Los enlaces usan `{{ .ConfirmationURL }}`, que lleva a `/auth/callback` de la app; no hay que cambiar código. No borres las partes entre `{{ }}`: Supabase las reemplaza por el enlace, el correo o el código.
 
 Dos cosas para tener en cuenta:

@@ -143,7 +143,7 @@ Están en `src/components` y las clases repetidas en `ui` (`src/lib/ui.ts`). Si 
 - **Confirmación** (`ConfirmSubmitButton`): ventana con la pregunta, la consecuencia, "Cancelar" y el botón de la acción. En celular sale como hoja desde abajo.
 - **Ventanas** (`Ventana`) y **menús** (`MenuDesplegable`): se cierran con Escape y con un clic afuera. En celular la ventana sale como hoja desde abajo, con el título fijo y solo el contenido desplazándose; mientras está abierta, la página de atrás no se mueve. Los campos miden 16 px en celular para que el iPhone no haga zoom al tocarlos.
 - **Estados vacío, carga y error:** ícono pequeño + frase + acción para salir de ahí; esqueletos al cargar; errores en lenguaje claro con "Intentar de nuevo". Nunca mensajes técnicos de Supabase o Postgres.
-- **Marca** (`Marca`): símbolo simple (cuadro con la "C") en el color de marca y "Colectia" en Manrope 700. Dentro de una institución, el nombre del colegio la acompaña, nunca la reemplaza.
+- **Marca** (`Marca`): la abeja de Colectia (`LogoAbeja`, que usa `currentColor`) con `text-primario`, así toma el color de la paleta de cada institución, y "Colectia" en Manrope 700. Dentro de una institución, el nombre del colegio la acompaña, nunca la reemplaza. El archivo original está en `public/colectia-abeja.svg`. El ícono de la pestaña del navegador (`src/app/icon.svg`), el de la pantalla de inicio del iPhone (`src/app/apple-icon.png`) y el de los correos (`public/colectia-abeja-correo.png`) usan el azul de la paleta por defecto, porque ahí no se puede saber la institución.
 - **Íconos:** Lucide (`lucide-react`), trazo 1,75; 16 px junto a texto y 20 px en botones y navegación (`src/lib/iconos.ts`).
 
 ---
