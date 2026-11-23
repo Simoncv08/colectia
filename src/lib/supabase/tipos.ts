@@ -68,6 +68,39 @@ export type Database = {
           },
         ]
       }
+      aceptaciones_legales: {
+        Row: {
+          aceptado_en: string
+          documento_id: string
+          persona_id: string
+        }
+        Insert: {
+          aceptado_en?: string
+          documento_id: string
+          persona_id: string
+        }
+        Update: {
+          aceptado_en?: string
+          documento_id?: string
+          persona_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aceptaciones_legales_documento_id_fkey"
+            columns: ["documento_id"]
+            isOneToOne: false
+            referencedRelation: "documentos_legales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aceptaciones_legales_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       acudiente_estudiante: {
         Row: {
           created_at: string
@@ -98,6 +131,47 @@ export type Database = {
           {
             foreignKeyName: "acudiente_estudiante_persona_id_fkey"
             columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documentos_legales: {
+        Row: {
+          contenido: string
+          id: string
+          publicado_en: string
+          publicado_por: string | null
+          requiere_aceptacion: boolean
+          resumen_cambios: string | null
+          tipo: string
+          version: number
+        }
+        Insert: {
+          contenido: string
+          id?: string
+          publicado_en?: string
+          publicado_por?: string | null
+          requiere_aceptacion?: boolean
+          resumen_cambios?: string | null
+          tipo: string
+          version: number
+        }
+        Update: {
+          contenido?: string
+          id?: string
+          publicado_en?: string
+          publicado_por?: string | null
+          requiere_aceptacion?: boolean
+          resumen_cambios?: string | null
+          tipo?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documentos_legales_publicado_por_fkey"
+            columns: ["publicado_por"]
             isOneToOne: false
             referencedRelation: "personas"
             referencedColumns: ["id"]
@@ -583,6 +657,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      aceptar_documentos_legales: {
+        Args: { p_tipos: string[] }
+        Returns: undefined
+      }
       actividad_anotar: {
         Args: {
           p_accion: string
@@ -628,6 +706,18 @@ export type Database = {
         Returns: boolean
       }
       es_super_admin: { Args: never; Returns: boolean }
+      estado_legal: {
+        Args: never
+        Returns: {
+          avisar: boolean
+          bloquea: boolean
+          documento_id: string
+          publicado_en: string
+          resumen_cambios: string | null
+          tipo: string
+          version: number
+        }[]
+      }
       evento_acepta_pagos: { Args: { p_evento_id: string }; Returns: boolean }
       evento_finalizado: {
         Args: { p_fecha_evento: string; p_finalizado_en: string }
@@ -646,6 +736,15 @@ export type Database = {
       marcar_devuelta_entregada: {
         Args: { p_grupo_pago_id: string }
         Returns: undefined
+      }
+      publicar_documento_legal: {
+        Args: {
+          p_contenido: string
+          p_requiere_aceptacion: boolean
+          p_resumen: string
+          p_tipo: string
+        }
+        Returns: number
       }
       puede_gestionar_imagen_evento: {
         Args: { p_nombre: string }

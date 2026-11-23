@@ -47,6 +47,17 @@ export default function CargandoPagina() {
         </div>
         <BotonEsqueleto className="w-full sm:w-44" />
       </TarjetaEsqueleto>
+      <TarjetaEsqueleto className="flex flex-col gap-3">
+        <Barra className="h-5 w-44" />
+        <div className="divide-y divide-gray-200 rounded-lg border border-gray-200">
+          {[0, 1].map((i) => (
+            <div key={i} className="flex min-h-14 flex-col justify-center gap-2 px-4 py-3">
+              <Barra className="h-4 w-44" />
+              <Barra className="h-3 w-56" />
+            </div>
+          ))}
+        </div>
+      </TarjetaEsqueleto>
     </Cargando>
   )
 }

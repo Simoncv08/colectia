@@ -1,8 +1,7 @@
 import { obtenerSesionAcudiente } from '@/lib/sesionAcudiente'
 import { desvincularEstudiante } from '../actions'
 import FormularioVincular from '../FormularioVincular'
-import FormularioDatos from './FormularioDatos'
-import FormularioContrasena from '@/components/FormularioContrasena'
+import { TarjetaContrasena, TarjetaDocumentosLegales, TarjetaMisDatos } from '@/components/Cuenta'
 import ConfirmSubmitButton from '@/components/ConfirmSubmitButton'
 import Ventana from '@/components/Ventana'
 import { ui } from '@/lib/ui'
@@ -26,15 +25,7 @@ export default async function CuentaAcudientePage() {
     <>
       <h1 className={ui.titulo}>Mi cuenta</h1>
 
-      <section className={ui.tarjeta}>
-        <h2 className={`${ui.subtitulo} mb-4`}>Mis datos</h2>
-        <FormularioDatos
-          nombres={persona.nombres}
-          apellidos={persona.apellidos}
-          telefono={persona.telefono}
-          correo={sesion.correo}
-        />
-      </section>
+      <TarjetaMisDatos persona={persona} correo={sesion.correo} />
 
       <section id="estudiantes" className={`${ui.tarjeta} scroll-mt-6`}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -99,23 +90,9 @@ export default async function CuentaAcudientePage() {
         </p>
       </section>
 
-      <section className={ui.tarjeta}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className={ui.subtitulo}>Contraseña</h2>
-            <p className={ui.textoSecundario}>
-              Si entras con Google o con enlace al correo, también puedes crear una contraseña.
-            </p>
-          </div>
-          <Ventana
-            textoBoton="Cambiar contraseña"
-            titulo="Cambiar contraseña"
-            variante="secundario"
-          >
-            <FormularioContrasena />
-          </Ventana>
-        </div>
-      </section>
+      <TarjetaContrasena />
+
+      <TarjetaDocumentosLegales personaId={sesion.userId} />
     </>
   )
 }

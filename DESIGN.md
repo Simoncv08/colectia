@@ -113,8 +113,10 @@ Preferimos bordes a sombras. Solo dos niveles: `shadow-xs` (tarjetas, junto con 
 
 ## 3. Layout
 
-- **Acudiente:** una columna de máximo 640 px. Encabezado fijo arriba con la marca a la izquierda y el menú de cuenta (nombre, Inicio, Mi cuenta, Cerrar sesión) a la derecha.
-- **Personal:** barra lateral de 240 px desde `lg` (Inicio, Eventos, Estudiantes, Cursos, Reportes, Personal, Actividad, Personalización). En pantallas menores se abre desde el botón de menú del encabezado. Contenido de máximo 1200 px. Encima del contenido van el nombre de la institución, su estado y el rol de quien está conectado.
+- **Menú de cuenta** (`MenuCuenta`), igual en los tres roles, arriba a la derecha: correo, Mi cuenta, Términos y condiciones, Política de privacidad y Cerrar sesión. "Mi cuenta" (`components/Cuenta.tsx`) tiene Mis datos, Contraseña y Términos y privacidad (con la versión aceptada y la fecha); el acudiente además ve sus estudiantes vinculados.
+- **Acudiente:** una columna de máximo 640 px. Encabezado fijo arriba con la marca a la izquierda y el menú de cuenta (con Inicio) a la derecha.
+- **Personal:** barra lateral de 240 px desde `lg` (Inicio, Eventos, Estudiantes, Cursos, Reportes, Personal, Actividad, Personalización). Barra superior fija: en computador, el nombre de la institución, su estado y el rol a la izquierda y el menú de cuenta a la derecha; en celular, la marca, el menú de cuenta (solo el ícono) y el botón "Menú" con las secciones. Contenido de máximo 1200 px.
+- **Super administrador:** barra superior con la marca y el menú de cuenta, y debajo las pestañas Instituciones y Términos y privacidad.
 - Las tablas se desplazan en horizontal dentro de su tarjeta; la página nunca.
 
 Estructura de una página: título y descripción corta, con la acción principal a la derecha; luego las tarjetas de resumen, los filtros y el contenido.
@@ -184,6 +186,7 @@ Activa (`exito`), En prueba (`alerta`), Suspendida (`peligro`), Cancelada (`neut
 - **Personal, inicio:** cuatro `TarjetaDato` (total recaudado, eventos abiertos, estudiantes con pago, pagos en efectivo de hoy) y la lista de eventos abiertos con su avance.
 - **Personal, cobro por salón:** filtrar por salón, marcar estudiantes y registrar; los que ya pagaron muestran "Pagado · efectivo".
 - **Personal, reportes:** "Descargar Excel" arriba a la derecha; filtros con chips; en cada evento, "Ver por curso" muestra barras horizontales del porcentaje con pago, con el número escrito al lado (nunca solo el color).
+- **Términos y privacidad:** el super administrador publica versiones nuevas en `/admin/legal` (texto con formato sencillo y vista previa). Cada versión queda guardada y dice si se debe aceptar. `PuertaLegal`, en el layout de cada rol, muestra la pantalla "Antes de continuar" / "Actualizamos nuestros documentos" (casilla "Leí y acepto…" y "Aceptar y continuar") en vez de la página hasta que la persona acepte; un cambio menor solo muestra un aviso que se cierra con la "×". Los documentos se leen en `/terminos` y `/privacidad` sin iniciar sesión, y el inicio de sesión los enlaza.
 
 ---
 

@@ -1,11 +1,14 @@
 import { cache } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { nombrePersona } from '@/lib/formato'
 
 export type SesionInstitucion = {
   supabase: Awaited<ReturnType<typeof createClient>>
   userId: string
   correo: string
+  nombre: string
+  persona: { nombres: string | null; apellidos: string | null; telefono: string | null } | null
   membresiaId: string
   institucionId: string
   rol: 'admin_institucion' | 'recaudador'
@@ -31,12 +34,15 @@ export const obtenerSesionInstitucion = cache(async (): Promise<SesionInstitucio
     redirect('/login')
   }
 
-  const { data: membresias } = await supabase
-    .from('membresias')
-    .select('id, institucion_id, rol, instituciones(nombre, estado, paleta, fondo)')
-    .eq('persona_id', user.id)
-    .in('rol', ['admin_institucion', 'recaudador'])
-    .order('created_at', { ascending: true })
+  const [{ data: membresias }, { data: persona }] = await Promise.all([
+    supabase
+      .from('membresias')
+      .select('id, institucion_id, rol, instituciones(nombre, estado, paleta, fondo)')
+      .eq('persona_id', user.id)
+      .in('rol', ['admin_institucion', 'recaudador'])
+      .order('created_at', { ascending: true }),
+    supabase.from('personas').select('nombres, apellidos, correo, telefono').eq('id', user.id).maybeSingle(),
+  ])
 
   // La consulta ya filtra por esos dos roles.
   const todas = (membresias ?? []).map((x) => ({ ...x, rol: x.rol as 'admin_institucion' | 'recaudador' }))
@@ -51,6 +57,8 @@ export const obtenerSesionInstitucion = cache(async (): Promise<SesionInstitucio
     supabase,
     userId: user.id,
     correo: user.email ?? '',
+    nombre: nombrePersona(persona, user.email ?? ''),
+    persona,
     membresiaId: m.id,
     institucionId: m.institucion_id,
     rol: m.rol,

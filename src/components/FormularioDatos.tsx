@@ -1,7 +1,7 @@
 'use client'
 
 import { startTransition, useActionState, type FormEvent } from 'react'
-import { actualizarDatos } from '../actions'
+import { actualizarDatos } from '@/app/actions'
 import type { Resultado } from '@/lib/resultado'
 import { ui } from '@/lib/ui'
 

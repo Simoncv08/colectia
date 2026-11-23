@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import FormularioLogin from './FormularioLogin'
@@ -26,6 +27,17 @@ export default async function LoginPage() {
         <div className={ui.tarjeta}>
           <FormularioLogin />
         </div>
+        <p className="mt-4 text-center text-[13px] text-gray-600">
+          Al usar Colectia aceptas los{' '}
+          <Link href="/terminos" className={ui.enlace}>
+            términos y condiciones
+          </Link>{' '}
+          y la{' '}
+          <Link href="/privacidad" className={ui.enlace}>
+            política de privacidad
+          </Link>
+          .
+        </p>
       </div>
     </main>
   )
