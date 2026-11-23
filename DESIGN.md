@@ -107,7 +107,7 @@ Preferimos bordes a sombras. Solo dos niveles: `shadow-xs` (tarjetas, junto con 
 
 ### 2.6 Movimiento
 
-120 ms en hover y foco, 200 ms al abrir o cerrar, curva `ease-colectia`. Solo se animan color, opacidad y giro de flechas. Con `prefers-reduced-motion` no hay transiciones. La carga se muestra con esqueletos (`EstadoCarga`), no con giradores.
+120 ms en hover y foco, 200 ms al abrir o cerrar, curva `ease-colectia`. Solo se animan color, opacidad y giro de flechas. Con `prefers-reduced-motion` no hay transiciones. La carga se muestra con esqueletos, no con giradores: cada página tiene su `loading.tsx` armado con las piezas de `src/components/Esqueleto.tsx` (tarjetas, filas, campos y botones con las mismas formas del contenido real). Si cambias la forma de una página, cambia también su esqueleto.
 
 ---
 
