@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { obtenerSesionInstitucion } from '@/lib/sesionInstitucion'
 import { ui } from '@/lib/ui'
+import FiltrosActivos from '@/components/FiltrosActivos'
 import { nombrePersona, pesos } from '@/lib/formato'
 
 type Params = {
@@ -23,12 +24,12 @@ const ZONA = 'America/Bogota'
 const PASO = 150
 
 const CATEGORIAS: Record<string, { etiqueta: string; clase: string }> = {
-  pagos: { etiqueta: 'Pagos', clase: 'bg-green-100 text-green-800' },
-  estudiantes: { etiqueta: 'Estudiantes', clase: 'bg-sky-100 text-sky-900' },
-  eventos: { etiqueta: 'Eventos', clase: 'bg-purple-100 text-purple-800' },
-  personal: { etiqueta: 'Personal', clase: 'bg-amber-100 text-amber-800' },
-  cursos: { etiqueta: 'Cursos', clase: 'bg-gray-200 text-gray-800' },
-  acudientes: { etiqueta: 'Acudientes', clase: 'bg-pink-100 text-pink-800' },
+  pagos: { etiqueta: 'Pagos', clase: 'bg-exito-suave text-exito' },
+  estudiantes: { etiqueta: 'Estudiantes', clase: 'bg-neutro-suave text-neutro' },
+  eventos: { etiqueta: 'Eventos', clase: 'bg-neutro-suave text-neutro' },
+  personal: { etiqueta: 'Personal', clase: 'bg-neutro-suave text-neutro' },
+  cursos: { etiqueta: 'Cursos', clase: 'bg-neutro-suave text-neutro' },
+  acudientes: { etiqueta: 'Acudientes', clase: 'bg-neutro-suave text-neutro' },
 }
 
 const VERBOS: Record<string, string> = { crear: 'agregó', editar: 'editó', eliminar: 'eliminó' }
@@ -172,6 +173,8 @@ export default async function ActividadPage({ searchParams }: Params) {
     dia.tarjetas.push(t)
   }
 
+  const nombres = new Map(personal)
+
   function urlCon(cambios: Record<string, string>) {
     const p = new URLSearchParams()
     const valores = { categoria, persona, ...cambios }
@@ -191,12 +194,12 @@ export default async function ActividadPage({ searchParams }: Params) {
       </div>
 
       <form method="get" className="flex flex-wrap items-end gap-2">
-        <label className="flex flex-col gap-1 text-sm font-medium text-gray-800">
+        <label className={ui.etiqueta}>
           Tipo de cambio
           <select
             name="categoria"
             defaultValue={categoria}
-            className={ui.campo}
+            className={ui.campoCompacto}
           >
             <option value="">Todos</option>
             {Object.entries(CATEGORIAS).map(([valor, c]) => (
@@ -206,12 +209,12 @@ export default async function ActividadPage({ searchParams }: Params) {
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-sm font-medium text-gray-800">
+        <label className={ui.etiqueta}>
           Quién
           <select
             name="persona"
             defaultValue={persona}
-            className={ui.campo}
+            className={ui.campoCompacto}
           >
             <option value="">Todo el personal</option>
             {personal.map(([id, nombre]) => (
@@ -224,23 +227,32 @@ export default async function ActividadPage({ searchParams }: Params) {
         </label>
         <button
           type="submit"
-          className={ui.botonPrimario}
+          className={`${ui.botonPrimario} sm:min-h-9`}
         >
           Filtrar
         </button>
-        {(categoria || persona) && (
-          <Link
-            href="/institucion/actividad"
-            className={ui.botonSecundario}
-          >
-            Limpiar
-          </Link>
-        )}
       </form>
+
+      <FiltrosActivos
+        hrefLimpiar="/institucion/actividad"
+        filtros={[
+          ...(categoria
+            ? [{ etiqueta: `Tipo: ${CATEGORIAS[categoria].etiqueta}`, hrefQuitar: urlCon({ categoria: '' }) }]
+            : []),
+          ...(persona
+            ? [
+                {
+                  etiqueta: `Quién: ${persona === 'sistema' ? 'cambios directos en Supabase' : nombres.get(persona) ?? 'otra persona'}`,
+                  hrefQuitar: urlCon({ persona: '' }),
+                },
+              ]
+            : []),
+        ]}
+      />
 
       {error && (
         <p className={ui.avisoRojo}>
-          No se pudo cargar la actividad: {error.message}
+          No se pudo cargar la actividad. Recarga la página para intentar de nuevo.
         </p>
       )}
 

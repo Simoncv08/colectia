@@ -113,7 +113,7 @@ export default async function CobroRapidoPage({ params }: Params) {
       )}
 
       {errorPagos && (
-        <p className={ui.avisoRojo}>No se pudieron cargar los pagos: {errorPagos.message}</p>
+        <p className={ui.avisoRojo}>No se pudieron cargar los pagos. Recarga la página para intentar de nuevo.</p>
       )}
 
       {!productos.length ? (

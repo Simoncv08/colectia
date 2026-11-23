@@ -8,6 +8,8 @@ import {
   agregarGrupoPorGrupoDeCursos,
   quitarGrupo,
 } from '../actions'
+import { Plus, X } from 'lucide-react'
+import { icono, iconoGrande } from '@/lib/iconos'
 
 type Opcion = { id: string; nombre: string }
 type EstudianteOpcion = { id: string; nombres: string; apellidos: string; curso_grado: string | null }
@@ -43,7 +45,12 @@ export default function SeccionDirigidoA({
           <h2 className={ui.subtitulo}>Dirigido a</h2>
           <p className={ui.ayuda}>Solo los acudientes de estos estudiantes ven el evento.</p>
         </div>
-        <Ventana textoBoton="+ Agregar" titulo="¿A quién va dirigido?" variante="secundario">
+        <Ventana textoBoton={
+              <>
+                <Plus {...iconoGrande} />
+                Agregar
+              </>
+            } titulo="¿A quién va dirigido?" variante="secundario">
           <div className="flex flex-col gap-5">
             {gruposCurso.length > 0 && (
               <FormularioAccion
@@ -132,7 +139,7 @@ export default function SeccionDirigidoA({
                       ariaLabel={`Quitar el curso ${g.curso_grado}`}
                       className={ui.botonChip}
                     >
-                      ×
+                      <X {...icono} />
                     </ConfirmSubmitButton>
                   </FormularioAccion>
                 </li>
@@ -153,7 +160,7 @@ export default function SeccionDirigidoA({
                         ariaLabel={`Quitar a ${g.estudiantes?.nombres ?? 'este estudiante'} del evento`}
                         className={ui.botonChip}
                       >
-                        ×
+                        <X {...icono} />
                       </ConfirmSubmitButton>
                     </FormularioAccion>
                   </li>

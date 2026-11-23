@@ -1,6 +1,8 @@
 import type { CSSProperties } from 'react'
 
 // Todas pasan 4.5:1: blanco sobre primario, y primario sobre blanco, tono suave y fondo tintado.
+// No hay paleta verde: el verde queda solo para "Pagado" (DESIGN.md). Un colegio que la tenía
+// guardada se ve con la azul.
 
 export type Paleta = {
   id: string
@@ -14,7 +16,6 @@ export type Paleta = {
 
 export const PALETAS: Paleta[] = [
   { id: 'azul', nombre: 'Azul', primario: '#1d4ed8', primarioHover: '#1e40af', suave: '#dbeafe', borde: '#93c5fd', tinte: '#eff6ff' },
-  { id: 'verde', nombre: 'Verde', primario: '#15803d', primarioHover: '#166534', suave: '#dcfce7', borde: '#86efac', tinte: '#f0fdf4' },
   { id: 'turquesa', nombre: 'Turquesa', primario: '#0f766e', primarioHover: '#115e59', suave: '#ccfbf1', borde: '#5eead4', tinte: '#f0fdfa' },
   { id: 'morado', nombre: 'Morado', primario: '#6d28d9', primarioHover: '#5b21b6', suave: '#ede9fe', borde: '#c4b5fd', tinte: '#f5f3ff' },
   { id: 'fucsia', nombre: 'Fucsia', primario: '#a21caf', primarioHover: '#86198f', suave: '#fae8ff', borde: '#f0abfc', tinte: '#fdf4ff' },
@@ -41,7 +42,7 @@ export function buscarPaleta(id: string | null | undefined): Paleta {
 function colorFondo(paleta: Paleta, fondo: string | null | undefined) {
   if (fondo === 'blanco') return '#ffffff'
   if (fondo === 'tinte') return paleta.tinte
-  return '#f9fafb'
+  return '#f7f8fa'
 }
 
 // Se aplica con style={estiloPaleta(...)} en el contenedor (variables de src/app/globals.css).

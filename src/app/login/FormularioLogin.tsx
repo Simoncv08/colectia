@@ -42,7 +42,7 @@ function traducirError(error: AuthError): string {
   if (texto.includes('invalid') && texto.includes('email')) {
     return 'Ese correo no parece válido. Revísalo.'
   }
-  return `No se pudo completar: ${error.message}`
+  return 'No se pudo completar. Intenta de nuevo en un momento.'
 }
 
 export default function FormularioLogin() {
@@ -194,7 +194,7 @@ export default function FormularioLogin() {
       <button
         type="button"
         onClick={entrarConGoogle}
-        className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-50"
+        className={`${ui.botonSecundario} w-full gap-3`}
       >
         <svg aria-hidden="true" viewBox="0 0 48 48" className="h-5 w-5">
           <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />
@@ -329,7 +329,7 @@ export default function FormularioLogin() {
           </p>
         )}
 
-        <button type="submit" disabled={enviando} className={`${ui.botonPrimario} w-full py-2.5`}>
+        <button type="submit" disabled={enviando} className={`${ui.botonPrimario} w-full`}>
           {enviando ? 'Un momento…' : textoBoton[modo]}
         </button>
       </form>

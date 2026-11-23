@@ -4,6 +4,8 @@ import Ventana from '@/components/Ventana'
 import { pesos } from '@/lib/formato'
 import { ui } from '@/lib/ui'
 import { crearProducto, eliminarProducto } from '../actions'
+import { Plus } from 'lucide-react'
+import { iconoGrande } from '@/lib/iconos'
 
 export type Producto = {
   id: string
@@ -27,7 +29,12 @@ export default function SeccionProductos({
           <h2 className={ui.subtitulo}>Productos</h2>
           <p className={ui.ayuda}>Lo que se paga en este evento (entrada, camiseta, etc.).</p>
         </div>
-        <Ventana textoBoton="+ Agregar producto" titulo="Agregar producto" variante="secundario">
+        <Ventana textoBoton={
+              <>
+                <Plus {...iconoGrande} />
+                Agregar producto
+              </>
+            } titulo="Agregar producto" variante="secundario">
           <FormularioAccion action={crearProducto.bind(null, eventoId)} className="flex flex-col gap-4">
             <label className={ui.etiqueta}>
               Nombre

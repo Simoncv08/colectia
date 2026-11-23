@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { descargarExcelReporte } from './actions'
+import { Download } from 'lucide-react'
+import { iconoGrande } from '@/lib/iconos'
+import { ui } from '@/lib/ui'
 
 export default function BotonDescargarExcel({ parametros }: { parametros: string }) {
   const [descargando, setDescargando] = useState(false)
@@ -30,9 +33,9 @@ export default function BotonDescargarExcel({ parametros }: { parametros: string
       enlace.click()
       enlace.remove()
       setTimeout(() => URL.revokeObjectURL(url), 1000)
-    } catch (e) {
+    } catch {
       setError(
-        `No se pudo descargar el Excel${e instanceof Error ? `: ${e.message}` : '.'}`
+        'No se pudo descargar el Excel. Intenta de nuevo.'
       )
     } finally {
       setDescargando(false)
@@ -45,12 +48,13 @@ export default function BotonDescargarExcel({ parametros }: { parametros: string
         type="button"
         onClick={descargar}
         disabled={descargando}
-        className="inline-flex min-h-11 items-center rounded-lg border border-green-700 bg-white px-3 py-1.5 text-sm font-medium text-green-800 hover:bg-green-50 active:bg-green-100 disabled:cursor-wait disabled:opacity-60 sm:min-h-9"
+        className={`${ui.botonSecundario} disabled:cursor-wait`}
       >
+        <Download {...iconoGrande} />
         {descargando ? 'Preparando Excel…' : 'Descargar Excel'}
       </button>
       {error && (
-        <p role="alert" className="max-w-xs text-right text-xs text-red-700">
+        <p role="alert" className="max-w-xs text-right text-xs text-peligro">
           {error}
         </p>
       )}

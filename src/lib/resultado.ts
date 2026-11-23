@@ -11,7 +11,9 @@ export function mensajeBD(error: ErrorBD, mensajes: { duplicado?: string; enUso?
   if (error.code === '23505') return mensajes.duplicado ?? 'Ese registro ya existe.'
   if (error.code === '23503') return mensajes.enUso ?? 'No se puede: hay otros registros que dependen de este.'
   if (error.code === '42501') return 'No tienes permiso para hacer esto.'
-  return error.message
+  // Cualquier otro error de la base se registra en el servidor y se muestra en palabras simples.
+  console.error(error)
+  return 'No se pudo completar. Intenta de nuevo en un momento.'
 }
 
 // Corre una acción: lo que lance se convierte en un mensaje de error para la pantalla.

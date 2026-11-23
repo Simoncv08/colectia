@@ -141,8 +141,8 @@ export default async function EditarEstudiantePage({ params }: Params) {
         </div>
       </FormularioAccion>
 
-      <section className="rounded-xl border border-red-200 bg-white p-5">
-        <h2 className="text-base font-semibold text-red-800">Eliminar estudiante</h2>
+      <section className={`${ui.tarjeta} border-peligro/30`}>
+        <h2 className="text-lg font-semibold text-peligro">Eliminar estudiante</h2>
         {pagosDelEstudiante ? (
           <p className="mt-1 text-sm text-gray-700">
             Este estudiante tiene {pagosDelEstudiante} pago(s) registrado(s), así que no se puede

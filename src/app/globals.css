@@ -1,23 +1,59 @@
 @import "tailwindcss";
 
-/* Siempre en modo claro. Cada institución cambia estas variables con su
-   paleta (src/lib/paletas.ts); las clases bg-primario, text-primario, etc. las usan. */
+/* Tokens de DESIGN.md. Siempre en modo claro. El color de marca es el de la paleta de cada
+   institución (src/lib/paletas.ts): estiloPaleta() cambia estas variables en el contenedor. */
 :root {
   --primario: #1d4ed8;
   --primario-hover: #1e40af;
   --primario-suave: #dbeafe;
   --primario-borde: #93c5fd;
-  --fondo: #f9fafb;
-  --texto: #111827;
+  --fondo: #f7f8fa;
 }
 
 @theme inline {
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+
   --color-primario: var(--primario);
   --color-primario-hover: var(--primario-hover);
   --color-primario-suave: var(--primario-suave);
   --color-primario-borde: var(--primario-borde);
   --color-fondo: var(--fondo);
-  --font-sans: var(--font-manrope);
+}
+
+@theme {
+  /* Grises de DESIGN.md: gray-200 es "borde", gray-600 "texto-secundario", gray-900 "texto". */
+  --color-gray-50: #f7f8fa;
+  --color-gray-100: #f2f4f7;
+  --color-gray-200: #e4e7ec;
+  --color-gray-300: #d0d5dd;
+  --color-gray-400: #98a2b3;
+  --color-gray-500: #667085;
+  --color-gray-600: #475467;
+  --color-gray-700: #344054;
+  --color-gray-800: #1d2939;
+  --color-gray-900: #0f172a;
+
+  --color-borde-campo: #858e9e;
+
+  --color-exito: #15703d;
+  --color-exito-suave: #eaf7ef;
+  --color-alerta: #9a5b00;
+  --color-alerta-suave: #fff6e5;
+  --color-peligro: #b42318;
+  --color-peligro-suave: #fef0ee;
+  --color-neutro: #475467;
+  --color-neutro-suave: #f2f4f7;
+
+  /* Radios con jerarquía: campos 6 px (md), botones y avisos 10 px (lg), tarjetas 16 px (xl). */
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+
+  /* Dos elevaciones: tarjetas (xs) y lo que flota encima, como ventanas y avisos (lg). */
+  --shadow-xs: 0 1px 2px rgb(16 24 40 / 0.06);
+  --shadow-lg: 0 12px 32px rgb(16 24 40 / 0.14);
+
+  --ease-colectia: cubic-bezier(0.2, 0, 0, 1);
 }
 
 html {
@@ -26,9 +62,9 @@ html {
 
 body {
   background: var(--fondo);
-  color: var(--texto);
-  font-family: var(--font-manrope), Arial, Helvetica, sans-serif;
-  /* Números tabulares en toda la app: los montos quedan alineados (DESIGN.md). */
+  color: var(--color-gray-900);
+  font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  /* Números tabulares en toda la app: los montos quedan alineados. */
   font-variant-numeric: tabular-nums;
 }
 
@@ -60,6 +96,11 @@ body {
     outline-offset: 2px;
   }
 
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--primario);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -72,7 +113,7 @@ body {
 }
 
 dialog::backdrop {
-  background: rgb(17 24 39 / 0.45);
+  background: rgb(15 23 42 / 0.45);
 }
 
 summary::-webkit-details-marker {

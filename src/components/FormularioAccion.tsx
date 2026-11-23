@@ -3,6 +3,7 @@
 import { useRef, useTransition, type FormEvent, type ReactNode } from 'react'
 import type { Resultado } from '@/lib/resultado'
 import { useAvisos } from '@/components/Avisos'
+import { MOTIVO_SOLO_LECTURA, useSoloLectura } from '@/components/SoloLectura'
 
 // Formulario que llama a una acción del servidor y muestra su resultado como aviso. Si sale
 // bien, se vacía y cierra la ventana en la que esté; si falla, conserva lo escrito.
@@ -20,6 +21,7 @@ export default function FormularioAccion({
   const formulario = useRef<HTMLFormElement>(null)
   const [enviando, startTransition] = useTransition()
   const mostrarAviso = useAvisos()
+  const soloLectura = useSoloLectura()
 
   function enviar(ev: FormEvent<HTMLFormElement>) {
     ev.preventDefault()
@@ -36,8 +38,14 @@ export default function FormularioAccion({
   }
 
   return (
-    <form ref={formulario} onSubmit={enviar} aria-busy={enviando} className={className}>
-      <fieldset disabled={enviando} className="contents">
+    <form
+      ref={formulario}
+      onSubmit={enviar}
+      aria-busy={enviando}
+      title={soloLectura ? MOTIVO_SOLO_LECTURA : undefined}
+      className={className}
+    >
+      <fieldset disabled={enviando || soloLectura} className="contents">
         {children}
       </fieldset>
     </form>

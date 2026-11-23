@@ -1,4 +1,6 @@
-// Cifra destacada de un resumen (recaudado, pagaron, faltan...).
+import { ui } from '@/lib/ui'
+
+// Resumen numérico (DESIGN.md 4.3): etiqueta, cifra grande y una línea de contexto opcional.
 export default function TarjetaDato({
   titulo,
   valor,
@@ -11,10 +13,12 @@ export default function TarjetaDato({
   alerta?: boolean
 }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4">
-      <p className="text-xs text-gray-700">{titulo}</p>
-      <p className={`text-xl font-semibold ${alerta ? 'text-amber-800' : 'text-gray-900'}`}>{valor}</p>
-      {nota && <p className="text-xs text-gray-600">{nota}</p>}
+    <div className={`${ui.tarjeta} flex flex-col gap-1`}>
+      <p className="text-[13px] font-medium text-gray-600">{titulo}</p>
+      <p className={`text-[28px] font-bold leading-9 sm:text-[32px] sm:leading-10 ${alerta ? 'text-alerta' : 'text-gray-900'}`}>
+        {valor}
+      </p>
+      {nota && <p className="text-[13px] text-gray-600">{nota}</p>}
     </div>
   )
 }

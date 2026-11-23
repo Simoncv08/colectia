@@ -24,7 +24,7 @@ export async function darRolEnInstitucion(
   const { data: personaId, error: errorBusqueda } = await supabase.rpc('buscar_persona_id_por_correo', {
     p_correo: correo,
   })
-  if (errorBusqueda) throw new Error(errorBusqueda.message)
+  if (errorBusqueda) throw new Error(mensajeBD(errorBusqueda))
   if (!personaId) {
     throw new Error(
       'Esa persona todavía no tiene cuenta en Colectia, o no ha confirmado su correo. Pídele que entre una vez y vuelve a intentar.'

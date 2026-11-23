@@ -90,15 +90,15 @@ export default function SelectorImagen({
         .from('eventos')
         .upload(ruta, contenido, { contentType: tipo, upsert: false })
       if (errorSubida) {
-        setError(`No se pudo subir la imagen: ${errorSubida.message}`)
+        setError('No se pudo subir la imagen. Revisa tu conexión e intenta de nuevo.')
         return
       }
       const { data } = supabase.storage.from('eventos').getPublicUrl(ruta)
       setUrl(data.publicUrl)
       setEnlace('')
-    } catch (e) {
+    } catch {
       setError(
-        `No se pudo subir la imagen${e instanceof Error ? `: ${e.message}` : '.'}`
+        'No se pudo subir la imagen. Revisa tu conexión e intenta de nuevo.'
       )
     } finally {
       setSubiendo(false)
@@ -245,7 +245,7 @@ export default function SelectorImagen({
         </p>
       )}
       {error && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-peligro">
           {error}
         </p>
       )}

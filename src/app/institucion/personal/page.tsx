@@ -5,6 +5,8 @@ import Ventana from '@/components/Ventana'
 import { ui } from '@/lib/ui'
 import { nombrePersona } from '@/lib/formato'
 import FormularioAccion from '@/components/FormularioAccion'
+import { Plus } from 'lucide-react'
+import { iconoGrande } from '@/lib/iconos'
 
 export const metadata = { title: 'Personal' }
 
@@ -34,7 +36,12 @@ export default async function PersonalPage() {
             Las personas que pueden registrar pagos y administrar la institución.
           </p>
         </div>
-        <Ventana textoBoton="+ Invitar persona" titulo="Invitar persona al personal">
+        <Ventana textoBoton={
+              <>
+                <Plus {...iconoGrande} />
+                Invitar persona
+              </>
+            } titulo="Invitar persona al personal">
           <FormularioAccion action={invitarMiembro} className="flex flex-col gap-4">
             <label className={ui.etiqueta}>
               Correo con el que entra a Colectia

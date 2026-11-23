@@ -1,7 +1,25 @@
+import { formatearFecha } from '@/lib/estadoEvento'
+
 // Formatos y comparaciones que usan varias pantallas, en una sola copia.
 
+const FORMATO_PESOS = new Intl.NumberFormat('es-CO', {
+  style: 'currency',
+  currency: 'COP',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+})
+
+// "$ 45.000": pesos sin decimales, la única forma de mostrar dinero en la app.
 export function pesos(valor: number) {
-  return `$${Math.round(valor).toLocaleString('es-CO')}`
+  return FORMATO_PESOS.format(Math.round(valor))
+}
+
+// "22 nov. 2026, 3:45 p. m.", en hora de Colombia, para los registros de pago.
+export function formatearFechaHora(iso: string) {
+  const d = new Date(iso)
+  const fecha = d.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' })
+  const hora = d.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: 'numeric', minute: '2-digit' })
+  return `${formatearFecha(fecha)}, ${hora}`
 }
 
 // Sin tildes ni mayúsculas: "José" y "jose", o "5 a" y "5A", quedan iguales.

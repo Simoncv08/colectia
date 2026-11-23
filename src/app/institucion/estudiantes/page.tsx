@@ -5,10 +5,16 @@ import { traerTodasLasFilas } from '@/lib/consultas'
 import { ordenarGrados } from '@/lib/ordenarGrados'
 import Ventana from '@/components/Ventana'
 import { ui } from '@/lib/ui'
-import { compararCursos, compararEstudiantes, normalizar } from '@/lib/formato'
+import { SIN_CURSO, compararCursos, compararEstudiantes, nombreCurso, normalizar } from '@/lib/formato'
 import FormularioAccion from '@/components/FormularioAccion'
+import { Plus, Search } from 'lucide-react'
+import { iconoGrande } from '@/lib/iconos'
+import FiltrosActivos from '@/components/FiltrosActivos'
+import Paginacion from '@/components/Paginacion'
 
-type Params = { searchParams: Promise<{ q?: string; curso?: string }> }
+type Params = { searchParams: Promise<{ q?: string; curso?: string; pagina?: string }> }
+
+const POR_PAGINA = 50
 
 type Estudiante = {
   id: string
@@ -22,7 +28,7 @@ type Estudiante = {
 export const metadata = { title: 'Estudiantes' }
 
 export default async function EstudiantesPage({ searchParams }: Params) {
-  const { q = '', curso = '' } = await searchParams
+  const { q = '', curso = '', pagina: paginaTexto = '1' } = await searchParams
   const sesion = await obtenerSesionInstitucion()
   if (!sesion) return null
   const { supabase, institucionId, esAdmin } = sesion
@@ -46,26 +52,37 @@ export default async function EstudiantesPage({ searchParams }: Params) {
 
   const busqueda = normalizar(q)
   const filtrados = todos.filter((e) => {
-    if (curso && (e.curso_grado ?? '') !== (curso === '__sin__' ? '' : curso)) return false
+    if (curso && (e.curso_grado ?? '') !== (curso === SIN_CURSO ? '' : curso)) return false
     if (!busqueda) return true
+    // El número de documento solo lo ve el administrador, así que solo él busca por documento.
+    const documento = esAdmin ? (e.numero_documento ?? '') : ''
     return normalizar(
-      `${e.nombres} ${e.apellidos} ${e.apellidos} ${e.nombres} ${e.codigo_institucional} ${e.numero_documento ?? ''}`
+      `${e.nombres} ${e.apellidos} ${e.apellidos} ${e.nombres} ${e.codigo_institucional} ${documento}`
     ).includes(busqueda)
   })
 
-  const porCurso = new Map<string, Estudiante[]>()
-  for (const e of filtrados) {
-    const clave = e.curso_grado ?? ''
-    const lista = porCurso.get(clave) ?? []
-    lista.push(e)
-    porCurso.set(clave, lista)
+  const ordenados = [...filtrados].sort(
+    (a, b) => compararCursos(a.curso_grado, b.curso_grado) || compararEstudiantes(a, b)
+  )
+  const ultimaPagina = Math.max(1, Math.ceil(ordenados.length / POR_PAGINA))
+  const pagina = Math.min(Math.max(1, Number(paginaTexto) || 1), ultimaPagina)
+  const enPagina = ordenados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
+
+  function url(cambios: { q?: string; curso?: string; pagina?: number }) {
+    const p = new URLSearchParams()
+    const valores = { q, curso, pagina: 1, ...cambios }
+    if (valores.q) p.set('q', valores.q)
+    if (valores.curso) p.set('curso', valores.curso)
+    if (valores.pagina > 1) p.set('pagina', String(valores.pagina))
+    const texto = p.toString()
+    return `/institucion/estudiantes${texto ? `?${texto}` : ''}`
   }
-  const secciones = Array.from(porCurso.entries())
-    .sort(([a], [b]) => compararCursos(a, b))
-    .map(([nombreCurso, lista]) => ({
-      curso: nombreCurso,
-      estudiantes: [...lista].sort(compararEstudiantes),
-    }))
+  const filtrosActivos = [
+    ...(q ? [{ etiqueta: `Búsqueda: ${q}`, hrefQuitar: url({ q: '' }) }] : []),
+    ...(curso
+      ? [{ etiqueta: `Curso: ${nombreCurso(curso === SIN_CURSO ? '' : curso)}`, hrefQuitar: url({ curso: '' }) }]
+      : []),
+  ]
 
   const hayFiltro = Boolean(q || curso)
 
@@ -112,7 +129,12 @@ export default async function EstudiantesPage({ searchParams }: Params) {
               </FormularioAccion>
             </Ventana>
 
-            <Ventana textoBoton="+ Agregar estudiante" titulo="Agregar estudiante">
+            <Ventana textoBoton={
+              <>
+                <Plus {...iconoGrande} />
+                Agregar estudiante
+              </>
+            } titulo="Agregar estudiante">
               {grados.length ? (
                 <FormularioAccion
                   action={crearEstudiante}
@@ -177,7 +199,7 @@ export default async function EstudiantesPage({ searchParams }: Params) {
           <input
             name="q"
             defaultValue={q}
-            placeholder="Nombre, apellido o código"
+            placeholder={esAdmin ? 'Nombre, código o documento' : 'Nombre, apellido o código'}
             className={ui.campo}
           />
         </label>
@@ -186,23 +208,21 @@ export default async function EstudiantesPage({ searchParams }: Params) {
           <select name="curso" defaultValue={curso} className={ui.campo}>
             <option value="">Todos los cursos</option>
             {cursos.map((c) => (
-              <option key={c || '__sin__'} value={c || '__sin__'}>
-                {c || 'Sin curso asignado'}
+              <option key={c || SIN_CURSO} value={c || SIN_CURSO}>
+                {nombreCurso(c)}
               </option>
             ))}
           </select>
         </label>
-        <button type="submit" className={ui.botonPrimario}>
+        <button type="submit" className={ui.botonSecundario}>
+          <Search {...iconoGrande} />
           Buscar
         </button>
-        {hayFiltro && (
-          <Link href="/institucion/estudiantes" className={ui.botonSecundario}>
-            Limpiar
-          </Link>
-        )}
       </form>
 
-      {error && <p className={ui.avisoRojo}>No se pudieron cargar los estudiantes: {error.message}</p>}
+      <FiltrosActivos filtros={filtrosActivos} hrefLimpiar="/institucion/estudiantes" />
+
+      {error && <p className={ui.avisoRojo}>No se pudieron cargar los estudiantes. Recarga la página para intentar de nuevo.</p>}
 
       {!filtrados.length && (
         <p className={ui.textoSecundario}>
@@ -210,38 +230,48 @@ export default async function EstudiantesPage({ searchParams }: Params) {
         </p>
       )}
 
-      <div className="flex flex-col gap-2">
-        {secciones.map((s) => (
-          <details
-            key={s.curso || '__sin__'}
-            open={hayFiltro}
-            className="group rounded-xl border border-gray-200 bg-white"
-          >
-            <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-3">
-              <span className="font-semibold text-gray-900">{s.curso || 'Sin curso asignado'}</span>
-              <span className="text-sm text-gray-700">
-                {s.estudiantes.length} estudiante(s)
-                <span className="ml-2 inline-block transition group-open:rotate-180">▾</span>
-              </span>
-            </summary>
-            <ul className="divide-y divide-gray-100 border-t border-gray-200">
-              {s.estudiantes.map((e) => (
-                <li key={e.id} className="flex items-center justify-between gap-3 px-5 py-2.5 text-sm">
-                  <span className="text-gray-900">
+      {enPagina.length > 0 && (
+        <div className={ui.contenedorTabla}>
+          <table className={ui.tablaResponsiva}>
+            <thead className={ui.encabezadoResponsivo}>
+              <tr>
+                <th scope="col">Estudiante</th>
+                <th scope="col">Código</th>
+                <th scope="col">Curso</th>
+                {esAdmin && (
+                  <th scope="col">
+                    <span className="sr-only">Acciones</span>
+                  </th>
+                )}
+              </tr>
+            </thead>
+            <tbody className={ui.cuerpoResponsivo}>
+              {enPagina.map((e) => (
+                <tr key={e.id} className={ui.filaResponsiva}>
+                  <td data-titulo="Estudiante" className={`${ui.celdaResponsiva} font-semibold text-gray-900`}>
                     {e.apellidos} {e.nombres}
-                    <span className="ml-2 text-gray-600">{e.codigo_institucional}</span>
-                  </span>
+                  </td>
+                  <td data-titulo="Código" className={`${ui.celdaResponsiva} text-gray-600`}>
+                    {e.codigo_institucional}
+                  </td>
+                  <td data-titulo="Curso" className={`${ui.celdaResponsiva} text-gray-600`}>
+                    {nombreCurso(e.curso_grado)}
+                  </td>
                   {esAdmin && (
-                    <Link href={`/institucion/estudiantes/${e.id}`} className={ui.enlace}>
-                      Editar
-                    </Link>
+                    <td className={`${ui.celdaResponsiva} sm:text-right`}>
+                      <Link href={`/institucion/estudiantes/${e.id}`} className={ui.enlace}>
+                        Editar
+                      </Link>
+                    </td>
                   )}
-                </li>
+                </tr>
               ))}
-            </ul>
-          </details>
-        ))}
-      </div>
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <Paginacion total={ordenados.length} pagina={pagina} porPagina={POR_PAGINA} hrefPagina={(n) => url({ pagina: n })} />
     </div>
   )
 }

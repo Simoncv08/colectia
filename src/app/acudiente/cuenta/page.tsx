@@ -7,6 +7,8 @@ import ConfirmSubmitButton from '@/components/ConfirmSubmitButton'
 import Ventana from '@/components/Ventana'
 import { ui } from '@/lib/ui'
 import FormularioAccion from '@/components/FormularioAccion'
+import { Plus } from 'lucide-react'
+import { iconoGrande } from '@/lib/iconos'
 
 export const metadata = { title: 'Mi cuenta' }
 
@@ -43,7 +45,12 @@ export default async function CuentaAcudientePage() {
             </p>
           </div>
           <Ventana
-            textoBoton="+ Vincular estudiante"
+            textoBoton={
+              <>
+                <Plus {...iconoGrande} />
+                Vincular estudiante
+              </>
+            }
             titulo="Vincular un estudiante"
             variante={vinculos.length ? 'secundario' : 'primario'}
           >
@@ -83,7 +90,7 @@ export default async function CuentaAcudientePage() {
           </ul>
         ) : (
           <p className={ui.textoSecundario}>
-            Todavía no tienes estudiantes vinculados. Usa <strong>+ Vincular estudiante</strong>{' '}
+            Todavía no tienes estudiantes vinculados. Usa <strong>Vincular estudiante</strong>{' '}
             con el código o el documento que te dio el colegio.
           </p>
         )}

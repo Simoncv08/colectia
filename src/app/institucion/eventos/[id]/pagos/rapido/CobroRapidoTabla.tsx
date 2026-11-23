@@ -3,6 +3,8 @@
 import { useMemo, useState, useTransition } from 'react'
 import { ordenarGrados } from '@/lib/ordenarGrados'
 import { ui } from '@/lib/ui'
+import EstadoPago from '@/components/EstadoPago'
+import { MOTIVO_SOLO_LECTURA, useSoloLectura } from '@/components/SoloLectura'
 import { SIN_CURSO, pesos } from '@/lib/formato'
 import type { Resultado } from '@/lib/resultado'
 import { useAvisos } from '@/components/Avisos'
@@ -52,6 +54,7 @@ export default function CobroRapidoTabla({
   miNombre: string
 }) {
   const mostrarAviso = useAvisos()
+  const soloLectura = useSoloLectura()
   const [entregando, startEntrega] = useTransition()
   const devueltasPorEstudiante = useMemo(() => {
     const mapa = new Map<string, DevueltaPendiente[]>()
@@ -199,7 +202,7 @@ export default function CobroRapidoTabla({
       <input type="hidden" name="filas" value={JSON.stringify(filas)} />
 
       <div className="flex flex-wrap items-end gap-3">
-        <label className="flex flex-col gap-1 text-sm font-medium text-gray-800">
+        <label className={ui.etiqueta}>
           Salón
           <select
             value={curso}
@@ -207,7 +210,7 @@ export default function CobroRapidoTabla({
               setCurso(ev.target.value)
               limpiar()
             }}
-            className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-primario"
+            className={ui.campo}
           >
             {cursos.map((c) => (
               <option key={c} value={c}>
@@ -220,7 +223,7 @@ export default function CobroRapidoTabla({
         </label>
 
         {productos.length > 1 ? (
-          <label className="flex flex-col gap-1 text-sm font-medium text-gray-800">
+          <label className={ui.etiqueta}>
             Producto que se está cobrando
             <select
               value={productoId}
@@ -228,7 +231,7 @@ export default function CobroRapidoTabla({
                 setProductoId(ev.target.value)
                 limpiar()
               }}
-              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-primario"
+              className={ui.campo}
             >
               {productos.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -239,16 +242,16 @@ export default function CobroRapidoTabla({
           </label>
         ) : (
           producto && (
-            <div className="flex flex-col gap-1 text-sm font-medium text-gray-800">
+            <div className={ui.etiqueta}>
               Producto
-              <span className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 font-normal text-gray-900">
+              <span className="flex min-h-11 items-center rounded-md border border-gray-200 bg-gray-50 px-3 text-[15px] font-normal text-gray-900">
                 {producto.nombre} · {pesos(precio)}
               </span>
             </div>
           )
         )}
 
-        <label className="flex items-center gap-2 pb-2 text-sm text-gray-700">
+        <label className="flex min-h-11 items-center gap-2 text-sm text-gray-700">
           <input
             type="checkbox"
             checked={ocultarPagados}
@@ -278,12 +281,19 @@ export default function CobroRapidoTabla({
         </p>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-xs uppercase text-gray-700">
+      {pendientesVisibles.length > 0 && (
+        <label className="flex min-h-11 items-center gap-2 text-sm font-medium text-gray-800 sm:hidden">
+          <input type="checkbox" className="h-5 w-5" checked={todosPendientesMarcados} onChange={alternarTodos} />
+          Marcar a todos los que no han pagado
+        </label>
+      )}
+
+      <div className={ui.contenedorTabla}>
+        <table className={ui.tablaResponsiva}>
+          <thead className={ui.encabezadoResponsivo}>
             <tr>
-              <th className="w-24 px-3 py-2">
-                <label className="-my-2 flex min-h-11 items-center gap-2 font-normal normal-case">
+              <th scope="col" className="w-24 px-4 py-3">
+                <label className="-my-2 flex min-h-11 items-center gap-2 font-normal">
                   <input
                     type="checkbox"
                     className="h-5 w-5"
@@ -294,19 +304,19 @@ export default function CobroRapidoTabla({
                   Todos
                 </label>
               </th>
-              <th className="px-3 py-2">Estudiante</th>
-              <th className="px-3 py-2">Estado</th>
-              <th className="px-3 py-2">Cantidad</th>
-              <th className="px-3 py-2">Devuelta pendiente</th>
+              <th scope="col" className="px-4 py-3">Estudiante</th>
+              <th scope="col" className="px-4 py-3">Estado</th>
+              <th scope="col" className="px-4 py-3">Cantidad</th>
+              <th scope="col" className="px-4 py-3">Devuelta pendiente</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className={ui.cuerpoResponsivo}>
             {visibles.map((e) => {
               const pagado = pagadoDe(e.id)
               const sel = seleccion[e.id]
               return (
-                <tr key={e.id} className="border-t border-gray-100 text-gray-900">
-                  <td className="px-3 py-2">
+                <tr key={e.id} className={`${ui.filaResponsiva} text-gray-900`}>
+                  <td data-titulo="Cobrar" className={ui.celdaResponsiva}>
                     {pagado === 0 && (
                       <label className="-m-3 inline-flex p-3">
                         <input
@@ -319,25 +329,25 @@ export default function CobroRapidoTabla({
                       </label>
                     )}
                   </td>
-                  <td className="px-3 py-2">
+                  <td data-titulo="Estudiante" className={ui.celdaResponsiva}>
                     {e.apellidos} {e.nombres}
                     {curso === TODOS && e.curso_grado && (
                       <span className="ml-1 text-gray-600">({e.curso_grado})</span>
                     )}
                   </td>
-                  <td className="px-3 py-2">
+                  <td data-titulo="Estado" className={ui.celdaResponsiva}>
+                    <div className="flex flex-col items-end gap-1 sm:items-start">
                     {pagado > 0 ? (
-                      <span className={`${ui.pildora} ${ui.estadoPagado}`}>
-                        Pagado{pagado > 1 ? ` (${pagado})` : ''}
-                      </span>
+                      <EstadoPago
+                        estado="pagado_efectivo"
+                        texto={`Pagado · efectivo${pagado > 1 ? ` (${pagado})` : ''}`}
+                      />
                     ) : sel ? (
-                      <span className={`${ui.pildora} border-primario-borde bg-primario-suave text-primario`}>
+                      <span className={`${ui.pildora} bg-primario-suave text-primario`}>
                         Por registrar
                       </span>
                     ) : (
-                      <span className={`${ui.pildora} ${ui.estadoPendiente}`}>
-                        Pendiente
-                      </span>
+                      <EstadoPago estado="sin_pago" />
                     )}
                     {devueltasPorEstudiante.get(e.id)?.map((d) => (
                       <div key={d.grupoPagoId} className="mt-1 flex flex-wrap items-center gap-2">
@@ -346,7 +356,7 @@ export default function CobroRapidoTabla({
                         </span>
                         <button
                           type="button"
-                          disabled={entregando}
+                          disabled={entregando || soloLectura}
                           onClick={() => entregarDevuelta(d)}
                           className={`${ui.enlace} inline-flex min-h-11 items-center text-xs sm:min-h-0`}
                         >
@@ -354,15 +364,16 @@ export default function CobroRapidoTabla({
                         </button>
                       </div>
                     ))}
+                    </div>
                   </td>
-                  <td className="px-3 py-2">
+                  <td data-titulo="Cantidad" className={ui.celdaResponsiva}>
                     {sel &&
                       (opcionesCantidad ? (
                         <select
                           aria-label={`Cantidad para ${e.nombres} ${e.apellidos}`}
                           value={sel.cantidad}
                           onChange={(ev) => cambiarCantidad(e.id, Number(ev.target.value))}
-                          className="rounded border border-gray-300 bg-white px-2 py-1 text-gray-900"
+                          className={ui.campoCompacto}
                         >
                           {opcionesCantidad.map((n) => (
                             <option key={n} value={n}>
@@ -380,11 +391,11 @@ export default function CobroRapidoTabla({
                           aria-label={`Cantidad para ${e.nombres} ${e.apellidos}`}
                           value={sel.cantidad}
                           onChange={(ev) => cambiarCantidad(e.id, Number(ev.target.value) || 1)}
-                          className="w-20 rounded border border-gray-300 bg-white px-2 py-1 text-gray-900"
+                          className={`${ui.campoCompacto} w-24`}
                         />
                       ))}
                   </td>
-                  <td className="px-3 py-2">
+                  <td data-titulo="Devuelta pendiente" className={ui.celdaResponsiva}>
                     {sel && (
                       <div className="flex items-center gap-2">
                         <label className="-m-3 inline-flex p-3">
@@ -405,7 +416,7 @@ export default function CobroRapidoTabla({
                             onChange={(ev) => cambiarMontoDevuelta(e.id, ev.target.value)}
                             aria-label={`Valor que se le debe a ${e.nombres} ${e.apellidos}`}
                             placeholder="$ que se le debe"
-                            className="w-32 rounded border border-gray-300 bg-white px-2 py-1 text-gray-900"
+                            className={`${ui.campoCompacto} w-32`}
                           />
                         )}
                       </div>
@@ -415,8 +426,8 @@ export default function CobroRapidoTabla({
               )
             })}
             {visibles.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-3 py-6 text-center text-gray-600">
+              <tr className="block sm:table-row">
+                <td colSpan={5} className="block px-4 py-6 text-center text-gray-600 sm:table-cell">
                   {delSalon.length === 0
                     ? 'No hay estudiantes de este salón en el evento.'
                     : 'Todos los estudiantes de este salón ya pagaron.'}
@@ -427,26 +438,27 @@ export default function CobroRapidoTabla({
         </table>
       </div>
 
-      <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+      <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-lg">
         <div className="text-sm text-gray-700">
           <p>
             {seleccionados.length} marcado(s) · Total:{' '}
-            <span className="font-semibold">{pesos(totalCobrado)}</span>
+            <span className={ui.monto}>{pesos(totalCobrado)}</span>
             {totalDevueltas > 0 && (
               <> · Devueltas pendientes: {pesos(totalDevueltas)}</>
             )}
           </p>
           <p className="text-xs text-gray-600">Quién recibe el dinero: {miNombre}</p>
           {devueltaSinValor && (
-            <p className="text-xs text-red-700">
+            <p className="text-xs text-peligro">
               Escribe cuánto se le debe a cada estudiante con devuelta pendiente.
             </p>
           )}
         </div>
         <button
           type="submit"
-          disabled={!seleccionados.length || devueltaSinValor || enviando}
-          className="rounded-lg bg-primario px-4 py-2 text-sm font-medium text-white hover:bg-primario-hover disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={soloLectura || !seleccionados.length || devueltaSinValor || enviando}
+          title={soloLectura ? MOTIVO_SOLO_LECTURA : undefined}
+          className={`${ui.botonPrimario} w-full sm:w-auto`}
         >
           {enviando ? 'Registrando…' : `Registrar ${seleccionados.length} pago(s)`}
         </button>

@@ -25,20 +25,26 @@ export default function FormularioVincular({ instituciones }: { instituciones: I
     <form onSubmit={enviar} className="flex flex-col gap-4">
       <input type="hidden" name="metodo" value={metodo} />
 
-      <div className="grid grid-cols-2 rounded-lg bg-gray-100 p-1 text-sm">
-        {(['codigo', 'documento'] as const).map((m) => (
-          <button
-            key={m}
-            type="button"
-            onClick={() => setMetodo(m)}
-            className={`rounded-md px-3 py-1.5 font-medium ${
-              metodo === m ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-700 hover:text-gray-900'
-            }`}
-          >
-            {m === 'codigo' ? 'Con el código' : 'Con el documento'}
-          </button>
-        ))}
-      </div>
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-1 text-[13px] font-medium text-gray-600">¿Cómo quieres vincularlo?</legend>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {(['codigo', 'documento'] as const).map((m) => (
+            <label
+              key={m}
+              className="flex min-h-11 items-center gap-3 rounded-lg border border-borde-campo bg-white px-3 py-2 text-sm font-medium text-gray-900 has-[:checked]:border-primario has-[:checked]:bg-primario-suave"
+            >
+              <input
+                type="radio"
+                name="metodo_eleccion"
+                checked={metodo === m}
+                onChange={() => setMetodo(m)}
+                className="h-4 w-4"
+              />
+              {m === 'codigo' ? 'Con el código del estudiante' : 'Con el documento del estudiante'}
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <label className={ui.etiqueta}>
         Institución
@@ -89,8 +95,8 @@ export default function FormularioVincular({ instituciones }: { instituciones: I
         </p>
       )}
 
-      <button type="submit" disabled={enviando} className={`${ui.botonPrimario} self-start`}>
-        {enviando ? 'Verificando…' : 'Vincular'}
+      <button type="submit" disabled={enviando} className={`${ui.botonPrimario} w-full sm:w-auto sm:self-start`}>
+        {enviando ? 'Verificando…' : 'Vincular estudiante'}
       </button>
     </form>
   )

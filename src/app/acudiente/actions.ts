@@ -60,13 +60,25 @@ export async function vincularEstudiante(
   })
 
   if (error) {
-    return { tipo: 'error', texto: `No se pudo vincular: ${error.message}` }
+    return { tipo: 'error', texto: 'No se pudo vincular al estudiante. Intenta de nuevo en un momento.' }
   }
 
-  const resultado = MENSAJES[String(data)] ?? {
+  // 'no_encontrado:N' trae los intentos que quedan en la hora (21_intentos_restantes.sql).
+  const [respuesta, quedan] = String(data).split(':')
+  const base = MENSAJES[respuesta] ?? {
     tipo: 'error' as const,
     texto: 'No se pudo vincular al estudiante. Intenta de nuevo.',
   }
+  const resultado: Resultado =
+    quedan === undefined
+      ? base
+      : {
+          ...base,
+          texto:
+            quedan === '0'
+              ? `${base.texto} Ya no te quedan intentos por ahora: espera una hora para volver a intentar.`
+              : `${base.texto} Te ${quedan === '1' ? 'queda 1 intento' : `quedan ${quedan} intentos`} en esta hora.`,
+        }
   if (resultado.tipo === 'ok') {
     revalidatePath('/acudiente', 'layout')
   }
@@ -127,7 +139,7 @@ export async function actualizarDatos(
     .select('id')
 
   if (error) {
-    return { tipo: 'error', texto: `No se pudieron guardar los cambios: ${error.message}` }
+    return { tipo: 'error', texto: 'No se pudieron guardar los cambios. Intenta de nuevo en un momento.' }
   }
   if (!data?.length) {
     return { tipo: 'error', texto: 'No se encontró tu cuenta. Cierra sesión y vuelve a entrar.' }

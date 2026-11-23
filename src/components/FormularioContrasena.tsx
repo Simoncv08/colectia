@@ -53,7 +53,7 @@ export default function FormularioContrasena({ alTerminar }: { alTerminar?: 'ir_
       } else if (errorSupabase.code === 'reauthentication_needed') {
         setError('Por seguridad, cierra sesión, vuelve a entrar e intenta de nuevo.')
       } else {
-        setError(`No se pudo cambiar la contraseña: ${errorSupabase.message}`)
+        setError('No se pudo cambiar la contraseña. Intenta de nuevo en un momento.')
       }
       return
     }

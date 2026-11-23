@@ -26,9 +26,10 @@ export async function descargarExcelReporte(
       base64: Buffer.from(resultado.contenido).toString('base64'),
     }
   } catch (e) {
+    console.error(e)
     return {
       ok: false,
-      error: `No se pudo generar el Excel${e instanceof Error ? `: ${e.message}` : '.'}`,
+      error: 'No se pudo generar el Excel. Intenta de nuevo.',
     }
   }
 }

@@ -20,8 +20,17 @@ export function estadoEvento(ev: FechasEvento, hoy = hoyColombia()): EstadoEvent
   return 'abierto'
 }
 
-// Sin pasar por Date, para que la zona horaria no corra la fecha un día.
+const MESES = ['ene.', 'feb.', 'mar.', 'abr.', 'may.', 'jun.', 'jul.', 'ago.', 'sept.', 'oct.', 'nov.', 'dic.']
+
+// "22 nov. 2026". Sin pasar por Date, para que la zona horaria no corra la fecha un día.
 export function formatearFecha(fecha: string | null): string {
+  if (!fecha) return ''
+  const [a, m, d] = fecha.slice(0, 10).split('-')
+  return `${Number(d)} ${MESES[Number(m) - 1]} ${a}`
+}
+
+// "22/11/2026", para el Excel.
+export function fechaNumerica(fecha: string | null): string {
   if (!fecha) return ''
   const [a, m, d] = fecha.slice(0, 10).split('-')
   return `${d}/${m}/${a}`
@@ -33,9 +42,9 @@ export function puedeReabrir(ev: FechasEvento, hoy = hoyColombia()) {
 }
 
 export const ESTADOS: Record<EstadoEvento, { etiqueta: string; clase: string }> = {
-  abierto: { etiqueta: 'Pago abierto', clase: 'border-green-200 bg-green-50 text-green-800' },
-  pago_cerrado: { etiqueta: 'Pago cerrado', clase: 'border-amber-200 bg-amber-50 text-amber-900' },
-  finalizado: { etiqueta: 'Finalizado', clase: 'border-gray-200 bg-gray-100 text-gray-700' },
+  abierto: { etiqueta: 'Pago abierto', clase: 'bg-exito-suave text-exito' },
+  pago_cerrado: { etiqueta: 'Pago cerrado', clase: 'bg-alerta-suave text-alerta' },
+  finalizado: { etiqueta: 'Finalizado', clase: 'bg-neutro-suave text-neutro' },
 }
 
 // Campo vacío = sin fecha.

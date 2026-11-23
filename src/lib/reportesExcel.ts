@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs'
 import type { createClient } from '@/lib/supabase/server'
-import { ESTADOS, formatearFecha, hoyColombia } from '@/lib/estadoEvento'
+import { ESTADOS, fechaNumerica, hoyColombia } from '@/lib/estadoEvento'
 import { SIN_CURSO, nombreCurso } from '@/lib/formato'
 import {
   cargarDatosReporte,
@@ -81,8 +81,8 @@ export async function construirExcelReporte(
       filas.map((x) => [
         x.evento.nombre,
         ESTADOS[x.evento.estado].etiqueta,
-        formatearFecha(x.evento.fecha_limite_pago),
-        formatearFecha(x.evento.fecha_evento),
+        fechaNumerica(x.evento.fecha_limite_pago),
+        fechaNumerica(x.evento.fecha_evento),
         x.estudiantes,
         x.pagaron,
         x.faltan,
@@ -145,7 +145,7 @@ export async function construirExcelReporte(
         { titulo: 'Total', ancho: 14, pesos: true },
       ],
       filas.flatMap((x) =>
-        x.porDia.map((d) => [x.nombre, formatearFecha(d.fecha), d.pagos, d.total])
+        x.porDia.map((d) => [x.nombre, fechaNumerica(d.fecha), d.pagos, d.total])
       )
     )
     agregarHoja(
@@ -169,7 +169,7 @@ export async function construirExcelReporte(
         { titulo: 'Id del pago', ancho: 38 },
       ],
       detallePagos(datos, f).map((d) => [
-        formatearFecha(d.fecha),
+        fechaNumerica(d.fecha),
         d.hora,
         d.evento,
         d.codigo,
@@ -211,14 +211,14 @@ export async function construirExcelReporte(
   info.columns = [{ width: 22 }, { width: 50 }]
   const filasInfo: [string, string][] = [
     ['Institución', institucion.nombre],
-    ['Generado el', `${formatearFecha(hoy)} (hora de Colombia)`],
+    ['Generado el', `${fechaNumerica(hoy)} (hora de Colombia)`],
     ['Evento', nombreEvento ?? (f.vista === 'pendientes' ? 'Todos los vigentes' : 'Todos')],
     ['Curso', f.curso ? (f.curso === SIN_CURSO ? nombreCurso('') : f.curso) : 'Todos'],
   ]
   if (f.vista !== 'pendientes') {
     filasInfo.push(
-      ['Pagos desde', f.desde ? formatearFecha(f.desde) : 'Sin límite'],
-      ['Pagos hasta', f.hasta ? formatearFecha(f.hasta) : 'Sin límite'],
+      ['Pagos desde', f.desde ? fechaNumerica(f.desde) : 'Sin límite'],
+      ['Pagos hasta', f.hasta ? fechaNumerica(f.hasta) : 'Sin límite'],
       ['Recibió', nombrePersona ?? 'Todo el personal']
     )
   }

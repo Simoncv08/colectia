@@ -4,6 +4,10 @@ import { crearInstitucion, cambiarEstadoInstitucion, asignarAdminInstitucion } f
 import { cerrarSesion } from '@/app/actions'
 import { ui } from '@/lib/ui'
 import FormularioAccion from '@/components/FormularioAccion'
+import EstadoInstitucion from '@/components/EstadoInstitucion'
+import Marca from '@/components/Marca'
+import { LogOut } from 'lucide-react'
+import { iconoGrande } from '@/lib/iconos'
 
 export const metadata = { title: 'Instituciones' }
 
@@ -45,14 +49,25 @@ export default async function InstitucionesPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-6 text-gray-900 sm:px-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className={ui.titulo}>Instituciones</h1>
+    <>
+    <header className="border-b border-gray-200 bg-white">
+      <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 px-4 py-2 sm:px-6">
+        <span className="flex items-center gap-3 py-2">
+          <Marca />
+          <span className="text-[13px] text-gray-600">Administración de la plataforma</span>
+        </span>
         <form action={cerrarSesion}>
-          <button type="submit" className={ui.botonSecundario}>
+          <button type="submit" className={`${ui.botonFantasma} text-gray-700`}>
+            <LogOut {...iconoGrande} />
             Cerrar sesión
           </button>
         </form>
+      </div>
+    </header>
+    <main className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-4 py-6 text-gray-900 sm:px-6 lg:py-8">
+      <div>
+        <h1 className={ui.titulo}>Instituciones</h1>
+        <p className={ui.textoSecundario}>Crea colegios, cambia su estado y asigna su primer administrador.</p>
       </div>
 
       <FormularioAccion action={crearInstitucion} className={`${ui.tarjeta} grid gap-4 sm:grid-cols-3`}>
@@ -76,31 +91,33 @@ export default async function InstitucionesPage() {
         </div>
       </FormularioAccion>
 
-      {error && <p className={ui.avisoRojo}>No se pudieron cargar las instituciones: {error.message}</p>}
+      {error && <p className={ui.avisoRojo}>No se pudieron cargar las instituciones. Recarga la página para intentar de nuevo.</p>}
 
       {instituciones?.length ? (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-          <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="bg-gray-50 text-xs text-gray-700">
+        <div className={ui.contenedorTabla}>
+          <table className={`${ui.tablaResponsiva} sm:min-w-[720px]`}>
+            <thead className={ui.encabezadoResponsivo}>
               <tr>
-                <th className="px-3 py-2">Nombre</th>
-                <th className="px-3 py-2">Código</th>
-                <th className="px-3 py-2">Estado</th>
-                <th className="px-3 py-2">Plan</th>
-                <th className="px-3 py-2">
+                <th scope="col">Nombre</th>
+                <th scope="col">Código</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Plan</th>
+                <th scope="col">
                   <span className="sr-only">Cambiar estado</span>
                 </th>
-                <th className="px-3 py-2">Asignar administrador</th>
+                <th scope="col">Asignar administrador</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className={ui.cuerpoResponsivo}>
               {instituciones.map((inst) => (
-                <tr key={inst.id} className="border-t border-gray-100">
-                  <td className="px-3 py-2 font-medium">{inst.nombre}</td>
-                  <td className="px-3 py-2">{inst.prefijo_codigo}</td>
-                  <td className="px-3 py-2">{inst.estado.replace('_', ' ')}</td>
-                  <td className="px-3 py-2">{inst.plan ?? 'Sin plan'}</td>
-                  <td className="px-3 py-2">
+                <tr key={inst.id} className={ui.filaResponsiva}>
+                  <td data-titulo="Nombre" className={`${ui.celdaResponsiva} font-semibold`}>{inst.nombre}</td>
+                  <td data-titulo="Código" className={ui.celdaResponsiva}>{inst.prefijo_codigo}</td>
+                  <td data-titulo="Estado" className={ui.celdaResponsiva}>
+                    <EstadoInstitucion estado={inst.estado} />
+                  </td>
+                  <td data-titulo="Plan" className={ui.celdaResponsiva}>{inst.plan ?? 'Sin plan'}</td>
+                  <td data-titulo="Cambiar estado" className={ui.celdaResponsiva}>
                     <FormularioAccion
                       action={cambiarEstadoInstitucion.bind(
                         null,
@@ -108,12 +125,12 @@ export default async function InstitucionesPage() {
                         inst.estado === 'activa' ? 'suspendida' : 'activa'
                       )}
                     >
-                      <button type="submit" className={ui.botonSecundario}>
+                      <button type="submit" className={ui.botonCompacto}>
                         {inst.estado === 'activa' ? 'Suspender' : 'Activar'}
                       </button>
                     </FormularioAccion>
                   </td>
-                  <td className="px-3 py-2">
+                  <td data-titulo="Asignar administrador" className={`${ui.celdaResponsiva} flex-col items-stretch sm:items-start`}>
                     <FormularioAccion
                       action={asignarAdminInstitucion.bind(null, inst.id)}
                       className="flex items-center gap-2"
@@ -124,9 +141,9 @@ export default async function InstitucionesPage() {
                         required
                         aria-label={`Correo del administrador de ${inst.nombre}`}
                         placeholder="correo@ejemplo.com"
-                        className={`${ui.campo} w-48`}
+                        className={`${ui.campoCompacto} w-52`}
                       />
-                      <button type="submit" className={ui.botonSecundario}>
+                      <button type="submit" className={ui.botonCompacto}>
                         Asignar
                       </button>
                     </FormularioAccion>
@@ -140,5 +157,6 @@ export default async function InstitucionesPage() {
         !error && <p className={ui.textoSecundario}>Todavía no hay instituciones creadas.</p>
       )}
     </main>
+    </>
   )
 }

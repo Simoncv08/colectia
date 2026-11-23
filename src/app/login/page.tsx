@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import FormularioLogin from './FormularioLogin'
 import Marca from '@/components/Marca'
+import { ui } from '@/lib/ui'
 
 export default async function LoginPage() {
   const supabase = await createClient()
@@ -14,17 +15,15 @@ export default async function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-fondo p-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-6 text-center">
+    <main className="flex min-h-screen items-center justify-center bg-fondo px-4 py-10">
+      <div className="w-full max-w-[400px]">
+        <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <h1>
-            <Marca className="text-3xl" />
+            <Marca tamano="grande" />
           </h1>
-          <p className="mt-2 text-sm text-gray-700">
-            Los pagos de las actividades del colegio, claros para las familias y para el colegio.
-          </p>
+          <p className={ui.textoSecundario}>Pagos escolares claros para familias y colegios.</p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-6 sm:p-8">
+        <div className={ui.tarjeta}>
           <FormularioLogin />
         </div>
       </div>

@@ -83,6 +83,7 @@ export default function SeccionDatos({
             <ConfirmSubmitButton
               confirmMessage={`¿Marcar "${evento.nombre}" como finalizado? Los acudientes ya no lo verán.`}
               className={ui.botonSecundario}
+              peligro={false}
             >
               Marcar como finalizado
             </ConfirmSubmitButton>
@@ -93,6 +94,7 @@ export default function SeccionDatos({
             <ConfirmSubmitButton
               confirmMessage={`¿Reabrir "${evento.nombre}"? Los acudientes lo volverán a ver.`}
               className={ui.botonSecundario}
+              peligro={false}
             >
               Reabrir evento
             </ConfirmSubmitButton>

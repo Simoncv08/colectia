@@ -6,6 +6,9 @@ import BotonDescargarExcel from './BotonDescargarExcel'
 import { formatearFecha } from '@/lib/estadoEvento'
 import { SIN_CURSO, nombreCurso, pesos } from '@/lib/formato'
 import TarjetaDato from '@/components/TarjetaDato'
+import FiltrosActivos from '@/components/FiltrosActivos'
+import { ChevronRight } from 'lucide-react'
+import { icono } from '@/lib/iconos'
 import EtiquetaEstado from '@/components/EtiquetaEstado'
 import {
   cargarDatosReporte,
@@ -16,6 +19,7 @@ import {
   pendientesDePago,
   recaudoPorPersona,
   resumenPorEvento,
+  type FilaEvento,
   type FilaPendiente,
   type Vista,
 } from '@/lib/reportes'
@@ -64,23 +68,37 @@ export default async function ReportesPage({ searchParams }: Params) {
     a[1].localeCompare(b[1], 'es')
   )
   const usaDineroFiltros = f.vista !== 'pendientes'
-  const hayFiltros = Boolean(
-    f.evento || f.curso || (usaDineroFiltros && (f.desde || f.hasta || f.persona))
-  )
   const vistaActual = VISTAS.find((v) => v.valor === f.vista)!
+  const quitar = (campo: keyof typeof f) => `/institucion/reportes?${filtrosAParametros(f, { [campo]: '' })}`
+  const nombreEvento = datos.eventos.find((e) => e.id === f.evento)?.nombre
+  const filtrosActivos = [
+    ...(f.evento ? [{ etiqueta: `Evento: ${nombreEvento ?? 'elegido'}`, hrefQuitar: quitar('evento') }] : []),
+    ...(f.curso
+      ? [{ etiqueta: `Curso: ${nombreCurso(f.curso === SIN_CURSO ? '' : f.curso)}`, hrefQuitar: quitar('curso') }]
+      : []),
+    ...(usaDineroFiltros && f.desde ? [{ etiqueta: `Desde ${formatearFecha(f.desde)}`, hrefQuitar: quitar('desde') }] : []),
+    ...(usaDineroFiltros && f.hasta ? [{ etiqueta: `Hasta ${formatearFecha(f.hasta)}`, hrefQuitar: quitar('hasta') }] : []),
+    ...(usaDineroFiltros && f.persona
+      ? [{ etiqueta: `Recibió: ${datos.personalPorId.get(f.persona) ?? 'otra persona'}`, hrefQuitar: quitar('persona') }]
+      : []),
+  ]
 
   return (
     <div className="flex flex-col">
-      <h1 className={`${ui.titulo} mb-4`}>Reportes</h1>
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <h1 className={ui.titulo}>Reportes</h1>
+        <BotonDescargarExcel parametros={filtrosAParametros(f, { vista: f.vista })} />
+      </div>
 
       <nav className="mb-4 flex flex-wrap gap-2 border-b border-gray-200">
         {VISTAS.map((v) => (
           <Link
             key={v.valor}
             href={`/institucion/reportes?${filtrosAParametros(f, { vista: v.valor })}`}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm ${
+            aria-current={f.vista === v.valor ? 'page' : undefined}
+            className={`-mb-px inline-flex min-h-11 items-center border-b-2 px-4 text-sm ${
               f.vista === v.valor
-                ? 'border-primario font-medium text-primario'
+                ? 'border-primario font-semibold text-primario'
                 : 'border-transparent text-gray-700 hover:text-gray-900'
             }`}
           >
@@ -90,14 +108,14 @@ export default async function ReportesPage({ searchParams }: Params) {
       </nav>
       <p className="mb-4 text-sm text-gray-700">{vistaActual.descripcion}</p>
 
-      <form method="get" className="mb-6 flex flex-wrap items-end gap-2 rounded-xl border border-gray-200 bg-white p-3">
+      <form method="get" className={`${ui.tarjeta} mb-6 flex flex-wrap items-end gap-3 md:p-4`}>
         {f.vista !== 'eventos' && <input type="hidden" name="vista" value={f.vista} />}
-        <label className="flex flex-col gap-1 text-xs font-medium text-gray-800">
+        <label className={ui.etiqueta}>
           Evento
           <select
             name="evento"
             defaultValue={f.evento}
-            className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900 focus:border-primario"
+            className={ui.campoCompacto}
           >
             <option value="">
               {f.vista === 'pendientes' ? 'Todos los eventos vigentes' : 'Todos los eventos'}
@@ -110,12 +128,12 @@ export default async function ReportesPage({ searchParams }: Params) {
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-xs font-medium text-gray-800">
+        <label className={ui.etiqueta}>
           Curso
           <select
             name="curso"
             defaultValue={f.curso}
-            className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900 focus:border-primario"
+            className={ui.campoCompacto}
           >
             <option value="">Todos</option>
             {cursos.map((c) => (
@@ -127,30 +145,30 @@ export default async function ReportesPage({ searchParams }: Params) {
         </label>
         {usaDineroFiltros && (
           <>
-            <label className="flex flex-col gap-1 text-xs font-medium text-gray-800">
+            <label className={ui.etiqueta}>
               Pagos desde
               <input
                 type="date"
                 name="desde"
                 defaultValue={f.desde}
-                className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900 focus:border-primario"
+                className={ui.campoCompacto}
               />
             </label>
-            <label className="flex flex-col gap-1 text-xs font-medium text-gray-800">
+            <label className={ui.etiqueta}>
               hasta
               <input
                 type="date"
                 name="hasta"
                 defaultValue={f.hasta}
-                className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900 focus:border-primario"
+                className={ui.campoCompacto}
               />
             </label>
-            <label className="flex flex-col gap-1 text-xs font-medium text-gray-800">
+            <label className={ui.etiqueta}>
               Recibió
               <select
                 name="persona"
                 defaultValue={f.persona}
-                className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900 focus:border-primario"
+                className={ui.campoCompacto}
               >
                 <option value="">Todo el personal</option>
                 {personal.map(([id, nombre]) => (
@@ -164,24 +182,24 @@ export default async function ReportesPage({ searchParams }: Params) {
         )}
         <button
           type="submit"
-          className="rounded-lg bg-primario px-3 py-1.5 text-sm font-medium text-white hover:bg-primario-hover"
+          className={`${ui.botonPrimario} sm:min-h-9`}
         >
-          Aplicar
+          Aplicar filtros
         </button>
-        {hayFiltros && (
-          <Link
-            href={`/institucion/reportes${f.vista !== 'eventos' ? `?vista=${f.vista}` : ''}`}
-            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-50"
-          >
-            Limpiar
-          </Link>
-        )}
-        <BotonDescargarExcel parametros={filtrosAParametros(f, { vista: f.vista })} />
       </form>
+
+      {filtrosActivos.length > 0 && (
+        <div className="-mt-3 mb-6">
+          <FiltrosActivos
+            filtros={filtrosActivos}
+            hrefLimpiar={`/institucion/reportes${f.vista !== 'eventos' ? `?vista=${f.vista}` : ''}`}
+          />
+        </div>
+      )}
 
       {datos.errores.length > 0 && (
         <p className={`${ui.avisoRojo} mb-4`}>
-          No se pudo cargar toda la información: {datos.errores.join(' · ')}
+          No se pudo cargar toda la información. Recarga la página para intentar de nuevo.
         </p>
       )}
 
@@ -228,7 +246,7 @@ function VistaEventos({ datos, f }: PropsVista) {
       <ul className="flex flex-col gap-3">
         {filas.map((x) => {
           return (
-            <li key={x.evento.id} className="rounded-xl border border-gray-200 bg-white p-4 text-gray-900">
+            <li key={x.evento.id} className="rounded-xl border border-gray-200 bg-white p-5 text-gray-900 shadow-xs">
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href={`/institucion/eventos/${x.evento.id}/pagos`}
@@ -257,11 +275,11 @@ function VistaEventos({ datos, f }: PropsVista) {
                 </div>
                 <div>
                   <p className="text-xs text-gray-600">Faltan</p>
-                  <p className={`font-semibold ${x.faltan ? 'text-amber-700' : ''}`}>{x.faltan}</p>
+                  <p className={`font-semibold ${x.faltan ? 'text-alerta' : ''}`}>{x.faltan}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-600">Devueltas pendientes</p>
-                  <p className={`font-semibold ${x.devueltasPendientes ? 'text-amber-700' : ''}`}>
+                  <p className={`font-semibold ${x.devueltasPendientes ? 'text-alerta' : ''}`}>
                     {x.devueltasPendientes
                       ? `${x.devueltasPendientes} (${pesos(x.valorDevueltasPendientes)})`
                       : '0'}
@@ -274,30 +292,12 @@ function VistaEventos({ datos, f }: PropsVista) {
               </div>
 
               {x.cursos.length > 0 && (
-                <details className="mt-3">
-                  <summary className="cursor-pointer text-sm font-medium text-primario">Ver por curso</summary>
-                  <table className="mt-2 w-full text-left text-sm">
-                    <thead>
-                      <tr className="text-xs text-gray-600">
-                        <th className="py-1">Curso</th>
-                        <th className="py-1">Pagaron</th>
-                        <th className="py-1">Faltan</th>
-                        <th className="py-1 text-right">Recaudado</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {x.cursos.map((c) => (
-                        <tr key={c.curso || SIN_CURSO} className="border-t border-gray-100">
-                          <td className="py-1">{nombreCurso(c.curso)}</td>
-                          <td className="py-1">
-                            {c.pagaron} de {c.estudiantes}
-                          </td>
-                          <td className={`py-1 ${c.faltan ? 'text-amber-700' : ''}`}>{c.faltan}</td>
-                          <td className="py-1 text-right">{pesos(c.recaudado)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <details className="group mt-3" open={Boolean(f.evento)}>
+                  <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-semibold text-primario">
+                    <ChevronRight {...icono} className="transition-transform duration-200 group-open:rotate-90" />
+                    Ver por curso
+                  </summary>
+                  <PorCurso cursos={x.cursos} />
                 </details>
               )}
             </li>
@@ -305,6 +305,46 @@ function VistaEventos({ datos, f }: PropsVista) {
         })}
       </ul>
     </>
+  )
+}
+
+// Barras horizontales del porcentaje con pago por curso, con su número escrito al lado (DESIGN.md 7.7).
+function PorCurso({ cursos }: { cursos: FilaEvento['cursos'] }) {
+  return (
+    <table className="mt-2 w-full text-left text-sm">
+      <thead className="text-[13px] text-gray-600">
+        <tr>
+          <th scope="col" className="py-2 pr-3 font-medium">Curso</th>
+          <th scope="col" className="w-1/2 py-2 pr-3 font-medium">Estudiantes con pago</th>
+          <th scope="col" className="py-2 text-right font-medium">Recaudado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {cursos.map((c) => {
+          const porcentaje = c.estudiantes ? Math.round((c.pagaron / c.estudiantes) * 100) : 0
+          return (
+            <tr
+              key={c.curso || SIN_CURSO}
+              title={`${nombreCurso(c.curso)}: ${c.pagaron} de ${c.estudiantes} con pago (${porcentaje}%)`}
+              className="border-t border-gray-200 hover:bg-gray-50"
+            >
+              <td className="py-2 pr-3 font-medium text-gray-900">{nombreCurso(c.curso)}</td>
+              <td className="py-2 pr-3">
+                <div className="flex items-center gap-3">
+                  <div aria-hidden="true" className="h-2 flex-1 overflow-hidden rounded bg-gray-100">
+                    <div className="h-full rounded bg-primario" style={{ width: `${porcentaje}%` }} />
+                  </div>
+                  <span className="w-28 shrink-0 text-right text-gray-700">
+                    {c.pagaron} de {c.estudiantes} <span className="text-gray-600">({porcentaje}%)</span>
+                  </span>
+                </div>
+              </td>
+              <td className={`py-2 text-right ${ui.monto}`}>{pesos(c.recaudado)}</td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
   )
 }
 
@@ -327,7 +367,7 @@ function VistaRecaudo({ datos, f }: PropsVista) {
 
       <ul className="flex flex-col gap-3">
         {filas.map((x) => (
-          <li key={x.personaId || 'sin'} className="rounded-xl border border-gray-200 bg-white p-4 text-gray-900">
+          <li key={x.personaId || 'sin'} className="rounded-xl border border-gray-200 bg-white p-5 text-gray-900 shadow-xs">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="font-medium">{x.nombre}</p>
               <p className="text-lg font-semibold">{pesos(x.total)}</p>
@@ -335,29 +375,32 @@ function VistaRecaudo({ datos, f }: PropsVista) {
             <p className="text-sm text-gray-600">
               {x.pagos} pago(s)
               {x.devueltasPendientes > 0 && (
-                <span className="text-amber-700">
+                <span className="text-alerta">
                   {' '}
                   · debe {x.devueltasPendientes} devuelta(s) por{' '}
                   {pesos(x.valorDevueltasPendientes)}
                 </span>
               )}
             </p>
-            <details className="mt-2">
-              <summary className="cursor-pointer text-sm font-medium text-primario">Ver por día</summary>
+            <details className="group mt-2">
+              <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-semibold text-primario">
+                <ChevronRight {...icono} className="transition-transform duration-200 group-open:rotate-90" />
+                Ver por día
+              </summary>
               <table className="mt-2 w-full text-left text-sm">
                 <thead>
                   <tr className="text-xs text-gray-600">
-                    <th className="py-1">Día</th>
-                    <th className="py-1">Pagos</th>
-                    <th className="py-1 text-right">Total</th>
+                    <th scope="col" className="py-1">Día</th>
+                    <th scope="col" className="py-1">Pagos</th>
+                    <th scope="col" className="py-1 text-right">Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {x.porDia.map((d) => (
-                    <tr key={d.fecha} className="border-t border-gray-100">
+                    <tr key={d.fecha} className="border-t border-gray-200">
                       <td className="py-1">{formatearFecha(d.fecha)}</td>
                       <td className="py-1">{d.pagos}</td>
-                      <td className="py-1 text-right">{pesos(d.total)}</td>
+                      <td className={`py-1 text-right ${ui.monto}`}>{pesos(d.total)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -398,7 +441,7 @@ function VistaPendientes({ filas }: { filas: FilaPendiente[] }) {
         <span className="font-semibold">{filas.length}</span> pendiente(s) de pago.
       </p>
       {porEvento.map((g) => (
-        <section key={g.evento.id} className="rounded-xl border border-gray-200 bg-white p-4 text-gray-900">
+        <section key={g.evento.id} className="rounded-xl border border-gray-200 bg-white p-5 text-gray-900 shadow-xs">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <p className="font-medium">
               {g.evento.nombre}{' '}
@@ -407,10 +450,7 @@ function VistaPendientes({ filas }: { filas: FilaPendiente[] }) {
               </span>
             </p>
             {g.evento.estado !== 'finalizado' && (
-              <Link
-                href={`/institucion/eventos/${g.evento.id}/pagos/rapido`}
-                className="rounded-lg bg-primario px-2.5 py-1 text-xs font-medium text-white hover:bg-primario-hover"
-              >
+              <Link href={`/institucion/eventos/${g.evento.id}/pagos/rapido`} className={ui.botonCompacto}>
                 Cobro por salón
               </Link>
             )}

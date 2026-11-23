@@ -1,4 +1,5 @@
 import { ui } from '@/lib/ui'
+import EtiquetaEstado from '@/components/EtiquetaEstado'
 import { obtenerSesionInstitucion } from '@/lib/sesionInstitucion'
 import { FONDOS, FONDO_POR_DEFECTO, PALETAS, PALETA_POR_DEFECTO, estiloPaleta } from '@/lib/paletas'
 import { guardarApariencia } from './actions'
@@ -29,13 +30,13 @@ export default async function PersonalizacionPage() {
       </div>
 
       <FormularioAccion action={guardarApariencia} vaciarAlTerminar={false} className="flex flex-col gap-6">
-        <fieldset className="rounded-xl border border-gray-200 bg-white p-5">
+        <fieldset className={ui.tarjeta}>
           <legend className="px-1 text-sm font-semibold text-gray-900">Paleta de colores</legend>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {PALETAS.map((p) => (
               <label
                 key={p.id}
-                className="cursor-pointer rounded-xl border-2 border-gray-200 p-3 has-[:checked]:border-gray-900"
+                className="cursor-pointer rounded-xl border-2 border-gray-200 bg-white p-3 has-[:checked]:border-gray-900 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primario"
               >
                 <input
                   type="radio"
@@ -55,13 +56,13 @@ export default async function PersonalizacionPage() {
           </div>
         </fieldset>
 
-        <fieldset className="rounded-xl border border-gray-200 bg-white p-5">
+        <fieldset className={ui.tarjeta}>
           <legend className="px-1 text-sm font-semibold text-gray-900">Color de fondo</legend>
           <div className="flex flex-wrap gap-3">
             {FONDOS.map((f) => (
               <label
                 key={f.id}
-                className="cursor-pointer rounded-xl border-2 border-gray-200 px-4 py-2 text-sm text-gray-900 has-[:checked]:border-gray-900"
+                className="inline-flex min-h-11 cursor-pointer items-center rounded-lg border-2 border-gray-200 bg-white px-4 text-sm font-medium text-gray-900 has-[:checked]:border-gray-900 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primario"
               >
                 <input
                   type="radio"
@@ -92,22 +93,16 @@ export default async function PersonalizacionPage() {
           className="rounded-xl border border-gray-200 bg-fondo p-4"
           style={estiloPaleta(paletaActual, fondoActual)}
         >
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
+          <div className={ui.tarjeta}>
             <div className="flex flex-wrap items-center gap-2">
               <p className="font-semibold text-gray-900">Salida al Parque del Café</p>
-              <span className={`${ui.pildora} border-primario-borde bg-primario-suave text-primario`}>
-                Pago abierto
-              </span>
+              <EtiquetaEstado estado="abierto" />
             </div>
-            <p className="mt-1 text-sm text-gray-700">Puedes pagar hasta el 28/09 · Se realiza el 01/10</p>
+            <p className="mt-1 text-[13px] text-gray-600">Paga hasta el 28 sept. 2026 · Se realiza el 1 oct. 2026</p>
             <div className="mt-3 flex gap-2">
-              <span className="rounded-lg bg-primario px-3 py-1.5 text-sm font-medium text-white">
-                Botón principal
-              </span>
-              <span className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800">
-                Botón secundario
-              </span>
-              <span className="px-1 py-1.5 text-sm font-medium text-primario">Enlace</span>
+              <span className={ui.botonPrimario}>Botón principal</span>
+              <span className={ui.botonSecundario}>Botón secundario</span>
+              <span className={`${ui.enlace} self-center text-sm`}>Enlace</span>
             </div>
           </div>
         </div>

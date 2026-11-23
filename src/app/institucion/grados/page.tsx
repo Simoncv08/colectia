@@ -12,6 +12,8 @@ import Ventana from '@/components/Ventana'
 import { ordenarGrados } from '@/lib/ordenarGrados'
 import { ui } from '@/lib/ui'
 import FormularioAccion from '@/components/FormularioAccion'
+import { Plus, X } from 'lucide-react'
+import { icono, iconoGrande } from '@/lib/iconos'
 
 // Casillas en vez de un <select multiple>, que obliga a mantener Ctrl presionado.
 function CasillasCursos({ cursos }: { cursos: { id: string; nombre: string }[] }) {
@@ -71,7 +73,12 @@ export default async function CursosPage() {
             <p className={ui.textoSecundario}>{grados.length} curso(s)</p>
           </div>
           {esAdmin && (
-            <Ventana textoBoton="+ Agregar cursos" titulo="Agregar cursos">
+            <Ventana textoBoton={
+              <>
+                <Plus {...iconoGrande} />
+                Agregar cursos
+              </>
+            } titulo="Agregar cursos">
               <FormularioAccion action={agregarGrados} className="flex flex-col gap-4">
                 <label className={ui.etiqueta}>
                   Un curso por línea (o separados por comas)
@@ -104,7 +111,7 @@ export default async function CursosPage() {
                       ariaLabel={`Eliminar el curso ${g.nombre}`}
                       className={ui.botonChip}
                     >
-                      ×
+                      <X {...icono} />
                     </ConfirmSubmitButton>
                   </FormularioAccion>
                 )}
@@ -125,7 +132,12 @@ export default async function CursosPage() {
             </p>
           </div>
           {esAdmin && grados.length > 0 && (
-            <Ventana textoBoton="+ Crear grupo" titulo="Crear grupo de cursos" variante="secundario">
+            <Ventana textoBoton={
+              <>
+                <Plus {...iconoGrande} />
+                Crear grupo
+              </>
+            } titulo="Crear grupo de cursos" variante="secundario">
               <FormularioAccion action={crearGrupoCurso} className="flex flex-col gap-4">
                 <label className={ui.etiqueta}>
                   Nombre del grupo
@@ -151,7 +163,7 @@ export default async function CursosPage() {
             return (
               <li
                 key={grupo.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-5 py-3"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-5 py-3 shadow-xs"
               >
                 <div className="min-w-0">
                   <p className="font-semibold text-gray-900">{grupo.nombre}</p>
@@ -177,7 +189,7 @@ export default async function CursosPage() {
                                     aria-label={`Quitar ${m.nombre} del grupo`}
                                     className={ui.botonChip}
                                   >
-                                    ×
+                                    <X {...icono} />
                                   </button>
                                 </FormularioAccion>
                               </li>

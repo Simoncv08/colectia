@@ -7,6 +7,8 @@ import { estadoEvento, formatearFecha, hoyColombia } from '@/lib/estadoEvento'
 import { ui } from '@/lib/ui'
 import EtiquetaEstado from '@/components/EtiquetaEstado'
 import FormularioAccion from '@/components/FormularioAccion'
+import { ChevronRight, Plus } from 'lucide-react'
+import { icono, iconoGrande } from '@/lib/iconos'
 
 type Evento = {
   id: string
@@ -43,7 +45,7 @@ export default async function EventosPage() {
     return (
       <li
         key={ev.id}
-        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-5 py-4"
+        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-xs"
       >
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -51,7 +53,7 @@ export default async function EventosPage() {
             <EtiquetaEstado estado={ev.estado} />
           </div>
           {(ev.fecha_limite_pago || ev.fecha_evento) && (
-            <p className="mt-0.5 text-sm text-gray-700">
+            <p className="mt-0.5 text-[13px] text-gray-600">
               {ev.fecha_limite_pago && `Pago hasta el ${formatearFecha(ev.fecha_limite_pago)}`}
               {ev.fecha_limite_pago && ev.fecha_evento && ' · '}
               {ev.fecha_evento && `Se realiza el ${formatearFecha(ev.fecha_evento)}`}
@@ -62,8 +64,8 @@ export default async function EventosPage() {
           <Link href={`/institucion/eventos/${ev.id}`} className={ui.botonSecundario}>
             Configurar
           </Link>
-          <Link href={`/institucion/eventos/${ev.id}/pagos`} className={ui.botonPrimario}>
-            Pagos
+          <Link href={`/institucion/eventos/${ev.id}/pagos`} className={ui.botonSecundario}>
+            Ver pagos
           </Link>
         </div>
       </li>
@@ -78,7 +80,12 @@ export default async function EventosPage() {
           <p className={ui.textoSecundario}>{vigentes.length} evento(s) vigente(s)</p>
         </div>
         {institucionActiva ? (
-          <Ventana textoBoton="+ Crear evento" titulo="Crear evento" tamano="lg">
+          <Ventana textoBoton={
+              <>
+                <Plus {...iconoGrande} />
+                Crear evento
+              </>
+            } titulo="Crear evento" tamano="lg">
             <FormularioAccion
               action={crearEvento}
               className="flex flex-col gap-4"
@@ -98,7 +105,7 @@ export default async function EventosPage() {
         )}
       </div>
 
-      {error && <p className={ui.avisoRojo}>No se pudieron cargar los eventos: {error.message}</p>}
+      {error && <p className={ui.avisoRojo}>No se pudieron cargar los eventos. Recarga la página para intentar de nuevo.</p>}
 
       {vigentes.length ? (
         <ul className="flex flex-col gap-2">
@@ -112,9 +119,9 @@ export default async function EventosPage() {
 
       {finalizados.length > 0 && (
         <details className="group">
-          <summary className="cursor-pointer list-none text-sm font-medium text-gray-800">
-            <span className="inline-block transition group-open:rotate-90">▸</span> Eventos
-            finalizados ({finalizados.length})
+          <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-semibold text-gray-800">
+            <ChevronRight {...icono} className="transition-transform duration-200 group-open:rotate-90" />
+            Eventos finalizados ({finalizados.length})
           </summary>
           <ul className="mt-3 flex flex-col gap-2">
             {finalizados.map(tarjeta)}

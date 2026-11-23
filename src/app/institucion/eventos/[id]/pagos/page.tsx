@@ -9,7 +9,17 @@ import FormularioAccion from '@/components/FormularioAccion'
 import { obtenerEstudiantesDirigidos } from '@/lib/estudiantesDirigidos'
 import { enTrozos, traerTodasLasFilas } from '@/lib/consultas'
 import { estadoEvento, formatearFecha } from '@/lib/estadoEvento'
-import { SIN_CURSO, compararCursos, compararEstudiantes, nombreCurso, pesos } from '@/lib/formato'
+import {
+  SIN_CURSO,
+  compararCursos,
+  compararEstudiantes,
+  formatearFechaHora,
+  nombreCurso,
+  pesos,
+} from '@/lib/formato'
+import { ChevronDown } from 'lucide-react'
+import { icono } from '@/lib/iconos'
+import EstadoPago from '@/components/EstadoPago'
 import { agruparPagos, cargarPersonal, type GrupoPago } from '@/lib/pagos'
 import { ui } from '@/lib/ui'
 
@@ -161,7 +171,7 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
       {estado === 'finalizado' && (
         <p className={ui.avisoAmbar}>Este evento ya finalizó; los acudientes ya no lo ven.</p>
       )}
-      {errorPagos && <p className={ui.avisoRojo}>No se pudieron cargar los pagos: {errorPagos.message}</p>}
+      {errorPagos && <p className={ui.avisoRojo}>No se pudieron cargar los pagos. Recarga la página para intentar de nuevo.</p>}
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <TarjetaDato titulo="Recaudado" valor={pesos(totalRecaudado)} />
@@ -184,15 +194,16 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
 
       <section className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold text-gray-900">Por salón</h2>
+          <h2 className={ui.subtitulo}>Por salón</h2>
           <div className="flex flex-wrap gap-2">
             <Link
               href={urlFiltros({ devueltas: !soloDevueltas })}
               scroll={false}
-              className={`rounded-full border px-3 py-1 text-sm ${
+              aria-pressed={soloDevueltas}
+              className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-medium sm:min-h-9 ${
                 soloDevueltas
-                  ? 'border-amber-600 bg-amber-100 font-medium text-amber-900'
-                  : 'border-gray-300 bg-white text-gray-800 hover:bg-gray-50'
+                  ? 'border-alerta bg-alerta-suave text-alerta'
+                  : 'border-borde-campo bg-white text-gray-800 hover:bg-gray-100'
               }`}
             >
               Solo devueltas pendientes ({devueltasPendientes.length})
@@ -201,10 +212,11 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
               <Link
                 href={urlFiltros({ sin_pago: !mostrarSinPago })}
                 scroll={false}
-                className={`rounded-full border px-3 py-1 text-sm ${
+                aria-pressed={mostrarSinPago}
+                className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-medium sm:min-h-9 ${
                   mostrarSinPago
-                    ? 'border-primario bg-primario-suave font-medium text-primario'
-                    : 'border-gray-300 bg-white text-gray-800 hover:bg-gray-50'
+                    ? 'border-primario bg-primario-suave text-primario'
+                    : 'border-borde-campo bg-white text-gray-800 hover:bg-gray-100'
                 }`}
               >
                 {mostrarSinPago ? 'Mostrando también quién no ha pagado' : 'Mostrar también quién no ha pagado'}
@@ -227,25 +239,25 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
           <details
             key={s.salon || SIN_CURSO}
             open={soloDevueltas}
-            className="group rounded-xl border border-gray-200 bg-white"
+            className="group rounded-xl border border-gray-200 bg-white shadow-xs"
           >
-            <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2 px-5 py-3">
+            <summary className="flex min-h-14 cursor-pointer list-none flex-wrap items-center justify-between gap-2 rounded-xl px-5 py-3 hover:bg-gray-50">
               <span className="font-semibold text-gray-900">{nombreCurso(s.salon)}</span>
               <span className="flex items-center gap-3 text-sm text-gray-700">
                 <span>
-                  pagaron <strong className="text-gray-900">{s.pagaron}</strong> de {s.total}
+                  <span className={`${ui.monto} text-gray-900`}>{s.pagaron}</span> de {s.total} con pago
                 </span>
-                <span className="font-medium text-gray-900">{pesos(s.recaudado)}</span>
+                <span className={`${ui.monto} text-gray-900`}>{pesos(s.recaudado)}</span>
                 {s.devueltas > 0 && (
                   <span className={`${ui.pildora} ${ui.estadoPendiente}`}>
                     {s.devueltas} devuelta(s)
                   </span>
                 )}
-                <span className="inline-block transition group-open:rotate-180">▾</span>
+                <ChevronDown {...icono} className="transition-transform duration-200 group-open:rotate-180" />
               </span>
             </summary>
 
-            <ul className="divide-y divide-gray-100 border-t border-gray-200">
+            <ul className="divide-y divide-gray-200 border-t border-gray-200">
               {s.estudiantes.map((e) => {
                 const todos = gruposDe(e.id)
                 const visibles = soloDevueltas ? todos.filter((g) => g.devueltaPendiente) : todos
@@ -255,13 +267,12 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
                       <p className="font-medium text-gray-900">
                         {e.apellidos} {e.nombres}
                       </p>
-                      {todos.length ? (
-                        <p className="text-sm font-medium text-gray-900">
-                          {pesos(totalDe(e.id))}
-                        </p>
-                      ) : (
-                        <p className="text-sm text-gray-600">Sin pagos</p>
-                      )}
+                      <span className="flex items-center gap-3">
+                        <EstadoPago estado={todos.length ? 'pagado_efectivo' : 'sin_pago'} />
+                        {todos.length > 0 && (
+                          <span className={`${ui.monto} text-gray-900`}>{pesos(totalDe(e.id))}</span>
+                        )}
+                      </span>
                     </div>
                     {visibles.length > 0 && (
                       <ul className="mt-1 flex flex-col gap-1">
@@ -276,9 +287,7 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
                                   )
                                   .join(', ')}{' '}
                                 · {pesos(g.monto)} ·{' '}
-                                {new Date(g.lineas[0].pagado_en).toLocaleDateString('es-CO', {
-                                  timeZone: 'America/Bogota',
-                                })}{' '}
+                                {formatearFechaHora(g.lineas[0].pagado_en)}{' '}
                                 · recibió{' '}
                                 {quienRecibio(g.lineas[0].registrado_por)}
                                 {g.lineas[0].comprobante ? ` · ${g.lineas[0].comprobante}` : ''}
@@ -298,7 +307,7 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
                               <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
                                 <span
                                   className={
-                                    g.devueltaPendiente ? 'font-medium text-amber-900' : 'text-gray-600'
+                                    g.devueltaPendiente ? 'font-medium text-alerta' : 'text-gray-600'
                                   }
                                 >
                                   Recibió {pesos(g.recibido ?? 0)} · devuelta {pesos(g.devuelta)}
@@ -308,7 +317,7 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
                                   <FormularioAccion action={marcarDevueltaEntregada.bind(null, evento.id, g.grupoPagoId)}>
                                     <button
                                       type="submit"
-                                      className="rounded border border-amber-400 bg-amber-50 px-2 py-0.5 font-medium text-amber-900 hover:bg-amber-100"
+                                      className={ui.botonCompacto}
                                     >
                                       Marcar como entregada
                                     </button>
