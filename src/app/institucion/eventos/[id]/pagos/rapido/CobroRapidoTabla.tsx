@@ -321,6 +321,7 @@ export default function CobroRapidoTabla({
                       <label className="-m-3 flex p-3">
                         <input
                           type="checkbox"
+                          id={`cobrar-${e.id}`}
                           aria-label={`Cobrar a ${e.nombres} ${e.apellidos}`}
                           checked={Boolean(sel)}
                           onChange={() => alternarCobro(e.id)}
@@ -329,13 +330,14 @@ export default function CobroRapidoTabla({
                       </label>
                     )}
                   </td>
-                  <td className={ui.celdaPrincipal}>
-                    <span className={ui.nombreFila}>
+                  <td className={`${ui.celdaPrincipal} col-start-2`}>
+                    {/* Tocar el nombre también marca la casilla. */}
+                    <label htmlFor={pagado === 0 ? `cobrar-${e.id}` : undefined} className={ui.nombreFila}>
                       {e.apellidos} {e.nombres}
                       {curso === TODOS && e.curso_grado && (
                         <span className="ml-1 font-normal text-gray-600">({e.curso_grado})</span>
                       )}
-                    </span>
+                    </label>
                   </td>
                   <td className={ui.celdaDebajo}>
                     <div className="flex flex-col items-start gap-1">
@@ -368,7 +370,7 @@ export default function CobroRapidoTabla({
                     ))}
                     </div>
                   </td>
-                  <td className={ui.celdaDebajo}>
+                  <td className={`${ui.celdaDebajo} pt-3`}>
                     {sel && <span className={`${ui.etiquetaMovil} w-full`}>Cantidad</span>}
                     {sel &&
                       (opcionesCantidad ? (
@@ -376,7 +378,7 @@ export default function CobroRapidoTabla({
                           aria-label={`Cantidad para ${e.nombres} ${e.apellidos}`}
                           value={sel.cantidad}
                           onChange={(ev) => cambiarCantidad(e.id, Number(ev.target.value))}
-                          className={ui.campoCompacto}
+                          className={`${ui.campoCompacto} w-full sm:w-auto`}
                         >
                           {opcionesCantidad.map((n) => (
                             <option key={n} value={n}>
@@ -399,11 +401,11 @@ export default function CobroRapidoTabla({
                         />
                       ))}
                   </td>
-                  <td className={ui.celdaDebajo}>
-                    {sel && <span className={`${ui.etiquetaMovil} w-full`}>Devuelta pendiente</span>}
+                  <td className={`${ui.celdaDebajo} pt-2`}>
                     {sel && (
-                      <div className="flex items-center gap-2">
-                        <label className="-m-3 inline-flex p-3">
+                      // En celular: "Se le debe devuelta" con su casilla, y al marcarla, el valor debajo.
+                      <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-1.5 sm:flex-nowrap">
+                        <label className="flex min-h-11 items-center gap-3 text-sm text-gray-800 sm:-m-3 sm:p-3">
                           <input
                             type="checkbox"
                             aria-label={`Devuelta pendiente para ${e.nombres} ${e.apellidos}`}
@@ -411,6 +413,7 @@ export default function CobroRapidoTabla({
                             onChange={() => alternarDevuelta(e.id)}
                             className="h-5 w-5"
                           />
+                          <span className="sm:hidden">Se le debe devuelta</span>
                         </label>
                         {sel.devuelta && (
                           <input
@@ -421,8 +424,8 @@ export default function CobroRapidoTabla({
                             value={sel.monto}
                             onChange={(ev) => cambiarMontoDevuelta(e.id, ev.target.value)}
                             aria-label={`Valor que se le debe a ${e.nombres} ${e.apellidos}`}
-                            placeholder="$ que se le debe"
-                            className={`${ui.campoCompacto} w-40`}
+                            placeholder="¿Cuánto se le debe?"
+                            className={`${ui.campoCompacto} w-full sm:w-44`}
                           />
                         )}
                       </div>

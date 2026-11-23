@@ -19,7 +19,8 @@ export const ui = {
     'min-h-11 w-full min-w-0 rounded-md border border-borde-campo bg-white px-3 py-2 text-base text-gray-900 sm:text-[15px] placeholder:text-gray-500 focus:border-primario focus:outline-none focus:ring-[3px] focus:ring-primario/25',
   campoCompacto:
     'min-h-11 min-w-0 rounded-md border border-borde-campo bg-white px-3 text-base text-gray-900 sm:text-sm placeholder:text-gray-500 focus:border-primario focus:outline-none focus:ring-[3px] focus:ring-primario/25 sm:min-h-9',
-  etiqueta: 'flex flex-col gap-1 text-[13px] font-medium text-gray-600',
+  // min-w-0: sin esto, un campo de fecha en iPhone ensancha la columna y se sale del formulario.
+  etiqueta: 'flex min-w-0 flex-col gap-1 text-[13px] font-medium text-gray-600',
   ayuda: 'text-xs text-gray-600',
 
   tarjeta: 'rounded-xl border border-gray-200 bg-white p-4 shadow-xs sm:p-5 md:p-6',
@@ -68,13 +69,14 @@ export const ui = {
   detalleMovil: 'mt-0.5 block text-[13px] text-gray-600 sm:hidden',
   celdaEscritorio: 'hidden sm:table-cell sm:px-4 sm:py-3',
   celdaFinal: 'shrink-0 sm:table-cell sm:px-4 sm:py-3 sm:text-right',
-  // Lista con casilla de marcar: la casilla a la izquierda del nombre, y el estado y los campos
-  // debajo del nombre, alineados con él.
+  // Lista con casilla de marcar: la casilla a la izquierda, centrada con el nombre y el estado, y
+  // los campos debajo, alineados con el nombre.
   filaMarcable:
-    'flex flex-wrap items-start gap-x-3 border-t border-gray-200 px-4 py-3 first:border-t-0 sm:table-row sm:p-0 sm:first:border-t sm:hover:bg-gray-50',
-  celdaMarcar: 'block w-6 shrink-0 pt-px sm:table-cell sm:w-auto sm:px-4 sm:py-3',
+    'grid grid-cols-[1.5rem_minmax(0,1fr)] gap-x-3 border-t border-gray-200 px-4 py-3 first:border-t-0 sm:table-row sm:p-0 sm:first:border-t sm:hover:bg-gray-50',
+  celdaMarcar:
+    'row-span-2 flex items-center justify-center sm:table-cell sm:px-4 sm:py-3 sm:align-middle',
   celdaDebajo:
-    'flex w-full flex-wrap items-center gap-x-3 gap-y-1 pl-9 pt-2 text-sm empty:hidden sm:table-cell sm:w-auto sm:px-4 sm:py-3 sm:empty:table-cell',
+    'col-start-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-1.5 text-sm empty:hidden sm:table-cell sm:px-4 sm:py-3 sm:empty:table-cell',
   // La etiqueta de un dato dentro de celdaDebajo; en computador la da el encabezado de la tabla.
   etiquetaMovil: 'text-[13px] font-medium text-gray-600 sm:hidden',
   // La acción de un elemento de lista con 44 px de área táctil en celular.

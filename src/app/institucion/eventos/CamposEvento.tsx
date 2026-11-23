@@ -34,7 +34,7 @@ export default function CamposEvento({
         Descripción (opcional)
         <textarea name="descripcion" rows={3} defaultValue={evento?.descripcion ?? ''} className={ui.campo} />
       </label>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className={ui.etiqueta}>
           Pago hasta el{opcional}
           <input

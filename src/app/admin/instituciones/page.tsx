@@ -70,7 +70,7 @@ export default async function InstitucionesPage() {
         <p className={ui.textoSecundario}>Crea colegios, cambia su estado y asigna su primer administrador.</p>
       </div>
 
-      <FormularioAccion action={crearInstitucion} className={`${ui.tarjeta} grid gap-4 sm:grid-cols-3`}>
+      <FormularioAccion action={crearInstitucion} className={`${ui.tarjeta} grid grid-cols-1 gap-4 sm:grid-cols-3`}>
         <h2 className={`${ui.subtitulo} sm:col-span-3`}>Crear institución</h2>
         <label className={ui.etiqueta}>
           Nombre

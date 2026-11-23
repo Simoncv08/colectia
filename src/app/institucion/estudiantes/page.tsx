@@ -143,7 +143,7 @@ export default async function EstudiantesPage({ searchParams }: Params) {
               {grados.length ? (
                 <FormularioAccion
                   action={crearEstudiante}
-                  className="grid gap-4 sm:grid-cols-2"
+                  className="grid grid-cols-1 gap-4 sm:grid-cols-2"
                 >
                   <label className={ui.etiqueta}>
                     Nombres

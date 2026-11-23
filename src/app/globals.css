@@ -125,9 +125,11 @@ body {
       display: block;
     }
 
-    /* Sin esto, la fecha queda centrada y el campo vacío pierde su alto. */
+    /* Sin esto, la fecha queda centrada, el campo vacío pierde su alto y el margen que el iPhone
+       le deja a la flecha (que ya no se muestra) lo ensancha. */
     input::-webkit-date-and-time-value {
       min-height: 1.5em;
+      margin: 0;
       text-align: left;
     }
   }

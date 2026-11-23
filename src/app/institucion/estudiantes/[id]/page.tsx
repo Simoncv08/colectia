@@ -72,7 +72,7 @@ export default async function EditarEstudiantePage({ params }: Params) {
       <FormularioAccion
         action={actualizarEstudiante.bind(null, estudiante.id)}
         vaciarAlTerminar={false}
-        className={`${ui.tarjeta} grid gap-4 sm:grid-cols-2`}
+        className={`${ui.tarjeta} grid grid-cols-1 gap-4 sm:grid-cols-2`}
       >
         <label className={ui.etiqueta}>
           Nombres

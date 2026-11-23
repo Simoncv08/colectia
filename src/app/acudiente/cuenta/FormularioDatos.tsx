@@ -29,7 +29,7 @@ export default function FormularioDatos({
   }
 
   return (
-    <form onSubmit={enviar} className="grid gap-4 sm:grid-cols-2">
+    <form onSubmit={enviar} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <label className={ui.etiqueta}>
         Nombres
         <input
