@@ -1,5 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from './tipos'
 
 // Corre en cada solicitud (proxy.ts en la raíz) para refrescar la sesión de Supabase.
 export async function updateSession(request: NextRequest) {
@@ -7,7 +9,7 @@ export async function updateSession(request: NextRequest) {
     request,
   })
 
-  const supabase = createServerClient(
+  const supabase: SupabaseClient<Database> = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {

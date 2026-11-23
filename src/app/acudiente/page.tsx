@@ -1,29 +1,11 @@
 import Link from 'next/link'
+import EstadoPago from '@/components/EstadoPago'
+import { pesos } from '@/lib/formato'
 import { estadoEvento, formatearFecha, hoyColombia } from '@/lib/estadoEvento'
 import { obtenerSesionAcudiente, type EstudianteVinculado } from '@/lib/sesionAcudiente'
+import { cobrosPorEvento } from '@/lib/saldoAcudiente'
 import { estiloPaleta } from '@/lib/paletas'
 import { ui } from '@/lib/ui'
-
-type ProductoDisponible = {
-  id: string
-  nombre: string
-  tipo: string
-  precio_unitario: number
-  cantidad_maxima_por_estudiante: number | null
-}
-
-type EventoDisponible = {
-  id: string
-  institucion_id: string
-  nombre: string
-  descripcion: string | null
-  imagen_url: string | null
-  fecha_limite_pago: string | null
-  fecha_evento: string | null
-  finalizado_en: string | null
-  instituciones: { nombre: string } | null
-  productos: ProductoDisponible[] | null
-}
 
 export const metadata = { title: 'Mis estudiantes' }
 
@@ -39,35 +21,56 @@ export default async function AcudientePage() {
     .order('created_at', { ascending: false })
 
   const hoy = hoyColombia()
-  const eventos = ((eventosCrudos ?? []) as unknown as EventoDisponible[])
+  const eventos = (eventosCrudos ?? [])
     .map((ev) => ({ ...ev, estado: estadoEvento(ev, hoy) }))
     .filter((ev) => ev.estado !== 'finalizado')
 
-  type Grupo = {
+  // Las dos consultas solo devuelven filas de sus propios estudiantes (RLS).
+  const ids = eventos.map((ev) => ev.id)
+  const [{ data: grupos }, { data: pagos }] = ids.length
+    ? await Promise.all([
+        supabase.from('evento_grupos').select('evento_id, curso_grado, estudiante_id').in('evento_id', ids),
+        supabase.from('registros_pago').select('evento_id, estudiante_id, monto').in('evento_id', ids),
+      ])
+    : [{ data: [] }, { data: [] }]
+  const cobros = cobrosPorEvento(
+    eventos,
+    grupos ?? [],
+    pagos ?? [],
+    vinculos.map((v) => v.estudiantes)
+  )
+
+  // Resumen de arriba, sin hablar de deudas: muchas actividades son opcionales.
+  const abiertas = eventos.filter((ev) => ev.estado === 'abierto').length
+  const conPago = eventos.filter((ev) =>
+    cobros.get(ev.id)?.estudiantes.some((x) => x.estado === 'pagado')
+  ).length
+
+  type Seccion = {
     id: string
     nombre: string
     estado: string | null
     estudiantes: (EstudianteVinculado & { vinculoId: string })[]
     eventos: typeof eventos
   }
-  const grupos = new Map<string, Grupo>()
-  function grupo(id: string, nombre: string, estado: string | null = null) {
-    let g = grupos.get(id)
+  const secciones = new Map<string, Seccion>()
+  function seccion(id: string, nombre: string, estado: string | null = null) {
+    let g = secciones.get(id)
     if (!g) {
       g = { id, nombre, estado, estudiantes: [], eventos: [] }
-      grupos.set(id, g)
+      secciones.set(id, g)
     }
     return g
   }
   for (const v of vinculos) {
     const e = v.estudiantes
-    grupo(e.institucion_id, e.instituciones?.nombre ?? 'Institución', e.instituciones?.estado ?? null)
+    seccion(e.institucion_id, e.instituciones?.nombre ?? 'Institución', e.instituciones?.estado ?? null)
       .estudiantes.push({ ...e, vinculoId: v.id })
   }
   for (const ev of eventos) {
-    grupo(ev.institucion_id, ev.instituciones?.nombre ?? 'Institución').eventos.push(ev)
+    seccion(ev.institucion_id, ev.instituciones?.nombre ?? 'Institución').eventos.push(ev)
   }
-  const listaGrupos = Array.from(grupos.values()).sort((a, b) =>
+  const listaSecciones = Array.from(secciones.values()).sort((a, b) =>
     a.nombre.localeCompare(b.nombre, 'es')
   )
 
@@ -83,16 +86,12 @@ export default async function AcudientePage() {
       </div>
 
       {errorEventos && (
-        <p className={ui.avisoRojo}>
-          No se pudieron cargar las actividades: {errorEventos.message}
-        </p>
+        <p className={ui.avisoRojo}>No se pudieron cargar las actividades: {errorEventos.message}</p>
       )}
 
-      {!listaGrupos.length && (
+      {!listaSecciones.length ? (
         <div className={`${ui.tarjeta} text-center`}>
-          <p className="text-gray-800">
-            Todavía no tienes ningún estudiante vinculado a tu cuenta.
-          </p>
+          <p className="text-gray-800">Todavía no tienes ningún estudiante vinculado a tu cuenta.</p>
           <p className={`${ui.textoSecundario} mt-1`}>
             Vincúlalo con el código o el documento que te dio el colegio.
           </p>
@@ -100,131 +99,141 @@ export default async function AcudientePage() {
             + Vincular estudiante
           </Link>
         </div>
+      ) : (
+        <section aria-labelledby="titulo-resumen" className={ui.resumen}>
+          <h2 id="titulo-resumen" className="text-sm font-medium text-white">
+            Actividades de tus estudiantes
+          </h2>
+          <p className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
+            {abiertas === 0 ? 'Ninguna abierta' : abiertas === 1 ? '1 abierta' : `${abiertas} abiertas`}
+          </p>
+          <p className="mt-2 text-sm text-white">
+            {conPago === 1 ? '1 actividad con pago registrado' : `${conPago} actividades con pago registrado`}
+          </p>
+          <p className="mt-4 border-t border-white/25 pt-3 text-sm text-white">
+            Por ahora los pagos se hacen en efectivo en el colegio. Cuando el colegio registra tu
+            pago, aquí aparece como Pagado.
+          </p>
+        </section>
       )}
 
-      {listaGrupos.map((g) => {
+      {listaSecciones.map((g) => {
         const apariencia = apariencias.get(g.id)
         return (
           <section
             key={g.id}
-            className="overflow-hidden rounded-xl border border-gray-200 bg-white"
+            aria-labelledby={`colegio-${g.id}`}
+            className="flex flex-col gap-4"
             style={estiloPaleta(apariencia?.paleta, apariencia?.fondo)}
           >
-            <div className="bg-primario px-5 py-3 text-white">
-              <p className="font-semibold">{g.nombre}</p>
-            </div>
-
-            <div className="flex flex-col gap-5 p-5">
-              {g.estado === 'suspendida' && (
-                <p className={ui.avisoAmbar}>
-                  Esta institución está suspendida temporalmente: puede que no veas actividades
-                  nuevas hasta que se reactive.
+            <div className="border-l-4 border-primario pl-3">
+              <h2 id={`colegio-${g.id}`} className="text-lg font-semibold text-gray-900">
+                {g.nombre}
+              </h2>
+              {g.estudiantes.length > 0 && (
+                <p className={ui.textoSecundario}>
+                  {g.estudiantes
+                    .map((e) => `${e.nombres} ${e.apellidos}${e.curso_grado ? ` (${e.curso_grado})` : ''}`)
+                    .join(' · ')}
                 </p>
               )}
-
-              {g.estudiantes.length > 0 && (
-                <ul className="flex flex-wrap gap-2">
-                  {g.estudiantes.map((e) => (
-                    <li key={e.vinculoId} className={ui.chip}>
-                      <span>
-                        <span className="font-medium">
-                          {e.nombres} {e.apellidos}
-                        </span>
-                        {e.curso_grado ? ` · ${e.curso_grado}` : ''}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              <div className="flex flex-col gap-3">
-                <h2 className={ui.subtitulo}>Actividades disponibles</h2>
-                {!g.eventos.length && (
-                  <p className={ui.textoSecundario}>
-                    Por ahora no hay actividades para tus estudiantes en esta institución.
-                  </p>
-                )}
-                {g.eventos.map((ev) => (
-                  <article
-                    key={ev.id}
-                    className={`rounded-lg border p-4 ${
-                      ev.estado === 'pago_cerrado'
-                        ? 'border-gray-200 bg-gray-50'
-                        : 'border-primario-borde bg-white'
-                    }`}
-                  >
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                      {ev.imagen_url && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={ev.imagen_url}
-                          alt={ev.nombre}
-                          className="h-32 w-full rounded-lg object-cover sm:w-40"
-                        />
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-semibold text-gray-900">{ev.nombre}</p>
-                          {ev.estado === 'pago_cerrado' && (
-                            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-900">
-                              Pago no disponible
-                            </span>
-                          )}
-                        </div>
-                        {(ev.fecha_limite_pago || ev.fecha_evento) && (
-                          <p className="mt-1 text-sm text-gray-700">
-                            {ev.fecha_limite_pago &&
-                              (ev.estado === 'pago_cerrado'
-                                ? `El plazo para pagar terminó el ${formatearFecha(ev.fecha_limite_pago)}`
-                                : `Puedes pagar hasta el ${formatearFecha(ev.fecha_limite_pago)}`)}
-                            {ev.fecha_limite_pago && ev.fecha_evento && ' · '}
-                            {ev.fecha_evento && `Se realiza el ${formatearFecha(ev.fecha_evento)}`}
-                          </p>
-                        )}
-                        {ev.descripcion && (
-                          <p className="mt-1 text-sm text-gray-700">{ev.descripcion}</p>
-                        )}
-                        <ul className="mt-3 flex flex-col gap-1 border-t border-gray-200 pt-2">
-                          {(ev.productos ?? []).map((p) => (
-                            <li
-                              key={p.id}
-                              className="flex items-center justify-between gap-2 text-sm text-gray-900"
-                            >
-                              <span>{p.nombre}</span>
-                              <span className="font-medium">
-                                ${Number(p.precio_unitario).toLocaleString('es-CO')}
-                                {p.tipo === 'precio_variable' && (
-                                  <span className="font-normal text-gray-600"> c/u</span>
-                                )}
-                                {p.cantidad_maxima_por_estudiante && (
-                                  <span className="font-normal text-gray-600">
-                                    {' '}
-                                    · máx. {p.cantidad_maxima_por_estudiante}
-                                  </span>
-                                )}
-                              </span>
-                            </li>
-                          ))}
-                          {!ev.productos?.length && (
-                            <li className="text-sm text-gray-600">
-                              Esta actividad todavía no tiene precios.
-                            </li>
-                          )}
-                        </ul>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
             </div>
+
+            {g.estado === 'suspendida' && (
+              <p className={ui.avisoAmbar}>
+                Esta institución está suspendida temporalmente: puede que no veas actividades nuevas
+                hasta que se reactive.
+              </p>
+            )}
+
+            {!g.eventos.length && (
+              <p className={`${ui.tarjeta} ${ui.textoSecundario}`}>
+                Por ahora no hay actividades para tus estudiantes en esta institución.
+              </p>
+            )}
+
+            {g.eventos.map((ev) => {
+              const cobro = cobros.get(ev.id)
+              const productos = ev.productos ?? []
+              return (
+                <article key={ev.id} className={`${ui.tarjeta} flex flex-col gap-4`}>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    {ev.imagen_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={ev.imagen_url}
+                        alt=""
+                        className="h-32 w-full rounded-lg object-cover sm:h-24 sm:w-32"
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-base font-semibold text-gray-900">{ev.nombre}</h3>
+                      {(ev.fecha_limite_pago || ev.fecha_evento) && (
+                        <p className="mt-1 text-sm text-gray-700">
+                          {ev.fecha_limite_pago &&
+                            (ev.estado === 'pago_cerrado'
+                              ? `El plazo para pagar terminó el ${formatearFecha(ev.fecha_limite_pago)}`
+                              : `Paga hasta el ${formatearFecha(ev.fecha_limite_pago)}`)}
+                          {ev.fecha_limite_pago && ev.fecha_evento && ' · '}
+                          {ev.fecha_evento && `Se realiza el ${formatearFecha(ev.fecha_evento)}`}
+                        </p>
+                      )}
+                      {ev.descripcion && <p className="mt-1 text-sm text-gray-700">{ev.descripcion}</p>}
+                    </div>
+                  </div>
+
+                  {productos.length ? (
+                    <ul className="flex flex-col gap-1 text-sm text-gray-800">
+                      {productos.map((p) => (
+                        <li key={p.id} className="flex justify-between gap-3">
+                          <span>
+                            {p.nombre}
+                            {p.cantidad_maxima_por_estudiante && (
+                              <span className="text-gray-600"> · máximo {p.cantidad_maxima_por_estudiante}</span>
+                            )}
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {pesos(Number(p.precio_unitario))}
+                            {p.tipo === 'precio_variable' && <span className="text-gray-600"> c/u</span>}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className={ui.textoSecundario}>Esta actividad todavía no tiene precios.</p>
+                  )}
+
+                  {cobro && productos.length > 0 && cobro.estudiantes.length > 0 && (
+                    <ul className="divide-y divide-gray-100 border-t border-gray-200">
+                      {cobro.estudiantes.map((x) => (
+                        <li
+                          key={x.estudiante.id}
+                          className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-3 last:pb-0"
+                        >
+                          <span className="font-medium text-gray-900">
+                            {x.estudiante.nombres} {x.estudiante.apellidos}
+                          </span>
+                          <span className="flex items-center gap-3">
+                            <EstadoPago estado={x.estado} />
+                            {x.estado === 'pagado' ? (
+                              <span className="font-semibold text-gray-900">{pesos(x.pagado)}</span>
+                            ) : (
+                              <span className="text-gray-600">
+                                Valor {cobro.desde ? 'desde ' : ''}
+                                {pesos(x.valor)}
+                              </span>
+                            )}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </article>
+              )
+            })}
           </section>
         )
       })}
-
-      <p className={ui.ayuda}>
-        El pago en línea todavía no está disponible. Por ahora, paga estas actividades
-        directamente en la institución (en efectivo).
-      </p>
     </>
   )
 }

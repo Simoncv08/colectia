@@ -33,28 +33,19 @@ export const obtenerSesionInstitucion = cache(async (): Promise<SesionInstitucio
 
   const { data: membresias } = await supabase
     .from('membresias')
-    .select('id, institucion_id, rol, instituciones(nombre, estado)')
+    .select('id, institucion_id, rol, instituciones(nombre, estado, paleta, fondo)')
     .eq('persona_id', user.id)
     .in('rol', ['admin_institucion', 'recaudador'])
     .order('created_at', { ascending: true })
 
-  const m = (membresias ?? [])[0] as unknown as
-    | {
-        id: string
-        institucion_id: string
-        rol: 'admin_institucion' | 'recaudador'
-        instituciones: { nombre: string; estado: string } | null
-      }
-    | undefined
+  // La consulta ya filtra por esos dos roles.
+  const todas = (membresias ?? []).map((x) => ({ ...x, rol: x.rol as 'admin_institucion' | 'recaudador' }))
+  // En la institución más antigua, el rol de administrador gana si la persona tiene los dos.
+  const m =
+    todas.find((x) => x.institucion_id === todas[0]?.institucion_id && x.rol === 'admin_institucion') ??
+    todas[0]
 
-  if (!m) return null
-
-  // Aparte y sin fallar: sin personalizacion_setup.sql se usan los colores por defecto.
-  const { data: apariencia } = await supabase
-    .from('instituciones')
-    .select('paleta, fondo')
-    .eq('id', m.institucion_id)
-    .maybeSingle()
+  if (!m?.institucion_id) return null
 
   return {
     supabase,
@@ -67,8 +58,39 @@ export const obtenerSesionInstitucion = cache(async (): Promise<SesionInstitucio
     institucion: {
       nombre: m.instituciones?.nombre ?? 'Tu institución',
       estado: m.instituciones?.estado ?? '',
-      paleta: (apariencia as { paleta?: string } | null)?.paleta ?? null,
-      fondo: (apariencia as { fondo?: string } | null)?.fondo ?? null,
+      paleta: m.instituciones?.paleta ?? null,
+      fondo: m.instituciones?.fondo ?? null,
     },
   }
 })
+
+// Para las acciones del personal: la institución sale de la sesión, nunca del formulario.
+export async function requerirPersonal({
+  soloAdmin = false,
+  institucionActiva = false,
+}: { soloAdmin?: boolean; institucionActiva?: boolean } = {}): Promise<SesionInstitucion> {
+  const sesion = await obtenerSesionInstitucion()
+  if (!sesion) {
+    throw new Error('Tu cuenta no es parte del personal de ninguna institución.')
+  }
+  if (soloAdmin && !sesion.esAdmin) {
+    throw new Error('Solo el administrador de la institución puede hacer esto.')
+  }
+  if (institucionActiva && sesion.institucion.estado !== 'activa') {
+    throw new Error('Tu institución no está activa, así que no puedes hacer cambios.')
+  }
+  return sesion
+}
+
+// Confirma que el evento es de la institución de la sesión antes de tocar sus productos o grupos.
+export async function exigirEventoPropio(sesion: SesionInstitucion, eventoId: string) {
+  const { data } = await sesion.supabase
+    .from('eventos')
+    .select('id')
+    .eq('id', eventoId)
+    .eq('institucion_id', sesion.institucionId)
+    .maybeSingle()
+  if (!data) {
+    throw new Error('Ese evento ya no existe o no es de tu institución.')
+  }
+}

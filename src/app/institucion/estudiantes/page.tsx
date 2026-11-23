@@ -1,10 +1,12 @@
 import Link from 'next/link'
 import { obtenerSesionInstitucion } from '@/lib/sesionInstitucion'
-import { cargarEstudiantesExcel, crearEstudiante } from '../actions'
+import { cargarEstudiantesExcel, crearEstudiante } from './actions'
 import { traerTodasLasFilas } from '@/lib/consultas'
 import { ordenarGrados } from '@/lib/ordenarGrados'
 import Ventana from '@/components/Ventana'
 import { ui } from '@/lib/ui'
+import { compararCursos, compararEstudiantes, normalizar } from '@/lib/formato'
+import FormularioAccion from '@/components/FormularioAccion'
 
 type Params = { searchParams: Promise<{ q?: string; curso?: string }> }
 
@@ -15,21 +17,6 @@ type Estudiante = {
   nombres: string
   apellidos: string
   curso_grado: string | null
-}
-
-// Sin tildes ni mayúsculas, para que buscar "jose" encuentre "José".
-function normalizar(texto: string) {
-  return texto
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .trim()
-}
-
-function compararCursos(a: string, b: string) {
-  if (!a) return 1
-  if (!b) return -1
-  return a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' })
 }
 
 export const metadata = { title: 'Estudiantes' }
@@ -77,11 +64,7 @@ export default async function EstudiantesPage({ searchParams }: Params) {
     .sort(([a], [b]) => compararCursos(a, b))
     .map(([nombreCurso, lista]) => ({
       curso: nombreCurso,
-      estudiantes: [...lista].sort(
-        (x, y) =>
-          x.apellidos.localeCompare(y.apellidos, 'es', { sensitivity: 'base' }) ||
-          x.nombres.localeCompare(y.nombres, 'es', { sensitivity: 'base' })
-      ),
+      estudiantes: [...lista].sort(compararEstudiantes),
     }))
 
   const hayFiltro = Boolean(q || curso)
@@ -96,8 +79,8 @@ export default async function EstudiantesPage({ searchParams }: Params) {
         {esAdmin && (
           <div className="flex flex-wrap gap-2">
             <Ventana textoBoton="Cargar desde Excel" titulo="Cargar estudiantes desde Excel" variante="secundario">
-              <form
-                action={cargarEstudiantesExcel.bind(null, institucionId)}
+              <FormularioAccion
+                action={cargarEstudiantesExcel}
                 className="flex flex-col gap-4"
               >
                 <p className={ui.textoSecundario}>
@@ -126,13 +109,13 @@ export default async function EstudiantesPage({ searchParams }: Params) {
                 <button type="submit" className={`${ui.botonPrimario} self-start`}>
                   Cargar archivo
                 </button>
-              </form>
+              </FormularioAccion>
             </Ventana>
 
             <Ventana textoBoton="+ Agregar estudiante" titulo="Agregar estudiante">
               {grados.length ? (
-                <form
-                  action={crearEstudiante.bind(null, institucionId)}
+                <FormularioAccion
+                  action={crearEstudiante}
                   className="grid gap-4 sm:grid-cols-2"
                 >
                   <label className={ui.etiqueta}>
@@ -173,7 +156,7 @@ export default async function EstudiantesPage({ searchParams }: Params) {
                       Agregar estudiante
                     </button>
                   </div>
-                </form>
+                </FormularioAccion>
               ) : (
                 <p className={ui.textoSecundario}>
                   Primero crea al menos un curso en la pestaña{' '}

@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import { obtenerSesionInstitucion } from '@/lib/sesionInstitucion'
 import { ui } from '@/lib/ui'
-import { pesos } from '@/lib/reportes'
+import { nombrePersona, pesos } from '@/lib/formato'
 
 type Params = {
-  searchParams: Promise<{ categoria?: string; persona?: string; limite?: string }>
+  searchParams: Promise<{ categoria?: string; persona?: string; antes?: string }>
 }
 
 type Actividad = {
@@ -17,11 +17,6 @@ type Actividad = {
   detalle: { grupo?: string; monto?: number } | null
   transaccion: number
   created_at: string
-}
-
-type StaffCrudo = {
-  persona_id: string
-  personas: { nombres: string | null; apellidos: string | null; correo: string | null } | null
 }
 
 const ZONA = 'America/Bogota'
@@ -37,6 +32,13 @@ const CATEGORIAS: Record<string, { etiqueta: string; clase: string }> = {
 }
 
 const VERBOS: Record<string, string> = { crear: 'agregó', editar: 'editó', eliminar: 'eliminó' }
+
+// Página siguiente: "fecha|id" de la última fila mostrada. La fecha va tal cual sale de la base,
+// con microsegundos, para que la comparación sea exacta.
+function leerCursor(valor: string | undefined) {
+  const m = /^([0-9T:.+\- ]{10,40})\|(\d{1,19})$/.exec(valor ?? '')
+  return m ? { fecha: m[1], id: m[2] } : null
+}
 
 // AAAA-MM-DD en hora de Colombia.
 function claveDia(fecha: Date) {
@@ -72,7 +74,7 @@ export default async function ActividadPage({ searchParams }: Params) {
   const filtros = await searchParams
   const categoria = filtros.categoria && CATEGORIAS[filtros.categoria] ? filtros.categoria : ''
   const persona = filtros.persona ?? ''
-  const limite = Math.min(Math.max(Number(filtros.limite) || PASO, PASO), 3000)
+  const cursor = leerCursor(filtros.antes)
 
   const sesion = await obtenerSesionInstitucion()
   if (!sesion) return null
@@ -94,11 +96,9 @@ export default async function ActividadPage({ searchParams }: Params) {
 
   const personal = Array.from(
     new Map(
-      ((staffCrudo ?? []) as unknown as StaffCrudo[]).map((s) => [
+      (staffCrudo ?? []).map((s) => [
         s.persona_id,
-        [s.personas?.nombres, s.personas?.apellidos].filter(Boolean).join(' ').trim() ||
-          s.personas?.correo ||
-          'Sin nombre',
+        nombrePersona(s.personas),
       ])
     ).entries()
   ).sort((a, b) => a[1].localeCompare(b[1], 'es'))
@@ -111,21 +111,27 @@ export default async function ActividadPage({ searchParams }: Params) {
     .eq('institucion_id', institucionId)
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
-    .limit(limite + 1)
+    .limit(PASO + 1)
 
   if (categoria) consulta = consulta.eq('categoria', categoria)
   if (persona === 'sistema') consulta = consulta.is('persona_id', null)
   else if (persona) consulta = consulta.eq('persona_id', persona)
+  if (cursor) {
+    consulta = consulta.or(
+      `created_at.lt."${cursor.fecha}",and(created_at.eq."${cursor.fecha}",id.lt.${cursor.id})`
+    )
+  }
 
   const { data: filasCrudas, error } = await consulta
-  const hayMas = (filasCrudas ?? []).length > limite
-  const filas = ((filasCrudas ?? []) as Actividad[]).slice(0, limite)
+  const hayMas = (filasCrudas ?? []).length > PASO
+  const filas = ((filasCrudas ?? []) as Actividad[]).slice(0, PASO)
+  const ultima = filas[filas.length - 1]
 
   // Misma transacción, persona y tipo de cambio = una sola tarjeta.
   const tarjetas: Actividad[][] = []
   for (const fila of filas) {
-    const ultima = tarjetas[tarjetas.length - 1]
-    const ref = ultima?.[0]
+    const previa = tarjetas[tarjetas.length - 1]
+    const ref = previa?.[0]
     if (
       ref &&
       ref.transaccion === fila.transaccion &&
@@ -133,7 +139,7 @@ export default async function ActividadPage({ searchParams }: Params) {
       ref.categoria === fila.categoria &&
       ref.accion === fila.accion
     ) {
-      ultima.push(fila)
+      previa.push(fila)
     } else {
       tarjetas.push([fila])
     }
@@ -235,9 +241,6 @@ export default async function ActividadPage({ searchParams }: Params) {
       {error && (
         <p className={ui.avisoRojo}>
           No se pudo cargar la actividad: {error.message}
-          {error.message.includes('actividad')
-            ? ' (¿ya se corrió el script supabase/actividad_setup.sql en Supabase?)'
-            : ''}
         </p>
       )}
 
@@ -273,7 +276,7 @@ export default async function ActividadPage({ searchParams }: Params) {
                     <div className="min-w-0 flex-1">
                       <p>
                         <span
-                          className={`mr-2 rounded px-1.5 py-0.5 text-xs ${cat?.clase ?? 'bg-gray-100'}`}
+                          className={`${ui.pildora} mr-2 border-transparent ${cat?.clase ?? 'bg-gray-100'}`}
                         >
                           {cat?.etiqueta ?? primero.categoria}
                         </span>
@@ -301,15 +304,18 @@ export default async function ActividadPage({ searchParams }: Params) {
         ))}
       </div>
 
-      {hayMas && (
-        <div className="text-center">
-          <Link
-            href={urlCon({ limite: String(limite + PASO) })}
-            scroll={false}
-            className={ui.botonSecundario}
-          >
-            Cargar más actividad
-          </Link>
+      {(hayMas || cursor) && (
+        <div className="flex flex-wrap justify-center gap-2">
+          {cursor && (
+            <Link href={urlCon({})} className={ui.botonSecundario}>
+              Volver a lo más reciente
+            </Link>
+          )}
+          {hayMas && ultima && (
+            <Link href={urlCon({ antes: `${ultima.created_at}|${ultima.id}` })} className={ui.botonSecundario}>
+              Ver actividad más antigua
+            </Link>
+          )}
         </div>
       )}
     </div>

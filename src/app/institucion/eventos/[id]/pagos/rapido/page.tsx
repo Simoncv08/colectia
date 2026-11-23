@@ -5,6 +5,8 @@ import { registrarPagosRapidos } from '../actions'
 import { obtenerEstudiantesDirigidos } from '@/lib/estudiantesDirigidos'
 import { traerTodasLasFilas } from '@/lib/consultas'
 import { estadoEvento, formatearFecha } from '@/lib/estadoEvento'
+import { nombrePersona } from '@/lib/formato'
+import { agruparPagos } from '@/lib/pagos'
 import { ui } from '@/lib/ui'
 import CobroRapidoTabla from './CobroRapidoTabla'
 
@@ -36,45 +38,39 @@ export default async function CobroRapidoPage({ params }: Params) {
     notFound()
   }
 
-  const { data: persona } = await supabase
-    .from('personas')
-    .select('nombres, apellidos, correo')
-    .eq('id', userId)
-    .maybeSingle()
+  type PagoCrudo = {
+    estudiante_id: string
+    producto_id: string | null
+    cantidad: number
+    monto: number
+    dinero_recibido: number | null
+    devuelta_pendiente: boolean
+    grupo_pago_id: string
+  }
 
-  const miNombre =
-    [persona?.nombres, persona?.apellidos].filter(Boolean).join(' ').trim() ||
-    persona?.correo ||
-    sesion.correo ||
-    'Tú'
-
-  const { data: productosCrudos } = await supabase
-    .from('productos')
-    .select('id, nombre, precio_unitario, cantidad_maxima_por_estudiante')
-    .eq('evento_id', evento.id)
-    .order('created_at', { ascending: true })
-
-  const productos = (productosCrudos ?? []) as Producto[]
-
-  const estudiantes = await obtenerEstudiantesDirigidos(
-    supabase,
-    evento.id,
-    evento.institucion_id
-  )
-  const estudianteIds = new Set(estudiantes.map((e) => e.id))
-
-  type PagoCrudo = { estudiante_id: string; producto_id: string | null; cantidad: number }
-
-  // Se filtra por estudiante en código: una lista larga de ids en la consulta la hace fallar.
-  const { data: pagosCrudos, error: errorPagos } = await traerTodasLasFilas<PagoCrudo>(
-    (desde, hasta) =>
+  // Los pagos se filtran por estudiante en código: una lista larga de ids en la consulta la hace fallar.
+  const [{ data: persona }, { data: productosCrudos }, estudiantes, { data: pagosCrudos, error: errorPagos }] =
+    await Promise.all([
+      supabase.from('personas').select('nombres, apellidos, correo').eq('id', userId).maybeSingle(),
       supabase
-        .from('registros_pago')
-        .select('estudiante_id, producto_id, cantidad')
+        .from('productos')
+        .select('id, nombre, precio_unitario, cantidad_maxima_por_estudiante')
         .eq('evento_id', evento.id)
-        .order('id', { ascending: true })
-        .range(desde, hasta)
-  )
+        .order('created_at', { ascending: true }),
+      obtenerEstudiantesDirigidos(supabase, evento.id, evento.institucion_id),
+      traerTodasLasFilas<PagoCrudo>((desde, hasta) =>
+        supabase
+          .from('registros_pago')
+          .select('estudiante_id, producto_id, cantidad, monto, dinero_recibido, devuelta_pendiente, grupo_pago_id')
+          .eq('evento_id', evento.id)
+          .order('id', { ascending: true })
+          .range(desde, hasta)
+      ),
+    ])
+
+  const miNombre = nombrePersona(persona, sesion.correo || 'Tú')
+  const productos = (productosCrudos ?? []) as Producto[]
+  const estudianteIds = new Set(estudiantes.map((e) => e.id))
 
   const pagosPrevios = pagosCrudos
     .filter(
@@ -86,6 +82,10 @@ export default async function CobroRapidoPage({ params }: Params) {
       productoId: p.producto_id,
       cantidad: p.cantidad,
     }))
+
+  const devueltasPendientes = agruparPagos(pagosCrudos)
+    .filter((g) => g.devueltaPendiente)
+    .map((g) => ({ grupoPagoId: g.grupoPagoId, estudianteId: g.estudianteId, valor: g.devuelta }))
 
   const estado = estadoEvento(evento)
 
@@ -129,6 +129,8 @@ export default async function CobroRapidoPage({ params }: Params) {
       ) : (
         <CobroRapidoTabla
           action={registrarPagosRapidos.bind(null, evento.id)}
+          eventoId={evento.id}
+          devueltasPendientes={devueltasPendientes}
           estudiantes={estudiantes}
           productos={productos}
           pagosPrevios={pagosPrevios}

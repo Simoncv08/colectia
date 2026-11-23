@@ -3,10 +3,14 @@ import { notFound } from 'next/navigation'
 import { obtenerSesionInstitucion } from '@/lib/sesionInstitucion'
 import { eliminarPago, marcarDevueltaEntregada } from './actions'
 import ConfirmSubmitButton from '@/components/ConfirmSubmitButton'
+import EtiquetaEstado from '@/components/EtiquetaEstado'
+import TarjetaDato from '@/components/TarjetaDato'
+import FormularioAccion from '@/components/FormularioAccion'
 import { obtenerEstudiantesDirigidos } from '@/lib/estudiantesDirigidos'
 import { enTrozos, traerTodasLasFilas } from '@/lib/consultas'
-import { ESTADOS, estadoEvento, formatearFecha } from '@/lib/estadoEvento'
-import { pesos } from '@/lib/reportes'
+import { estadoEvento, formatearFecha } from '@/lib/estadoEvento'
+import { SIN_CURSO, compararCursos, compararEstudiantes, nombreCurso, pesos } from '@/lib/formato'
+import { agruparPagos, cargarPersonal, type GrupoPago } from '@/lib/pagos'
 import { ui } from '@/lib/ui'
 
 type Params = {
@@ -30,18 +34,6 @@ type Pago = {
   pagado_en: string
 }
 
-type GrupoPago = {
-  grupoPagoId: string
-  estudianteId: string
-  lineas: Pago[]
-  montoTotal: number
-  dineroRecibido: number | null
-  devueltaPendiente: boolean
-  comprobante: string | null
-  registradoPor: string | null
-  pagadoEn: string
-}
-
 export const metadata = { title: 'Pagos del evento' }
 
 export default async function PagosEventoPage({ params, searchParams }: Params) {
@@ -58,7 +50,7 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
 
   const sesion = await obtenerSesionInstitucion()
   if (!sesion) return null
-  const { supabase, institucionId } = sesion
+  const { supabase, institucionId, esAdmin } = sesion
 
   const { data: evento } = await supabase
     .from('eventos')
@@ -71,13 +63,9 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
     notFound()
   }
 
-  const [{ data: staffCrudo }, { data: productosCrudos }, estudiantesDirigidos, { data: pagos, error: errorPagos }] =
+  const [personal, { data: productosCrudos }, estudiantesDirigidos, { data: pagos, error: errorPagos }] =
     await Promise.all([
-      supabase
-        .from('membresias')
-        .select('id, personas(correo, nombres, apellidos)')
-        .eq('institucion_id', institucionId)
-        .in('rol', ['admin_institucion', 'recaudador']),
+      cargarPersonal(supabase, institucionId),
       supabase.from('productos').select('id, nombre').eq('evento_id', evento.id),
       obtenerEstudiantesDirigidos(supabase, evento.id, institucionId),
       traerTodasLasFilas<Pago>((desde, hasta) =>
@@ -93,18 +81,6 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
       ),
     ])
 
-  // Un recaudador solo puede leer su propia fila de personal; los demás salen como "otra persona".
-  const personal = new Map(
-    ((staffCrudo ?? []) as unknown as {
-      id: string
-      personas: { correo: string | null; nombres: string | null; apellidos: string | null } | null
-    }[]).map((s) => [
-      s.id,
-      [s.personas?.nombres, s.personas?.apellidos].filter(Boolean).join(' ').trim() ||
-        s.personas?.correo ||
-        'Sin nombre',
-    ])
-  )
   const productoPorId = new Map((productosCrudos ?? []).map((p) => [p.id, p.nombre]))
 
   // Quien pagó y luego cambió de curso se sigue mostrando, para no ocultar su pago.
@@ -122,39 +98,16 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
   }
   const estudiantes: Estudiante[] = [...estudiantesDirigidos, ...extra]
 
-  const gruposPorId = new Map<string, GrupoPago>()
-  for (const p of pagos) {
-    let g = gruposPorId.get(p.grupo_pago_id)
-    if (!g) {
-      g = {
-        grupoPagoId: p.grupo_pago_id,
-        estudianteId: p.estudiante_id,
-        lineas: [],
-        montoTotal: 0,
-        dineroRecibido: p.dinero_recibido == null ? null : Number(p.dinero_recibido),
-        devueltaPendiente: p.devuelta_pendiente,
-        comprobante: p.comprobante,
-        registradoPor: p.registrado_por,
-        pagadoEn: p.pagado_en,
-      }
-      gruposPorId.set(p.grupo_pago_id, g)
-    }
-    g.lineas.push(p)
-    g.montoTotal += Number(p.monto)
+  const grupos = agruparPagos(pagos)
+  const gruposPorEstudiante = new Map<string, GrupoPago<Pago>[]>()
+  for (const g of grupos) {
+    gruposPorEstudiante.set(g.estudianteId, [...(gruposPorEstudiante.get(g.estudianteId) ?? []), g])
   }
-  const gruposPorEstudiante = new Map<string, GrupoPago[]>()
-  for (const g of gruposPorId.values()) {
-    const lista = gruposPorEstudiante.get(g.estudianteId) ?? []
-    lista.push(g)
-    gruposPorEstudiante.set(g.estudianteId, lista)
-  }
+  const gruposDe = (eid: string) => gruposPorEstudiante.get(eid) ?? []
+  const totalDe = (eid: string) => gruposDe(eid).reduce((t, g) => t + g.monto, 0)
 
-  const devuelta = (g: GrupoPago) =>
-    g.dineroRecibido != null ? Math.max(0, g.dineroRecibido - g.montoTotal) : 0
-  const totalRecaudado = pagos.reduce((s, p) => s + Number(p.monto), 0)
-  const devueltasPendientes = Array.from(gruposPorId.values()).filter(
-    (g) => g.devueltaPendiente && devuelta(g) > 0
-  )
+  const totalRecaudado = grupos.reduce((s, g) => s + g.monto, 0)
+  const devueltasPendientes = grupos.filter((g) => g.devueltaPendiente)
   const pagaronTotal = estudiantes.filter((e) => gruposPorEstudiante.has(e.id)).length
 
   const porSalon = new Map<string, Estudiante[]>()
@@ -163,30 +116,16 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
     porSalon.set(clave, [...(porSalon.get(clave) ?? []), e])
   }
   const salones = Array.from(porSalon.entries())
-    .sort(([a], [b]) => {
-      if (!a) return 1
-      if (!b) return -1
-      return a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' })
-    })
+    .sort(([a], [b]) => compararCursos(a, b))
     .map(([salon, lista]) => {
-      const ordenados = [...lista].sort(
-        (x, y) =>
-          x.apellidos.localeCompare(y.apellidos, 'es', { sensitivity: 'base' }) ||
-          x.nombres.localeCompare(y.nombres, 'es', { sensitivity: 'base' })
-      )
-      const gruposDe = (eid: string) => gruposPorEstudiante.get(eid) ?? []
+      const ordenados = [...lista].sort(compararEstudiantes)
       const conPago = ordenados.filter((e) => gruposDe(e.id).length > 0)
-      const conDevuelta = ordenados.filter((e) =>
-        gruposDe(e.id).some((g) => g.devueltaPendiente && devuelta(g) > 0)
-      )
+      const conDevuelta = ordenados.filter((e) => gruposDe(e.id).some((g) => g.devueltaPendiente))
       return {
         salon,
         total: ordenados.length,
         pagaron: conPago.length,
-        recaudado: conPago.reduce(
-          (s, e) => s + gruposDe(e.id).reduce((t, g) => t + g.montoTotal, 0),
-          0
-        ),
+        recaudado: conPago.reduce((s, e) => s + totalDe(e.id), 0),
         devueltas: conDevuelta.length,
         estudiantes: soloDevueltas ? conDevuelta : mostrarSinPago ? ordenados : conPago,
       }
@@ -194,6 +133,9 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
     .filter((s) => s.estudiantes.length > 0)
 
   const estado = estadoEvento(evento)
+  // Un recaudador no ve los nombres del resto del personal.
+  const quienRecibio = (membresiaId: string | null) =>
+    membresiaId ? personal.get(membresiaId) ?? 'otra persona del personal' : 'sin registrar'
 
   return (
     <div className="flex flex-col gap-6">
@@ -204,9 +146,7 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
           </Link>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <h1 className={ui.titulo}>{evento.nombre}</h1>
-            <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${ESTADOS[estado].clase}`}>
-              {ESTADOS[estado].etiqueta}
-            </span>
+            <EtiquetaEstado estado={estado} />
           </div>
           <p className={ui.textoSecundario}>
             Pagos
@@ -224,31 +164,22 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
       {errorPagos && <p className={ui.avisoRojo}>No se pudieron cargar los pagos: {errorPagos.message}</p>}
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className={ui.tarjeta}>
-          <p className="text-xs text-gray-600">Recaudado</p>
-          <p className="text-xl font-semibold text-gray-900">{pesos(totalRecaudado)}</p>
-        </div>
-        <div className={ui.tarjeta}>
-          <p className="text-xs text-gray-600">Pagaron</p>
-          <p className="text-xl font-semibold text-gray-900">
-            {pagaronTotal}
-            <span className="text-sm font-normal text-gray-600"> de {estudiantes.length}</span>
-          </p>
-        </div>
-        <div className={ui.tarjeta}>
-          <p className="text-xs text-gray-600">Faltan</p>
-          <p className="text-xl font-semibold text-gray-900">{estudiantes.length - pagaronTotal}</p>
-        </div>
-        <div className={ui.tarjeta}>
-          <p className="text-xs text-gray-600">Devueltas pendientes</p>
-          <p
-            className={`text-xl font-semibold ${devueltasPendientes.length ? 'text-amber-800' : 'text-gray-900'}`}
-          >
-            {devueltasPendientes.length
-              ? pesos(devueltasPendientes.reduce((s, g) => s + devuelta(g), 0))
-              : '0'}
-          </p>
-        </div>
+        <TarjetaDato titulo="Recaudado" valor={pesos(totalRecaudado)} />
+        <TarjetaDato
+          titulo="Pagaron"
+          valor={
+            <>
+              {pagaronTotal}
+              <span className="text-sm font-normal text-gray-600"> de {estudiantes.length}</span>
+            </>
+          }
+        />
+        <TarjetaDato titulo="Faltan" valor={estudiantes.length - pagaronTotal} />
+        <TarjetaDato
+          titulo="Devueltas pendientes"
+          alerta={devueltasPendientes.length > 0}
+          valor={pesos(devueltasPendientes.reduce((s, g) => s + g.devuelta, 0))}
+        />
       </section>
 
       <section className="flex flex-col gap-3">
@@ -294,19 +225,19 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
 
         {salones.map((s) => (
           <details
-            key={s.salon || '__sin__'}
+            key={s.salon || SIN_CURSO}
             open={soloDevueltas}
             className="group rounded-xl border border-gray-200 bg-white"
           >
             <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2 px-5 py-3">
-              <span className="font-semibold text-gray-900">{s.salon || 'Sin curso asignado'}</span>
+              <span className="font-semibold text-gray-900">{nombreCurso(s.salon)}</span>
               <span className="flex items-center gap-3 text-sm text-gray-700">
                 <span>
                   pagaron <strong className="text-gray-900">{s.pagaron}</strong> de {s.total}
                 </span>
                 <span className="font-medium text-gray-900">{pesos(s.recaudado)}</span>
                 {s.devueltas > 0 && (
-                  <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-900">
+                  <span className={`${ui.pildora} ${ui.estadoPendiente}`}>
                     {s.devueltas} devuelta(s)
                   </span>
                 )}
@@ -316,10 +247,8 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
 
             <ul className="divide-y divide-gray-100 border-t border-gray-200">
               {s.estudiantes.map((e) => {
-                const todos = gruposPorEstudiante.get(e.id) ?? []
-                const visibles = soloDevueltas
-                  ? todos.filter((g) => g.devueltaPendiente && devuelta(g) > 0)
-                  : todos
+                const todos = gruposDe(e.id)
+                const visibles = soloDevueltas ? todos.filter((g) => g.devueltaPendiente) : todos
                 return (
                   <li key={e.id} className="px-5 py-3">
                     <div className="flex items-center justify-between gap-3">
@@ -328,7 +257,7 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
                       </p>
                       {todos.length ? (
                         <p className="text-sm font-medium text-gray-900">
-                          {pesos(todos.reduce((t, g) => t + g.montoTotal, 0))}
+                          {pesos(totalDe(e.id))}
                         </p>
                       ) : (
                         <p className="text-sm text-gray-600">Sin pagos</p>
@@ -346,43 +275,44 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
                                       `${l.cantidad} × ${(l.producto_id && productoPorId.get(l.producto_id)) || 'Producto eliminado'}`
                                   )
                                   .join(', ')}{' '}
-                                · {pesos(g.montoTotal)} ·{' '}
-                                {new Date(g.pagadoEn).toLocaleDateString('es-CO', {
+                                · {pesos(g.monto)} ·{' '}
+                                {new Date(g.lineas[0].pagado_en).toLocaleDateString('es-CO', {
                                   timeZone: 'America/Bogota',
                                 })}{' '}
                                 · recibió{' '}
-                                {(g.registradoPor && personal.get(g.registradoPor)) ||
-                                  (g.registradoPor ? 'otra persona del personal' : 'sin registrar')}
-                                {g.comprobante ? ` · ${g.comprobante}` : ''}
+                                {quienRecibio(g.lineas[0].registrado_por)}
+                                {g.lineas[0].comprobante ? ` · ${g.lineas[0].comprobante}` : ''}
                               </span>
-                              <form action={eliminarPago.bind(null, evento.id, g.grupoPagoId)}>
-                                <ConfirmSubmitButton
-                                  confirmMessage="¿Eliminar este pago (con todos sus productos)? No se puede deshacer."
-                                  className={ui.botonQuitar}
-                                >
-                                  Eliminar
-                                </ConfirmSubmitButton>
-                              </form>
+                              {esAdmin && (
+                                <FormularioAccion action={eliminarPago.bind(null, evento.id, g.grupoPagoId)}>
+                                  <ConfirmSubmitButton
+                                    confirmMessage="¿Eliminar este pago (con todos sus productos)? No se puede deshacer."
+                                    className={ui.botonQuitar}
+                                  >
+                                    Eliminar
+                                  </ConfirmSubmitButton>
+                                </FormularioAccion>
+                              )}
                             </div>
-                            {devuelta(g) > 0 && (
+                            {g.devuelta > 0 && (
                               <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
                                 <span
                                   className={
                                     g.devueltaPendiente ? 'font-medium text-amber-900' : 'text-gray-600'
                                   }
                                 >
-                                  Recibió {pesos(g.dineroRecibido ?? 0)} · devuelta {pesos(devuelta(g))}
+                                  Recibió {pesos(g.recibido ?? 0)} · devuelta {pesos(g.devuelta)}
                                   {g.devueltaPendiente ? ' · pendiente por entregar' : ' · ya entregada'}
                                 </span>
                                 {g.devueltaPendiente && (
-                                  <form action={marcarDevueltaEntregada.bind(null, evento.id, g.grupoPagoId)}>
+                                  <FormularioAccion action={marcarDevueltaEntregada.bind(null, evento.id, g.grupoPagoId)}>
                                     <button
                                       type="submit"
                                       className="rounded border border-amber-400 bg-amber-50 px-2 py-0.5 font-medium text-amber-900 hover:bg-amber-100"
                                     >
                                       Marcar como entregada
                                     </button>
-                                  </form>
+                                  </FormularioAccion>
                                 )}
                               </div>
                             )}

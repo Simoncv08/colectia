@@ -2,8 +2,9 @@ import Link from 'next/link'
 import { obtenerSesionInstitucion } from '@/lib/sesionInstitucion'
 import { estiloPaleta } from '@/lib/paletas'
 import NavInstitucion from '@/components/NavInstitucion'
-import { cerrarSesion } from './actions'
+import { cerrarSesion } from '@/app/actions'
 import { ui } from '@/lib/ui'
+import Marca from '@/components/Marca'
 
 export default async function InstitucionLayout({ children }: { children: React.ReactNode }) {
   const sesion = await obtenerSesionInstitucion()
@@ -36,12 +37,20 @@ export default async function InstitucionLayout({ children }: { children: React.
       <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto max-w-5xl px-4 pt-4 sm:px-6">
           <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-lg font-semibold text-gray-900">{sesion.institucion.nombre}</p>
-              <p className="text-xs text-gray-600">
-                {sesion.esAdmin ? 'Administrador' : 'Recaudador'} · {sesion.correo}
+            <div className="min-w-0">
+              <p className="flex min-w-0 items-baseline gap-2 text-lg">
+                <Marca />
+                <span aria-hidden="true" className="text-gray-300">
+                  /
+                </span>
+                <span className="truncate font-semibold text-gray-900">{sesion.institucion.nombre}</span>
+              </p>
+              <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                <span className="truncate">
+                  {sesion.esAdmin ? 'Administrador' : 'Recaudador'} · {sesion.correo}
+                </span>
                 {sesion.institucion.estado && sesion.institucion.estado !== 'activa' && (
-                  <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-amber-800">
+                  <span className={`${ui.pildora} ${ui.estadoPendiente}`}>
                     Institución {sesion.institucion.estado.replace('_', ' ')}
                   </span>
                 )}

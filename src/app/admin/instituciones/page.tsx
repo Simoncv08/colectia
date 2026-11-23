@@ -1,12 +1,9 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import {
-  crearInstitucion,
-  cambiarEstadoInstitucion,
-  asignarAdminInstitucion,
-  cerrarSesion,
-} from './actions'
+import { crearInstitucion, cambiarEstadoInstitucion, asignarAdminInstitucion } from './actions'
+import { cerrarSesion } from '@/app/actions'
 import { ui } from '@/lib/ui'
+import FormularioAccion from '@/components/FormularioAccion'
 
 export const metadata = { title: 'Instituciones' }
 
@@ -58,7 +55,7 @@ export default async function InstitucionesPage() {
         </form>
       </div>
 
-      <form action={crearInstitucion} className={`${ui.tarjeta} grid gap-4 sm:grid-cols-3`}>
+      <FormularioAccion action={crearInstitucion} className={`${ui.tarjeta} grid gap-4 sm:grid-cols-3`}>
         <h2 className={`${ui.subtitulo} sm:col-span-3`}>Crear institución</h2>
         <label className={ui.etiqueta}>
           Nombre
@@ -77,7 +74,7 @@ export default async function InstitucionesPage() {
             Crear institución
           </button>
         </div>
-      </form>
+      </FormularioAccion>
 
       {error && <p className={ui.avisoRojo}>No se pudieron cargar las instituciones: {error.message}</p>}
 
@@ -104,7 +101,7 @@ export default async function InstitucionesPage() {
                   <td className="px-3 py-2">{inst.estado.replace('_', ' ')}</td>
                   <td className="px-3 py-2">{inst.plan ?? 'Sin plan'}</td>
                   <td className="px-3 py-2">
-                    <form
+                    <FormularioAccion
                       action={cambiarEstadoInstitucion.bind(
                         null,
                         inst.id,
@@ -114,10 +111,10 @@ export default async function InstitucionesPage() {
                       <button type="submit" className={ui.botonSecundario}>
                         {inst.estado === 'activa' ? 'Suspender' : 'Activar'}
                       </button>
-                    </form>
+                    </FormularioAccion>
                   </td>
                   <td className="px-3 py-2">
-                    <form
+                    <FormularioAccion
                       action={asignarAdminInstitucion.bind(null, inst.id)}
                       className="flex items-center gap-2"
                     >
@@ -132,7 +129,7 @@ export default async function InstitucionesPage() {
                       <button type="submit" className={ui.botonSecundario}>
                         Asignar
                       </button>
-                    </form>
+                    </FormularioAccion>
                   </td>
                 </tr>
               ))}

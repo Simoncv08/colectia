@@ -1,8 +1,8 @@
 import ExcelJS from 'exceljs'
 import type { createClient } from '@/lib/supabase/server'
 import { ESTADOS, formatearFecha, hoyColombia } from '@/lib/estadoEvento'
+import { SIN_CURSO, nombreCurso } from '@/lib/formato'
 import {
-  SIN_CURSO,
   cargarDatosReporte,
   detallePagos,
   pendientesDePago,
@@ -37,9 +37,6 @@ function agregarHoja(
   return hoja
 }
 
-function nombreCurso(c: string) {
-  return c || 'Sin curso asignado'
-}
 
 // Misma vista y mismos filtros que la pantalla. Quien llama ya verificó que es administrador.
 export async function construirExcelReporte(
@@ -216,7 +213,7 @@ export async function construirExcelReporte(
     ['Institución', institucion.nombre],
     ['Generado el', `${formatearFecha(hoy)} (hora de Colombia)`],
     ['Evento', nombreEvento ?? (f.vista === 'pendientes' ? 'Todos los vigentes' : 'Todos')],
-    ['Curso', f.curso ? (f.curso === SIN_CURSO ? 'Sin curso asignado' : f.curso) : 'Todos'],
+    ['Curso', f.curso ? (f.curso === SIN_CURSO ? nombreCurso('') : f.curso) : 'Todos'],
   ]
   if (f.vista !== 'pendientes') {
     filasInfo.push(

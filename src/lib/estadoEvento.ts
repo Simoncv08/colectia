@@ -1,4 +1,4 @@
-// Misma lógica que evento_finalizado y evento_acepta_pagos (supabase/eventos_fechas_setup.sql).
+// Misma lógica que evento_finalizado y evento_acepta_pagos (supabase/migraciones/11_eventos_fechas_setup.sql).
 
 export type EstadoEvento = 'abierto' | 'pago_cerrado' | 'finalizado'
 
@@ -27,10 +27,15 @@ export function formatearFecha(fecha: string | null): string {
   return `${d}/${m}/${a}`
 }
 
+// Solo se reabre lo que se cerró a mano y cuya fecha de realización no ha pasado.
+export function puedeReabrir(ev: FechasEvento, hoy = hoyColombia()) {
+  return Boolean(ev.finalizado_en) && !(ev.fecha_evento && hoy > ev.fecha_evento)
+}
+
 export const ESTADOS: Record<EstadoEvento, { etiqueta: string; clase: string }> = {
-  abierto: { etiqueta: 'Pago abierto', clase: 'bg-green-100 text-green-800' },
-  pago_cerrado: { etiqueta: 'Pago cerrado', clase: 'bg-amber-100 text-amber-800' },
-  finalizado: { etiqueta: 'Finalizado', clase: 'bg-gray-200 text-gray-700' },
+  abierto: { etiqueta: 'Pago abierto', clase: 'border-green-200 bg-green-50 text-green-800' },
+  pago_cerrado: { etiqueta: 'Pago cerrado', clase: 'border-amber-200 bg-amber-50 text-amber-900' },
+  finalizado: { etiqueta: 'Finalizado', clase: 'border-gray-200 bg-gray-100 text-gray-700' },
 }
 
 // Campo vacío = sin fecha.

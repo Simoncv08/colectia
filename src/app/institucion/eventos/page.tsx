@@ -1,10 +1,12 @@
 import Link from 'next/link'
 import { obtenerSesionInstitucion } from '@/lib/sesionInstitucion'
 import { crearEvento } from './actions'
-import SelectorImagen from '@/components/SelectorImagen'
+import CamposEvento from './CamposEvento'
 import Ventana from '@/components/Ventana'
-import { ESTADOS, estadoEvento, formatearFecha, hoyColombia } from '@/lib/estadoEvento'
+import { estadoEvento, formatearFecha, hoyColombia } from '@/lib/estadoEvento'
 import { ui } from '@/lib/ui'
+import EtiquetaEstado from '@/components/EtiquetaEstado'
+import FormularioAccion from '@/components/FormularioAccion'
 
 type Evento = {
   id: string
@@ -20,7 +22,7 @@ export const metadata = { title: 'Eventos' }
 export default async function EventosPage() {
   const sesion = await obtenerSesionInstitucion()
   if (!sesion) return null
-  const { supabase, institucionId, membresiaId } = sesion
+  const { supabase, institucionId } = sesion
   const institucionActiva = sesion.institucion.estado === 'activa'
 
   const { data: eventosCrudos, error } = await supabase
@@ -38,7 +40,6 @@ export default async function EventosPage() {
   const finalizados = eventos.filter((ev) => ev.estado === 'finalizado')
 
   function tarjeta(ev: (typeof eventos)[number]) {
-    const estado = ESTADOS[ev.estado]
     return (
       <li
         key={ev.id}
@@ -47,9 +48,7 @@ export default async function EventosPage() {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p className="font-semibold text-gray-900">{ev.nombre}</p>
-            <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${estado.clase}`}>
-              {estado.etiqueta}
-            </span>
+            <EtiquetaEstado estado={ev.estado} />
           </div>
           {(ev.fecha_limite_pago || ev.fecha_evento) && (
             <p className="mt-0.5 text-sm text-gray-700">
@@ -80,33 +79,11 @@ export default async function EventosPage() {
         </div>
         {institucionActiva ? (
           <Ventana textoBoton="+ Crear evento" titulo="Crear evento" tamano="lg">
-            <form
-              action={crearEvento.bind(null, institucionId, membresiaId)}
+            <FormularioAccion
+              action={crearEvento}
               className="flex flex-col gap-4"
             >
-              <label className={ui.etiqueta}>
-                Nombre del evento
-                <input name="nombre" required placeholder="Ej.: Salida al Parque del Café" className={ui.campo} />
-              </label>
-              <label className={ui.etiqueta}>
-                Descripción (opcional)
-                <textarea name="descripcion" rows={3} className={ui.campo} />
-              </label>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className={ui.etiqueta}>
-                  Pago hasta el (opcional)
-                  <input name="fecha_limite_pago" type="date" className={ui.campo} />
-                </label>
-                <label className={ui.etiqueta}>
-                  Se realiza el (opcional)
-                  <input name="fecha_evento" type="date" className={ui.campo} />
-                </label>
-              </div>
-              <p className={ui.ayuda}>
-                Después de la fecha límite los acudientes verán &quot;pago no disponible&quot;, y
-                desde el día siguiente al evento ya no lo verán.
-              </p>
-              <SelectorImagen institucionId={institucionId} limpiarAlReiniciar />
+              <CamposEvento institucionId={institucionId} />
               <p className={ui.ayuda}>
                 Después de crearlo, entra a <strong>Configurar</strong> para elegir a qué cursos va
                 dirigido y agregar sus productos.
@@ -114,7 +91,7 @@ export default async function EventosPage() {
               <button type="submit" className={`${ui.botonPrimario} self-start`}>
                 Crear evento
               </button>
-            </form>
+            </FormularioAccion>
           </Ventana>
         ) : (
           <p className={ui.avisoAmbar}>Tu institución no está activa, así que no puedes crear eventos.</p>

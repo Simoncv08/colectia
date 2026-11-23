@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import FormularioLogin from './FormularioLogin'
+import Marca from '@/components/Marca'
 
 export default async function LoginPage() {
   const supabase = await createClient()
@@ -14,14 +15,18 @@ export default async function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-fondo p-4">
-      <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+      <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-semibold text-gray-900">Colectia</h1>
-          <p className="mt-1 text-sm text-gray-700">
-            Pagos de actividades escolares, sin efectivo en manos de los estudiantes.
+          <h1>
+            <Marca className="text-3xl" />
+          </h1>
+          <p className="mt-2 text-sm text-gray-700">
+            Los pagos de las actividades del colegio, claros para las familias y para el colegio.
           </p>
         </div>
-        <FormularioLogin />
+        <div className="rounded-xl border border-gray-200 bg-white p-6 sm:p-8">
+          <FormularioLogin />
+        </div>
       </div>
     </main>
   )

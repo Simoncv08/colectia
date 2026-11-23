@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
+import { useRouter } from 'next/navigation'
 import type { AuthError } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { ui } from '@/lib/ui'
@@ -45,6 +46,12 @@ function traducirError(error: AuthError): string {
 }
 
 export default function FormularioLogin() {
+  const router = useRouter()
+  // refresh() para que el servidor vuelva a leer las cookies de la sesión nueva.
+  function irAlInicio() {
+    router.replace('/')
+    router.refresh()
+  }
   const [modo, setModo] = useState<Modo>('entrar')
   const [correo, setCorreo] = useState('')
   const [enviando, setEnviando] = useState(false)
@@ -87,8 +94,7 @@ export default function FormularioLogin() {
           setMensaje({ tipo: 'error', texto: traducirError(error) })
           return
         }
-        // Recarga completa para que el servidor lea las cookies de la sesión nueva.
-        window.location.assign('/')
+        irAlInicio()
         return
       }
 
@@ -128,7 +134,7 @@ export default function FormularioLogin() {
           return
         }
         if (data.session) {
-          window.location.assign('/')
+          irAlInicio()
           return
         }
         setMensaje({

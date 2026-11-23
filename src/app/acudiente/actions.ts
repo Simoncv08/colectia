@@ -2,17 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
+import { accion, mensajeBD, type Resultado } from '@/lib/resultado'
 
-export async function cerrarSesion() {
-  const supabase = await createClient()
-  await supabase.auth.signOut()
-  redirect('/login')
-}
-
-export type ResultadoVinculo = { tipo: 'ok' | 'error'; texto: string } | null
-
-const MENSAJES: Record<string, ResultadoVinculo> = {
+const MENSAJES: Record<string, Resultado> = {
   ok: { tipo: 'ok', texto: 'Listo, el estudiante quedó vinculado a tu cuenta.' },
   ya_vinculado: { tipo: 'error', texto: 'Ya tienes vinculado a este estudiante.' },
   no_encontrado: {
@@ -20,18 +12,27 @@ const MENSAJES: Record<string, ResultadoVinculo> = {
     texto:
       'No encontramos ningún estudiante con esos datos en esa institución. Revisa que el código (o el documento) y la fecha de nacimiento sean los que tiene el colegio.',
   },
+  demasiados_intentos: {
+    tipo: 'error',
+    texto:
+      'Hiciste muchos intentos que no coincidieron. Espera una hora y vuelve a intentar, o pide los datos exactos al colegio.',
+  },
+  limite_vinculos: {
+    tipo: 'error',
+    texto: 'Ya tienes 10 estudiantes vinculados, el máximo por cuenta. Si necesitas más, contacta al colegio.',
+  },
   institucion_no_disponible: {
     tipo: 'error',
     texto: 'Esa institución no está disponible en este momento. Contacta al colegio.',
   },
 }
 
-// Verificar y vincular ocurren juntos en vincular_estudiante (fix_vincular_estudiante.sql),
+// Verificar y vincular ocurren juntos en vincular_estudiante (supabase/migraciones/19_seguridad_fase1.sql),
 // así no se puede crear un vínculo sin pasar la verificación.
 export async function vincularEstudiante(
-  _anterior: ResultadoVinculo,
+  _anterior: Resultado | null,
   formData: FormData
-): Promise<ResultadoVinculo> {
+): Promise<Resultado> {
   const metodo = String(formData.get('metodo') ?? '')
   const institucionId = String(formData.get('institucion_id') ?? '').trim()
   const codigo = String(formData.get('codigo') ?? '').trim()
@@ -52,19 +53,13 @@ export async function vincularEstudiante(
   const supabase = await createClient()
   const { data, error } = await supabase.rpc('vincular_estudiante', {
     p_institucion_id: institucionId,
-    p_codigo: metodo === 'documento' ? null : codigo,
-    p_numero_documento: metodo === 'documento' ? numeroDocumento : null,
+    // La función trata '' como "no se envió".
+    p_codigo: metodo === 'documento' ? '' : codigo,
+    p_numero_documento: metodo === 'documento' ? numeroDocumento : '',
     p_fecha_nacimiento: fechaNacimiento,
   })
 
   if (error) {
-    if (error.message.includes('vincular_estudiante')) {
-      return {
-        tipo: 'error',
-        texto:
-          'Falta un paso en la base de datos: corre supabase/fix_vincular_estudiante.sql en Supabase.',
-      }
-    }
     return { tipo: 'error', texto: `No se pudo vincular: ${error.message}` }
   }
 
@@ -72,7 +67,7 @@ export async function vincularEstudiante(
     tipo: 'error' as const,
     texto: 'No se pudo vincular al estudiante. Intenta de nuevo.',
   }
-  if (resultado?.tipo === 'ok') {
+  if (resultado.tipo === 'ok') {
     revalidatePath('/acudiente', 'layout')
   }
   return resultado
@@ -80,23 +75,26 @@ export async function vincularEstudiante(
 
 // Borra el vínculo, no al estudiante.
 export async function desvincularEstudiante(id: string, _formData: FormData) {
-  const supabase = await createClient()
-  const { error } = await supabase.from('acudiente_estudiante').delete().eq('id', id)
+  return accion(async () => {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('acudiente_estudiante')
+      .delete()
+      .eq('id', id)
+      .select('id')
+    if (error) throw new Error(mensajeBD(error))
+    if (!data?.length) throw new Error('Ese estudiante ya no estaba vinculado a tu cuenta.')
 
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  revalidatePath('/acudiente', 'layout')
+    revalidatePath('/acudiente', 'layout')
+    return 'El estudiante salió de tu cuenta.'
+  })
 }
-
-export type ResultadoDatos = { tipo: 'ok' | 'error'; texto: string } | null
 
 // El correo no se cambia aquí: es con el que se inicia sesión.
 export async function actualizarDatos(
-  _anterior: ResultadoDatos,
+  _anterior: Resultado | null,
   formData: FormData
-): Promise<ResultadoDatos> {
+): Promise<Resultado> {
   const nombres = String(formData.get('nombres') ?? '').trim()
   const apellidos = String(formData.get('apellidos') ?? '').trim()
   const telefono = String(formData.get('telefono') ?? '').trim()

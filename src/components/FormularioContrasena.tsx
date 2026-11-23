@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ui } from '@/lib/ui'
 
@@ -8,6 +9,12 @@ const LARGO_MINIMO = 8
 
 // Se usa en "Mi cuenta" y en /restablecer (enlace del correo de recuperación).
 export default function FormularioContrasena({ alTerminar }: { alTerminar?: 'ir_al_inicio' }) {
+  const router = useRouter()
+  // refresh() para que el servidor vuelva a leer las cookies de la sesión nueva.
+  function irAlInicio() {
+    router.replace('/')
+    router.refresh()
+  }
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState('')
   const [listo, setListo] = useState(false)
@@ -62,7 +69,7 @@ export default function FormularioContrasena({ alTerminar }: { alTerminar?: 'ir_
         </p>
         <button
           type="button"
-          onClick={() => window.location.assign('/')}
+          onClick={() => irAlInicio()}
           className={`${ui.botonPrimario} w-full py-2.5`}
         >
           Continuar

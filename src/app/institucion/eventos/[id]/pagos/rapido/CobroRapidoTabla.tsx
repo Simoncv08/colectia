@@ -1,8 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import { ordenarGrados } from '@/lib/ordenarGrados'
 import { ui } from '@/lib/ui'
+import { SIN_CURSO, pesos } from '@/lib/formato'
+import type { Resultado } from '@/lib/resultado'
+import { useAvisos } from '@/components/Avisos'
+import { marcarDevueltaEntregada } from '../actions'
 
 type Producto = {
   id: string
@@ -24,24 +28,43 @@ type PagoPrevio = {
   cantidad: number
 }
 
+type DevueltaPendiente = { grupoPagoId: string; estudianteId: string; valor: number }
+
 type Seleccion = Record<string, { cantidad: number; devuelta: boolean; monto: string }>
 
 const TODOS = '__todos__'
-const SIN_CURSO = '__sin_curso__'
 
 export default function CobroRapidoTabla({
   action,
+  eventoId,
   estudiantes,
   productos,
   pagosPrevios,
+  devueltasPendientes,
   miNombre,
 }: {
-  action: (formData: FormData) => Promise<{ registrados: number; omitidos: number }>
+  action: (formData: FormData) => Promise<Resultado>
+  eventoId: string
   estudiantes: Estudiante[]
   productos: Producto[]
   pagosPrevios: PagoPrevio[]
+  devueltasPendientes: DevueltaPendiente[]
   miNombre: string
 }) {
+  const mostrarAviso = useAvisos()
+  const [entregando, startEntrega] = useTransition()
+  const devueltasPorEstudiante = useMemo(() => {
+    const mapa = new Map<string, DevueltaPendiente[]>()
+    for (const d of devueltasPendientes) mapa.set(d.estudianteId, [...(mapa.get(d.estudianteId) ?? []), d])
+    return mapa
+  }, [devueltasPendientes])
+
+  function entregarDevuelta(d: DevueltaPendiente) {
+    startEntrega(async () => {
+      mostrarAviso(await marcarDevueltaEntregada(eventoId, d.grupoPagoId))
+    })
+  }
+
   const cursos = useMemo(
     () =>
       ordenarGrados(
@@ -158,15 +181,8 @@ export default function CobroRapidoTabla({
     setMensaje(null)
     try {
       const r = await action(formData)
-      setSeleccion({})
-      setMensaje({
-        tipo: 'ok',
-        texto:
-          `Se registraron ${r.registrados} pago(s).` +
-          (r.omitidos
-            ? ` ${r.omitidos} se omitieron porque ya tenían un pago de este producto registrado.`
-            : ''),
-      })
+      if (r.tipo === 'ok') setSeleccion({})
+      setMensaje(r)
     } catch (e) {
       setMensaje({
         tipo: 'error',
@@ -216,7 +232,7 @@ export default function CobroRapidoTabla({
             >
               {productos.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.nombre} · ${Number(p.precio_unitario).toLocaleString('es-CO')}
+                  {p.nombre} · {pesos(Number(p.precio_unitario))}
                 </option>
               ))}
             </select>
@@ -226,7 +242,7 @@ export default function CobroRapidoTabla({
             <div className="flex flex-col gap-1 text-sm font-medium text-gray-800">
               Producto
               <span className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 font-normal text-gray-900">
-                {producto.nombre} · ${precio.toLocaleString('es-CO')}
+                {producto.nombre} · {pesos(precio)}
               </span>
             </div>
           )
@@ -311,18 +327,33 @@ export default function CobroRapidoTabla({
                   </td>
                   <td className="px-3 py-2">
                     {pagado > 0 ? (
-                      <span className="rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                      <span className={`${ui.pildora} ${ui.estadoPagado}`}>
                         Pagado{pagado > 1 ? ` (${pagado})` : ''}
                       </span>
                     ) : sel ? (
-                      <span className="rounded bg-primario-suave px-2 py-0.5 text-xs font-medium text-primario">
+                      <span className={`${ui.pildora} border-primario-borde bg-primario-suave text-primario`}>
                         Por registrar
                       </span>
                     ) : (
-                      <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
+                      <span className={`${ui.pildora} ${ui.estadoPendiente}`}>
                         Pendiente
                       </span>
                     )}
+                    {devueltasPorEstudiante.get(e.id)?.map((d) => (
+                      <div key={d.grupoPagoId} className="mt-1 flex flex-wrap items-center gap-2">
+                        <span className={`${ui.pildora} ${ui.estadoPendiente}`}>
+                          Se le debe {pesos(d.valor)} de devuelta
+                        </span>
+                        <button
+                          type="button"
+                          disabled={entregando}
+                          onClick={() => entregarDevuelta(d)}
+                          className={`${ui.enlace} inline-flex min-h-11 items-center text-xs sm:min-h-0`}
+                        >
+                          Ya se entregó
+                        </button>
+                      </div>
+                    ))}
                   </td>
                   <td className="px-3 py-2">
                     {sel &&
@@ -335,7 +366,7 @@ export default function CobroRapidoTabla({
                         >
                           {opcionesCantidad.map((n) => (
                             <option key={n} value={n}>
-                              {n} · ${(precio * n).toLocaleString('es-CO')}
+                              {n} · {pesos(precio * n)}
                             </option>
                           ))}
                         </select>
@@ -400,9 +431,9 @@ export default function CobroRapidoTabla({
         <div className="text-sm text-gray-700">
           <p>
             {seleccionados.length} marcado(s) · Total:{' '}
-            <span className="font-semibold">${totalCobrado.toLocaleString('es-CO')}</span>
+            <span className="font-semibold">{pesos(totalCobrado)}</span>
             {totalDevueltas > 0 && (
-              <> · Devueltas pendientes: ${totalDevueltas.toLocaleString('es-CO')}</>
+              <> · Devueltas pendientes: {pesos(totalDevueltas)}</>
             )}
           </p>
           <p className="text-xs text-gray-600">Quién recibe el dinero: {miNombre}</p>

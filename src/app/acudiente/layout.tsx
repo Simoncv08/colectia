@@ -1,8 +1,9 @@
 import { obtenerSesionAcudiente } from '@/lib/sesionAcudiente'
 import { estiloPaleta } from '@/lib/paletas'
 import NavAcudiente from '@/components/NavAcudiente'
-import { cerrarSesion } from './actions'
+import { cerrarSesion } from '@/app/actions'
 import { ui } from '@/lib/ui'
+import Marca from '@/components/Marca'
 
 export default async function AcudienteLayout({ children }: { children: React.ReactNode }) {
   const sesion = await obtenerSesionAcudiente()
@@ -17,7 +18,7 @@ export default async function AcudienteLayout({ children }: { children: React.Re
         <div className="mx-auto max-w-3xl px-4 pt-4 sm:px-6">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-lg font-semibold text-gray-900">Colectia</p>
+              <Marca className="text-xl" />
               <p className="truncate text-xs text-gray-600">{sesion.nombre}</p>
             </div>
             <form action={cerrarSesion}>

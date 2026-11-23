@@ -1,6 +1,8 @@
 import type { createClient } from '@/lib/supabase/server'
 import { enTrozos, traerTodasLasFilas } from '@/lib/consultas'
 import { estadoEvento, hoyColombia, type EstadoEvento } from '@/lib/estadoEvento'
+import { SIN_CURSO, compararCursos, compararEstudiantes } from '@/lib/formato'
+import { agruparPagos, cargarPersonal } from '@/lib/pagos'
 
 // Reportes y su Excel salen de los mismos cálculos, para que la pantalla y el archivo coincidan.
 
@@ -43,18 +45,6 @@ export function filtrosAParametros(f: FiltrosReporte, cambios: Partial<FiltrosRe
     if (v && !(k === 'vista' && v === 'eventos')) p.set(k, v)
   }
   return p.toString()
-}
-
-export const SIN_CURSO = '__sin__'
-
-export function compararCursos(a: string, b: string) {
-  if (!a) return 1
-  if (!b) return -1
-  return a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' })
-}
-
-export function pesos(valor: number) {
-  return `$${Math.round(valor).toLocaleString('es-CO')}`
 }
 
 export type EventoR = {
@@ -187,24 +177,7 @@ export async function cargarDatosReporte(
     pagosCrudos.push(...pg)
   }
 
-  const { data: staffCrudo } = await supabase
-    .from('membresias')
-    .select('id, personas(nombres, apellidos, correo)')
-    .eq('institucion_id', institucionId)
-    .in('rol', ['admin_institucion', 'recaudador'])
-
-  const personalPorId = new Map<string, string>()
-  for (const s of (staffCrudo ?? []) as unknown as {
-    id: string
-    personas: { nombres: string | null; apellidos: string | null; correo: string | null } | null
-  }[]) {
-    personalPorId.set(
-      s.id,
-      [s.personas?.nombres, s.personas?.apellidos].filter(Boolean).join(' ').trim() ||
-        s.personas?.correo ||
-        'Sin nombre'
-    )
-  }
+  const personalPorId = await cargarPersonal(supabase, institucionId)
 
   const pagos: PagoR[] = pagosCrudos
     .map((p) => {
@@ -241,21 +214,9 @@ export async function cargarDatosReporte(
   }
   for (const p of pagos) estudiantesPorEvento.get(p.evento_id)?.add(p.estudiante_id)
 
-  const sumaPorGrupo = new Map<string, { suma: number; recibido: number | null; pendiente: boolean }>()
-  for (const p of pagos) {
-    const g = sumaPorGrupo.get(p.grupo_pago_id) ?? {
-      suma: 0,
-      recibido: p.dinero_recibido,
-      pendiente: p.devuelta_pendiente,
-    }
-    g.suma += p.monto
-    sumaPorGrupo.set(p.grupo_pago_id, g)
-  }
-  const devueltaPorGrupo = new Map<string, { valor: number; pendiente: boolean }>()
-  for (const [id, g] of sumaPorGrupo) {
-    const valor = g.recibido != null ? Math.max(0, g.recibido - g.suma) : 0
-    devueltaPorGrupo.set(id, { valor, pendiente: g.pendiente && valor > 0 })
-  }
+  const devueltaPorGrupo = new Map(
+    agruparPagos(pagos).map((g) => [g.grupoPagoId, { valor: g.devuelta, pendiente: g.devueltaPendiente }])
+  )
 
   return {
     eventos,
@@ -483,8 +444,7 @@ export function pendientesDePago(datos: DatosReporte, f: FiltrosReporte): FilaPe
     (a, b) =>
       (ordenEvento.get(a.evento.id) ?? 0) - (ordenEvento.get(b.evento.id) ?? 0) ||
       compararCursos(a.curso, b.curso) ||
-      a.estudiante.apellidos.localeCompare(b.estudiante.apellidos, 'es', { sensitivity: 'base' }) ||
-      a.estudiante.nombres.localeCompare(b.estudiante.nombres, 'es', { sensitivity: 'base' })
+      compararEstudiantes(a.estudiante, b.estudiante)
   )
 }
 

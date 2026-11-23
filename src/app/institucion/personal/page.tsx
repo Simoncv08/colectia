@@ -1,15 +1,10 @@
 import { obtenerSesionInstitucion } from '@/lib/sesionInstitucion'
-import { eliminarMiembro, invitarMiembro } from '../actions'
+import { eliminarMiembro, invitarMiembro } from './actions'
 import ConfirmSubmitButton from '@/components/ConfirmSubmitButton'
 import Ventana from '@/components/Ventana'
 import { ui } from '@/lib/ui'
-
-type Miembro = {
-  id: string
-  persona_id: string
-  rol: string
-  personas: { correo: string | null; nombres: string | null; apellidos: string | null } | null
-}
+import { nombrePersona } from '@/lib/formato'
+import FormularioAccion from '@/components/FormularioAccion'
 
 export const metadata = { title: 'Personal' }
 
@@ -28,7 +23,7 @@ export default async function PersonalPage() {
     .in('rol', ['admin_institucion', 'recaudador'])
     .order('created_at', { ascending: true })
 
-  const miembros = (data ?? []) as unknown as Miembro[]
+  const miembros = data ?? []
 
   return (
     <div className="flex flex-col gap-6">
@@ -40,9 +35,9 @@ export default async function PersonalPage() {
           </p>
         </div>
         <Ventana textoBoton="+ Invitar persona" titulo="Invitar persona al personal">
-          <form action={invitarMiembro.bind(null, sesion.institucionId)} className="flex flex-col gap-4">
+          <FormularioAccion action={invitarMiembro} className="flex flex-col gap-4">
             <label className={ui.etiqueta}>
-              Correo de Google
+              Correo con el que entra a Colectia
               <input name="correo" type="email" required className={ui.campo} />
             </label>
             <label className={ui.etiqueta}>
@@ -53,22 +48,19 @@ export default async function PersonalPage() {
               </select>
             </label>
             <p className={ui.ayuda}>
-              La persona debe haber iniciado sesión con Google al menos una vez en Colectia antes
-              de poder invitarla.
+              La persona debe haber entrado una vez a Colectia y confirmado su correo. Si ya está
+              en el personal con otro rol, se le cambia el rol.
             </p>
             <button type="submit" className={`${ui.botonPrimario} self-start`}>
               Invitar
             </button>
-          </form>
+          </FormularioAccion>
         </Ventana>
       </div>
 
       <ul className={`${ui.tarjeta} divide-y divide-gray-100 p-0`}>
         {miembros.map((m) => {
-          const nombre =
-            [m.personas?.nombres, m.personas?.apellidos].filter(Boolean).join(' ').trim() ||
-            m.personas?.correo ||
-            'Sin nombre'
+          const nombre = nombrePersona(m.personas)
           return (
             <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
               <div>
@@ -93,14 +85,14 @@ export default async function PersonalPage() {
                   {m.rol === 'admin_institucion' ? 'Administrador' : 'Recaudador'}
                 </span>
                 {m.persona_id !== sesion.userId && (
-                  <form action={eliminarMiembro.bind(null, m.id)}>
+                  <FormularioAccion action={eliminarMiembro.bind(null, m.id)}>
                     <ConfirmSubmitButton
                       confirmMessage={`¿Quitar a ${nombre} del personal de la institución?`}
                       className={ui.botonQuitar}
                     >
                       Quitar
                     </ConfirmSubmitButton>
-                  </form>
+                  </FormularioAccion>
                 )}
               </div>
             </li>

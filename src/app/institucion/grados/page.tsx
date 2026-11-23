@@ -11,15 +11,7 @@ import ConfirmSubmitButton from '@/components/ConfirmSubmitButton'
 import Ventana from '@/components/Ventana'
 import { ordenarGrados } from '@/lib/ordenarGrados'
 import { ui } from '@/lib/ui'
-
-type GrupoCursoConMiembros = {
-  id: string
-  nombre: string
-  grupo_curso_grados: {
-    id: string
-    grados: { id: string; nombre: string } | null
-  }[]
-}
+import FormularioAccion from '@/components/FormularioAccion'
 
 // Casillas en vez de un <select multiple>, que obliga a mantener Ctrl presionado.
 function CasillasCursos({ cursos }: { cursos: { id: string; nombre: string }[] }) {
@@ -59,7 +51,7 @@ export default async function CursosPage() {
     .select('id, nombre, grupo_curso_grados(id, grados(id, nombre))')
     .eq('institucion_id', institucionId)
 
-  const grupos = ((gruposCrudos ?? []) as unknown as GrupoCursoConMiembros[])
+  const grupos = (gruposCrudos ?? [])
     .map((grupo) => ({
       ...grupo,
       miembros: ordenarGrados(
@@ -80,7 +72,7 @@ export default async function CursosPage() {
           </div>
           {esAdmin && (
             <Ventana textoBoton="+ Agregar cursos" titulo="Agregar cursos">
-              <form action={agregarGrados.bind(null, institucionId)} className="flex flex-col gap-4">
+              <FormularioAccion action={agregarGrados} className="flex flex-col gap-4">
                 <label className={ui.etiqueta}>
                   Un curso por línea (o separados por comas)
                   <textarea
@@ -95,7 +87,7 @@ export default async function CursosPage() {
                 <button type="submit" className={`${ui.botonPrimario} self-start`}>
                   Agregar
                 </button>
-              </form>
+              </FormularioAccion>
             </Ventana>
           )}
         </div>
@@ -106,7 +98,7 @@ export default async function CursosPage() {
               <li key={g.id} className={ui.chip}>
                 {g.nombre}
                 {esAdmin && (
-                  <form action={eliminarGrado.bind(null, institucionId, g.id, g.nombre)}>
+                  <FormularioAccion action={eliminarGrado.bind(null, g.id, g.nombre)}>
                     <ConfirmSubmitButton
                       confirmMessage={`¿Eliminar el curso "${g.nombre}"? Solo se puede si ya no tiene estudiantes.`}
                       ariaLabel={`Eliminar el curso ${g.nombre}`}
@@ -114,7 +106,7 @@ export default async function CursosPage() {
                     >
                       ×
                     </ConfirmSubmitButton>
-                  </form>
+                  </FormularioAccion>
                 )}
               </li>
             ))}
@@ -134,7 +126,7 @@ export default async function CursosPage() {
           </div>
           {esAdmin && grados.length > 0 && (
             <Ventana textoBoton="+ Crear grupo" titulo="Crear grupo de cursos" variante="secundario">
-              <form action={crearGrupoCurso.bind(null, institucionId)} className="flex flex-col gap-4">
+              <FormularioAccion action={crearGrupoCurso} className="flex flex-col gap-4">
                 <label className={ui.etiqueta}>
                   Nombre del grupo
                   <input name="nombre" required placeholder="Ej.: Primaria" className={ui.campo} />
@@ -146,7 +138,7 @@ export default async function CursosPage() {
                 <button type="submit" className={`${ui.botonPrimario} self-start`}>
                   Crear grupo
                 </button>
-              </form>
+              </FormularioAccion>
             </Ventana>
           )}
         </div>
@@ -179,7 +171,7 @@ export default async function CursosPage() {
                             {grupo.miembros.map((m) => (
                               <li key={m.membresiaId} className={ui.chip}>
                                 {m.nombre}
-                                <form action={quitarGradoDeGrupo.bind(null, m.membresiaId)}>
+                                <FormularioAccion action={quitarGradoDeGrupo.bind(null, m.membresiaId)}>
                                   <button
                                     type="submit"
                                     aria-label={`Quitar ${m.nombre} del grupo`}
@@ -187,7 +179,7 @@ export default async function CursosPage() {
                                   >
                                     ×
                                   </button>
-                                </form>
+                                </FormularioAccion>
                               </li>
                             ))}
                           </ul>
@@ -195,7 +187,7 @@ export default async function CursosPage() {
                           <p className={ui.ayuda}>Este grupo todavía no tiene cursos.</p>
                         )}
                       </div>
-                      <form
+                      <FormularioAccion
                         action={agregarGradosAGrupo.bind(null, grupo.id)}
                         className="flex flex-col gap-3 border-t border-gray-200 pt-4"
                       >
@@ -204,8 +196,8 @@ export default async function CursosPage() {
                         <button type="submit" className={`${ui.botonPrimario} self-start`}>
                           Agregar al grupo
                         </button>
-                      </form>
-                      <form
+                      </FormularioAccion>
+                      <FormularioAccion
                         action={eliminarGrupoCurso.bind(null, grupo.id)}
                         className="border-t border-gray-200 pt-4"
                       >
@@ -215,7 +207,7 @@ export default async function CursosPage() {
                         >
                           Eliminar grupo
                         </ConfirmSubmitButton>
-                      </form>
+                      </FormularioAccion>
                     </div>
                   </Ventana>
                 )}

@@ -9,14 +9,20 @@
 
 -- Paso 1: confirma tu correo (el mismo con el que entras con Google) y
 -- copia el resultado para asegurarte de que ya existe tu persona:
-select id, correo, nombres from public.personas where correo = 'TU-CORREO-AQUI';
+select p.id, u.email, p.nombres
+from public.personas p
+join auth.users u on u.id = p.id
+where lower(u.email) = lower('TU-CORREO-AQUI') and u.email_confirmed_at is not null;
 
 -- Paso 2: reemplaza 'TU-CORREO-AQUI' (aquí abajo también) por tu correo
 -- real y corre este bloque:
+-- Se usa el correo de la cuenta (auth.users), que nadie puede cambiar desde la app.
 insert into public.membresias (persona_id, institucion_id, rol)
-select id, null, 'super_admin'
-from public.personas
-where correo = 'TU-CORREO-AQUI';
+select p.id, null, 'super_admin'
+from public.personas p
+join auth.users u on u.id = p.id
+where lower(u.email) = lower('TU-CORREO-AQUI') and u.email_confirmed_at is not null
+limit 1;
 
 -- Paso 3: verifica que quedó creada:
 select * from public.membresias where rol = 'super_admin';

@@ -1,14 +1,15 @@
 'use client'
 
 import { startTransition, useActionState, useState, type FormEvent } from 'react'
-import { vincularEstudiante, type ResultadoVinculo } from './actions'
+import { vincularEstudiante } from './actions'
+import type { Resultado } from '@/lib/resultado'
 import { ui } from '@/lib/ui'
 
 type Institucion = { id: string; nombre: string }
 
 export default function FormularioVincular({ instituciones }: { instituciones: Institucion[] }) {
   const [metodo, setMetodo] = useState<'codigo' | 'documento'>('codigo')
-  const [resultado, accion, enviando] = useActionState<ResultadoVinculo, FormData>(
+  const [resultado, accion, enviando] = useActionState<Resultado | null, FormData>(
     vincularEstudiante,
     null
   )

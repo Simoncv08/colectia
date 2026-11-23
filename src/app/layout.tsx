@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
-import { Geist } from 'next/font/google'
+import { Manrope } from 'next/font/google'
 import './globals.css'
+import ProveedorAvisos from '@/components/Avisos'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+// Por qué Manrope: ver DESIGN.md.
+const manrope = Manrope({
+  variable: '--font-manrope',
   subsets: ['latin'],
 })
 
@@ -14,8 +16,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="es" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+    <html lang="es" className={`${manrope.variable} h-full antialiased`}>
+      <body className="flex min-h-full flex-col">
+        <ProveedorAvisos>{children}</ProveedorAvisos>
+      </body>
     </html>
   )
 }

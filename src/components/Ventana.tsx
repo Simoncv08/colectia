@@ -3,22 +3,19 @@
 import { useId, useRef, type ReactNode } from 'react'
 import { ui } from '@/lib/ui'
 
-// Se cierra al enviar un formulario de adentro, salvo con cerrarAlEnviar={false}
-// (para formularios que muestran su resultado en la misma ventana).
+// Los FormularioAccion de adentro la cierran cuando su acción sale bien.
 export default function Ventana({
   textoBoton,
   titulo,
   children,
   variante = 'primario',
   tamano = 'md',
-  cerrarAlEnviar = true,
 }: {
   textoBoton: ReactNode
   titulo: string
   children: ReactNode
   variante?: 'primario' | 'secundario' | 'peligro' | 'enlace'
   tamano?: 'md' | 'lg'
-  cerrarAlEnviar?: boolean
 }) {
   const ref = useRef<HTMLDialogElement>(null)
   const idTitulo = useId()
@@ -43,15 +40,12 @@ export default function Ventana({
       <dialog
         ref={ref}
         aria-labelledby={idTitulo}
-        className={`m-auto w-[calc(100%-2rem)] rounded-2xl border border-gray-200 bg-white p-0 text-gray-900 shadow-xl ${
+        className={`m-auto w-[calc(100%-2rem)] rounded-xl border border-gray-200 bg-white p-0 text-gray-900 shadow-xl ${
           tamano === 'lg' ? 'max-w-2xl' : 'max-w-lg'
         }`}
         onClick={(ev) => {
           // El clic en el fondo oscuro llega con target === el propio dialog.
           if (ev.target === ref.current) ref.current?.close()
-        }}
-        onSubmit={() => {
-          if (cerrarAlEnviar) setTimeout(() => ref.current?.close(), 0)
         }}
       >
         <div className="flex items-center justify-between border-b border-gray-200 px-5 py-3">

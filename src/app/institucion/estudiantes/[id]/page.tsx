@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { obtenerSesionInstitucion } from '@/lib/sesionInstitucion'
-import { actualizarEstudiante, eliminarEstudiante } from '../../actions'
+import { actualizarEstudiante, eliminarEstudiante } from '../actions'
 import ConfirmSubmitButton from '@/components/ConfirmSubmitButton'
 import { ordenarGrados } from '@/lib/ordenarGrados'
 import { ui } from '@/lib/ui'
+import FormularioAccion from '@/components/FormularioAccion'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -65,8 +66,9 @@ export default async function EditarEstudiantePage({ params }: Params) {
         </h1>
       </div>
 
-      <form
-        action={actualizarEstudiante.bind(null, estudiante.id, estudiante.institucion_id)}
+      <FormularioAccion
+        action={actualizarEstudiante.bind(null, estudiante.id)}
+        vaciarAlTerminar={false}
         className={`${ui.tarjeta} grid gap-4 sm:grid-cols-2`}
       >
         <label className={ui.etiqueta}>
@@ -137,7 +139,7 @@ export default async function EditarEstudiantePage({ params }: Params) {
             Guardar cambios
           </button>
         </div>
-      </form>
+      </FormularioAccion>
 
       <section className="rounded-xl border border-red-200 bg-white p-5">
         <h2 className="text-base font-semibold text-red-800">Eliminar estudiante</h2>
@@ -147,7 +149,7 @@ export default async function EditarEstudiantePage({ params }: Params) {
             eliminar: se perderían esos registros de pago.
           </p>
         ) : (
-          <form action={eliminarEstudiante.bind(null, estudiante.id)} className="mt-2">
+          <FormularioAccion action={eliminarEstudiante.bind(null, estudiante.id)} className="mt-2">
             <p className="mb-3 text-sm text-gray-700">
               Se borrará al estudiante y su vínculo con los acudientes. No se puede deshacer.
             </p>
@@ -157,7 +159,7 @@ export default async function EditarEstudiantePage({ params }: Params) {
             >
               Eliminar estudiante
             </ConfirmSubmitButton>
-          </form>
+          </FormularioAccion>
         )}
       </section>
     </div>

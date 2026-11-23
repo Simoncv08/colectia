@@ -1,152 +1,145 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requerirPersonal, type SesionInstitucion } from '@/lib/sesionInstitucion'
+import { accion, mensajeBD } from '@/lib/resultado'
 
-// La RLS ya exige admin_institucion; la revisión de aquí es para dar un mensaje claro.
-export async function agregarGrados(institucionId: string, formData: FormData) {
-  const texto = String(formData.get('nombres') ?? '')
-
-  const nombres = Array.from(
-    new Set(
-      texto
-        .split(/[\n,]/)
-        .map((n) => n.trim())
-        .filter((n) => n.length > 0)
-    )
-  )
-
-  if (nombres.length === 0) {
-    throw new Error('Escribe al menos un curso o grado (uno por línea).')
-  }
-
-  const supabase = await createClient()
-  const { error } = await supabase.from('grados').upsert(
-    nombres.map((nombre) => ({ institucion_id: institucionId, nombre })),
-    { onConflict: 'institucion_id,nombre', ignoreDuplicates: true }
-  )
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  revalidatePath('/institucion/grados')
-  revalidatePath('/institucion')
+function revalidarCursos() {
+  revalidatePath('/institucion', 'layout')
 }
 
-export async function eliminarGrado(
-  institucionId: string,
-  gradoId: string,
-  nombreGrado: string,
-  _formData: FormData
-) {
-  const supabase = await createClient()
+function leerIds(formData: FormData) {
+  return formData.getAll('grado_ids').map(String).filter(Boolean)
+}
 
-  const { count, error: errorConteo } = await supabase
-    .from('estudiantes')
-    .select('id', { count: 'exact', head: true })
-    .eq('institucion_id', institucionId)
-    .eq('curso_grado', nombreGrado)
+async function exigirGrupoPropio(sesion: SesionInstitucion, grupoCursoId: string) {
+  const { data } = await sesion.supabase
+    .from('grupos_curso')
+    .select('id')
+    .eq('id', grupoCursoId)
+    .eq('institucion_id', sesion.institucionId)
+    .maybeSingle()
+  if (!data) throw new Error('Ese grupo de cursos ya no existe.')
+}
 
-  if (errorConteo) {
-    throw new Error(errorConteo.message)
-  }
-
-  if (count && count > 0) {
-    throw new Error(
-      `No puedes eliminar "${nombreGrado}" porque todavía hay ${count} estudiante(s) en ese curso/grado. Cámbialos de curso primero.`
+export async function agregarGrados(formData: FormData) {
+  return accion(async () => {
+    const sesion = await requerirPersonal({ soloAdmin: true })
+    const nombres = Array.from(
+      new Set(
+        String(formData.get('nombres') ?? '')
+          .split(/[\n,]/)
+          .map((n) => n.trim())
+          .filter(Boolean)
+      )
     )
-  }
+    if (!nombres.length) throw new Error('Escribe al menos un curso (uno por línea).')
 
-  const { error } = await supabase.from('grados').delete().eq('id', gradoId)
+    const { error } = await sesion.supabase.from('grados').upsert(
+      nombres.map((nombre) => ({ institucion_id: sesion.institucionId, nombre })),
+      { onConflict: 'institucion_id,nombre', ignoreDuplicates: true }
+    )
+    if (error) throw new Error(mensajeBD(error))
 
-  if (error) {
-    throw new Error(error.message)
-  }
+    revalidarCursos()
+    return nombres.length === 1 ? `El curso ${nombres[0]} quedó listo.` : `${nombres.length} cursos quedaron listos.`
+  })
+}
 
-  revalidatePath('/institucion/grados')
-  revalidatePath('/institucion')
+export async function eliminarGrado(gradoId: string, nombreGrado: string, _formData: FormData) {
+  return accion(async () => {
+    const sesion = await requerirPersonal({ soloAdmin: true })
+    const { count, error: errorConteo } = await sesion.supabase
+      .from('estudiantes')
+      .select('id', { count: 'exact', head: true })
+      .eq('institucion_id', sesion.institucionId)
+      .eq('curso_grado', nombreGrado)
+    if (errorConteo) throw new Error(mensajeBD(errorConteo))
+    if (count) {
+      throw new Error(
+        `No puedes eliminar ${nombreGrado}: todavía tiene ${count} estudiante(s). Cámbialos de curso primero.`
+      )
+    }
+
+    const { error } = await sesion.supabase
+      .from('grados')
+      .delete()
+      .eq('id', gradoId)
+      .eq('institucion_id', sesion.institucionId)
+    if (error) throw new Error(mensajeBD(error))
+
+    revalidarCursos()
+    return `El curso ${nombreGrado} quedó eliminado.`
+  })
 }
 
 // Grupos de cursos (por ejemplo "Primaria"). Un curso puede estar en varios grupos.
+export async function crearGrupoCurso(formData: FormData) {
+  return accion(async () => {
+    const sesion = await requerirPersonal({ soloAdmin: true })
+    const nombre = String(formData.get('nombre') ?? '').trim()
+    if (!nombre) throw new Error('El nombre del grupo es obligatorio.')
 
-export async function crearGrupoCurso(institucionId: string, formData: FormData) {
-  const nombre = String(formData.get('nombre') ?? '').trim()
-  const gradoIds = formData
-    .getAll('grado_ids')
-    .map((v) => String(v))
-    .filter(Boolean)
+    const { data: grupo, error } = await sesion.supabase
+      .from('grupos_curso')
+      .insert({ institucion_id: sesion.institucionId, nombre })
+      .select('id')
+      .single()
+    if (error) throw new Error(mensajeBD(error, { duplicado: 'Ya existe un grupo con ese nombre.' }))
 
-  if (!nombre) {
-    throw new Error('El nombre del grupo de cursos es obligatorio.')
-  }
-
-  const supabase = await createClient()
-
-  const { data: grupo, error: errorGrupo } = await supabase
-    .from('grupos_curso')
-    .insert({ institucion_id: institucionId, nombre })
-    .select('id')
-    .single()
-
-  if (errorGrupo) {
-    throw new Error(errorGrupo.message)
-  }
-
-  if (gradoIds.length > 0) {
-    const { error: errorMiembros } = await supabase
-      .from('grupo_curso_grados')
-      .insert(gradoIds.map((grado_id) => ({ grupo_curso_id: grupo.id, grado_id })))
-
-    if (errorMiembros) {
-      throw new Error(errorMiembros.message)
+    const gradoIds = leerIds(formData)
+    if (gradoIds.length) {
+      const { error: errorMiembros } = await sesion.supabase
+        .from('grupo_curso_grados')
+        .insert(gradoIds.map((grado_id) => ({ grupo_curso_id: grupo.id, grado_id })))
+      if (errorMiembros) throw new Error(mensajeBD(errorMiembros))
     }
-  }
 
-  revalidatePath('/institucion/grados')
+    revalidarCursos()
+    return `El grupo "${nombre}" quedó creado.`
+  })
 }
 
 export async function eliminarGrupoCurso(id: string, _formData: FormData) {
-  const supabase = await createClient()
-  const { error } = await supabase.from('grupos_curso').delete().eq('id', id)
+  return accion(async () => {
+    const sesion = await requerirPersonal({ soloAdmin: true })
+    const { error } = await sesion.supabase
+      .from('grupos_curso')
+      .delete()
+      .eq('id', id)
+      .eq('institucion_id', sesion.institucionId)
+    if (error) throw new Error(mensajeBD(error))
 
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  revalidatePath('/institucion/grados')
+    revalidarCursos()
+    return 'El grupo quedó eliminado. Los cursos siguen igual.'
+  })
 }
 
 export async function agregarGradosAGrupo(grupoCursoId: string, formData: FormData) {
-  const gradoIds = formData
-    .getAll('grado_ids')
-    .map((v) => String(v))
-    .filter(Boolean)
+  return accion(async () => {
+    const sesion = await requerirPersonal({ soloAdmin: true })
+    const gradoIds = leerIds(formData)
+    if (!gradoIds.length) throw new Error('Marca al menos un curso para agregar al grupo.')
+    await exigirGrupoPropio(sesion, grupoCursoId)
 
-  if (gradoIds.length === 0) {
-    throw new Error('Selecciona al menos un curso/grado para agregar al grupo.')
-  }
+    const { error } = await sesion.supabase.from('grupo_curso_grados').upsert(
+      gradoIds.map((grado_id) => ({ grupo_curso_id: grupoCursoId, grado_id })),
+      { onConflict: 'grupo_curso_id,grado_id', ignoreDuplicates: true }
+    )
+    if (error) throw new Error(mensajeBD(error))
 
-  const supabase = await createClient()
-  const { error } = await supabase.from('grupo_curso_grados').upsert(
-    gradoIds.map((grado_id) => ({ grupo_curso_id: grupoCursoId, grado_id })),
-    { onConflict: 'grupo_curso_id,grado_id', ignoreDuplicates: true }
-  )
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  revalidatePath('/institucion/grados')
+    revalidarCursos()
+    return gradoIds.length === 1 ? 'El curso quedó en el grupo.' : `${gradoIds.length} cursos quedaron en el grupo.`
+  })
 }
 
 export async function quitarGradoDeGrupo(id: string, _formData: FormData) {
-  const supabase = await createClient()
-  const { error } = await supabase.from('grupo_curso_grados').delete().eq('id', id)
+  return accion(async () => {
+    const sesion = await requerirPersonal({ soloAdmin: true })
+    const { error } = await sesion.supabase.from('grupo_curso_grados').delete().eq('id', id)
+    if (error) throw new Error(mensajeBD(error))
 
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  revalidatePath('/institucion/grados')
+    revalidarCursos()
+    return 'El curso salió del grupo.'
+  })
 }

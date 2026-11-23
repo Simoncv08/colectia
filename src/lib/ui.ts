@@ -27,6 +27,15 @@ export const ui = {
   botonChip:
     '-my-3 -mr-3 inline-flex h-11 w-11 items-center justify-center rounded-full text-lg leading-none text-primario hover:text-red-700 active:bg-white/60',
 
+  // Solo las etiquetas de estado son completamente redondas (DESIGN.md).
+  pildora: 'inline-flex items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-medium',
+  estadoPagado: 'border-green-200 bg-green-50 text-green-800',
+  estadoPendiente: 'border-amber-200 bg-amber-50 text-amber-900',
+  estadoNeutro: 'border-gray-200 bg-gray-100 text-gray-700',
+
+  // Tarjeta de resumen: una por pantalla principal, en el color del colegio.
+  resumen: 'rounded-xl bg-primario p-5 text-white shadow-sm sm:p-6',
+
   avisoAmbar: 'rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900',
   avisoRojo: 'rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800',
   avisoVerde: 'rounded-lg border border-green-300 bg-green-50 p-3 text-sm text-green-800',

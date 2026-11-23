@@ -6,6 +6,7 @@ import FormularioContrasena from '@/components/FormularioContrasena'
 import ConfirmSubmitButton from '@/components/ConfirmSubmitButton'
 import Ventana from '@/components/Ventana'
 import { ui } from '@/lib/ui'
+import FormularioAccion from '@/components/FormularioAccion'
 
 export const metadata = { title: 'Mi cuenta' }
 
@@ -45,7 +46,6 @@ export default async function CuentaAcudientePage() {
             textoBoton="+ Vincular estudiante"
             titulo="Vincular un estudiante"
             variante={vinculos.length ? 'secundario' : 'primario'}
-            cerrarAlEnviar={false}
           >
             <FormularioVincular instituciones={instituciones ?? []} />
           </Ventana>
@@ -69,14 +69,14 @@ export default async function CuentaAcudientePage() {
                       {e.curso_grado ? ` · ${e.curso_grado}` : ''}
                     </p>
                   </div>
-                  <form action={desvincularEstudiante.bind(null, v.id)}>
+                  <FormularioAccion action={desvincularEstudiante.bind(null, v.id)}>
                     <ConfirmSubmitButton
                       confirmMessage={`¿Quitar a ${e.nombres} ${e.apellidos} de tu cuenta? Dejarás de ver sus actividades. Puedes volver a vincularlo cuando quieras.`}
                       className={ui.botonPeligro}
                     >
                       Quitar de mi cuenta
                     </ConfirmSubmitButton>
-                  </form>
+                  </FormularioAccion>
                 </li>
               )
             })}
@@ -104,7 +104,6 @@ export default async function CuentaAcudientePage() {
             textoBoton="Cambiar contraseña"
             titulo="Cambiar contraseña"
             variante="secundario"
-            cerrarAlEnviar={false}
           >
             <FormularioContrasena />
           </Ventana>

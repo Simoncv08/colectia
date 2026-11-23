@@ -3,16 +3,17 @@ import { obtenerSesionInstitucion } from '@/lib/sesionInstitucion'
 import { ui } from '@/lib/ui'
 import BarraAvance from '@/components/BarraAvance'
 import BotonDescargarExcel from './BotonDescargarExcel'
-import { ESTADOS, formatearFecha } from '@/lib/estadoEvento'
+import { formatearFecha } from '@/lib/estadoEvento'
+import { SIN_CURSO, nombreCurso, pesos } from '@/lib/formato'
+import TarjetaDato from '@/components/TarjetaDato'
+import EtiquetaEstado from '@/components/EtiquetaEstado'
 import {
-  SIN_CURSO,
   cargarDatosReporte,
   cursosDisponibles,
   filtrosAParametros,
   leerFiltros,
   pagosFiltrados,
   pendientesDePago,
-  pesos,
   recaudoPorPersona,
   resumenPorEvento,
   type FilaPendiente,
@@ -40,9 +41,6 @@ const VISTAS: { valor: Vista; etiqueta: string; descripcion: string }[] = [
   },
 ]
 
-function nombreCurso(c: string) {
-  return c || 'Sin curso asignado'
-}
 
 export const metadata = { title: 'Reportes' }
 
@@ -199,16 +197,6 @@ type PropsVista = {
   f: ReturnType<typeof leerFiltros>
 }
 
-function Tarjeta({ titulo, valor, nota }: { titulo: string; valor: string; nota?: string }) {
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4">
-      <p className="text-xs text-gray-700">{titulo}</p>
-      <p className="text-xl font-semibold text-gray-900">{valor}</p>
-      {nota && <p className="text-xs text-gray-600">{nota}</p>}
-    </div>
-  )
-}
-
 function VistaEventos({ datos, f }: PropsVista) {
   const filas = resumenPorEvento(datos, f)
   const totalRecaudado = filas.reduce((s, x) => s + x.recaudado, 0)
@@ -219,13 +207,13 @@ function VistaEventos({ datos, f }: PropsVista) {
   return (
     <>
       <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Tarjeta
+        <TarjetaDato
           titulo="Total recaudado"
           valor={pesos(totalRecaudado)}
           nota={filtroDinero ? 'según las fechas / persona elegidas' : undefined}
         />
-        <Tarjeta titulo="Pagos registrados" valor={String(totalPagos)} />
-        <Tarjeta titulo="Devueltas pendientes" valor={pesos(totalDevueltas)} />
+        <TarjetaDato titulo="Pagos registrados" valor={String(totalPagos)} />
+        <TarjetaDato titulo="Devueltas pendientes" valor={pesos(totalDevueltas)} />
       </section>
 
       {filtroDinero && (
@@ -239,7 +227,6 @@ function VistaEventos({ datos, f }: PropsVista) {
 
       <ul className="flex flex-col gap-3">
         {filas.map((x) => {
-          const estado = ESTADOS[x.evento.estado]
           return (
             <li key={x.evento.id} className="rounded-xl border border-gray-200 bg-white p-4 text-gray-900">
               <div className="flex flex-wrap items-center gap-2">
@@ -249,9 +236,7 @@ function VistaEventos({ datos, f }: PropsVista) {
                 >
                   {x.evento.nombre}
                 </Link>
-                <span className={`rounded px-1.5 py-0.5 text-xs ${estado.clase}`}>
-                  {estado.etiqueta}
-                </span>
+                <EtiquetaEstado estado={x.evento.estado} />
                 {x.evento.fecha_limite_pago && (
                   <span className="text-xs text-gray-600">
                     Pago hasta el {formatearFecha(x.evento.fecha_limite_pago)}
@@ -331,8 +316,8 @@ function VistaRecaudo({ datos, f }: PropsVista) {
   return (
     <>
       <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Tarjeta titulo="Total recibido en efectivo" valor={pesos(total)} />
-        <Tarjeta
+        <TarjetaDato titulo="Total recibido en efectivo" valor={pesos(total)} />
+        <TarjetaDato
           titulo="Pagos registrados"
           valor={String(new Set(pagos.map((p) => p.grupo_pago_id)).size)}
         />

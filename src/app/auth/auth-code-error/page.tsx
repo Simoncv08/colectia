@@ -3,7 +3,7 @@ import Link from 'next/link'
 export default function AuthCodeErrorPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-fondo p-4">
-      <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-sm sm:p-8">
+      <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-6 text-center sm:p-8">
         <h1 className="text-xl font-semibold text-gray-900">No se pudo iniciar sesión</h1>
         <p className="mt-2 text-sm text-gray-700">
           Si llegaste desde un enlace del correo, puede que ya haya vencido, que ya se haya usado

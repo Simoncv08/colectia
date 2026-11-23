@@ -17,7 +17,7 @@
   --color-primario-suave: var(--primario-suave);
   --color-primario-borde: var(--primario-borde);
   --color-fondo: var(--fondo);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-manrope);
 }
 
 html {
@@ -27,7 +27,9 @@ html {
 body {
   background: var(--fondo);
   color: var(--texto);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-manrope), Arial, Helvetica, sans-serif;
+  /* Números tabulares en toda la app: los montos quedan alineados (DESIGN.md). */
+  font-variant-numeric: tabular-nums;
 }
 
 @layer base {

@@ -1,7 +1,8 @@
 'use client'
 
 import { startTransition, useActionState, type FormEvent } from 'react'
-import { actualizarDatos, type ResultadoDatos } from '../actions'
+import { actualizarDatos } from '../actions'
+import type { Resultado } from '@/lib/resultado'
 import { ui } from '@/lib/ui'
 
 // Con onSubmit y no con action={...}: React vacía el formulario al usar action.
@@ -16,7 +17,7 @@ export default function FormularioDatos({
   telefono: string
   correo: string
 }) {
-  const [resultado, accion, enviando] = useActionState<ResultadoDatos, FormData>(
+  const [resultado, accion, enviando] = useActionState<Resultado | null, FormData>(
     actualizarDatos,
     null
   )

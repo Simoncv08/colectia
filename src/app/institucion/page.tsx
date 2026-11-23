@@ -1,8 +1,10 @@
 import Link from 'next/link'
 import { obtenerSesionInstitucion } from '@/lib/sesionInstitucion'
-import { cargarDatosReporte, leerFiltros, pesos, resumenPorEvento } from '@/lib/reportes'
-import { ESTADOS, formatearFecha } from '@/lib/estadoEvento'
+import { cargarDatosReporte, leerFiltros, resumenPorEvento } from '@/lib/reportes'
+import { pesos } from '@/lib/formato'
+import { formatearFecha } from '@/lib/estadoEvento'
 import { ui } from '@/lib/ui'
+import EtiquetaEstado from '@/components/EtiquetaEstado'
 import BarraAvance from '@/components/BarraAvance'
 
 export const metadata = { title: 'Inicio' }
@@ -22,25 +24,37 @@ export default async function InicioInstitucionPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className={ui.titulo}>Eventos activos</h1>
-          <p className={ui.textoSecundario}>
-            {activos.length
-              ? `${activos.length} evento(s) en curso · ${pesos(totalRecaudado)} recaudado · ${totalFaltan} estudiante(s) por pagar`
-              : 'No hay eventos activos en este momento.'}
-          </p>
-        </div>
+      <h1 className="sr-only">Inicio</h1>
+
+      {activos.length > 0 && (
+        <section aria-labelledby="titulo-resumen" className={ui.resumen}>
+          <h2 id="titulo-resumen" className="text-sm font-medium text-white">
+            Recaudado en eventos activos
+          </h2>
+          <p className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">{pesos(totalRecaudado)}</p>
+          <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-white/25 pt-3 text-sm sm:grid-cols-3">
+            <div>
+              <dt className="text-white">Eventos en curso</dt>
+              <dd className="text-lg font-semibold">{activos.length}</dd>
+            </div>
+            <div>
+              <dt className="text-white">Estudiantes por pagar</dt>
+              <dd className="text-lg font-semibold">{totalFaltan}</dd>
+            </div>
+            <div>
+              <dt className="text-white">Devueltas por entregar</dt>
+              <dd className="text-lg font-semibold">{pesos(totalDevueltas)}</dd>
+            </div>
+          </dl>
+        </section>
+      )}
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-xl font-semibold text-gray-900">Eventos activos</h2>
         <Link href="/institucion/eventos" className={ui.botonSecundario}>
           Ver todos los eventos
         </Link>
       </div>
-
-      {totalDevueltas > 0 && (
-        <p className={ui.avisoAmbar}>
-          Hay devueltas pendientes por entregar por {pesos(totalDevueltas)} en total.
-        </p>
-      )}
 
       {datos.errores.length > 0 && (
         <p className={ui.avisoRojo}>No se pudo cargar toda la información: {datos.errores.join(' · ')}</p>
@@ -49,7 +63,7 @@ export default async function InicioInstitucionPage() {
       {activos.length === 0 && (
         <div className={`${ui.tarjeta} text-center`}>
           <p className={ui.textoSecundario}>
-            Cuando crees un evento aparecerá aquí con su recaudo y su avance.
+            No hay eventos activos. Cuando crees uno, aparecerá aquí con su recaudo y su avance.
           </p>
           <Link href="/institucion/eventos" className={`${ui.botonPrimario} mt-4`}>
             Ir a Eventos
@@ -59,15 +73,12 @@ export default async function InicioInstitucionPage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         {activos.map((x) => {
-          const estado = ESTADOS[x.evento.estado]
           return (
             <article key={x.evento.id} className={`${ui.tarjeta} flex flex-col gap-4`}>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-lg font-semibold text-gray-900">{x.evento.nombre}</h2>
-                  <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${estado.clase}`}>
-                    {estado.etiqueta}
-                  </span>
+                  <EtiquetaEstado estado={x.evento.estado} />
                 </div>
                 {(x.evento.fecha_limite_pago || x.evento.fecha_evento) && (
                   <p className="mt-1 text-sm text-gray-700">

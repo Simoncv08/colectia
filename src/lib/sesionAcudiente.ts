@@ -1,15 +1,13 @@
 import { cache } from 'react'
+import { nombrePersona } from '@/lib/formato'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import type { Tables } from '@/lib/supabase/tipos'
 
-export type EstudianteVinculado = {
-  id: string
-  nombres: string
-  apellidos: string
-  curso_grado: string | null
-  institucion_id: string
-  instituciones: { nombre: string; estado: string } | null
-}
+export type EstudianteVinculado = Pick<
+  Tables<'estudiantes'>,
+  'id' | 'nombres' | 'apellidos' | 'curso_grado' | 'institucion_id'
+> & { instituciones: Pick<Tables<'instituciones'>, 'nombre' | 'estado' | 'paleta' | 'fondo'> }
 
 export type Vinculo = { id: string; estudiantes: EstudianteVinculado }
 
@@ -35,15 +33,12 @@ export const obtenerSesionAcudiente = cache(async () => {
     supabase
       .from('acudiente_estudiante')
       .select(
-        'id, estudiantes(id, nombres, apellidos, curso_grado, institucion_id, instituciones(nombre, estado))'
+        'id, estudiantes(id, nombres, apellidos, curso_grado, institucion_id, instituciones(nombre, estado, paleta, fondo))'
       )
       .eq('persona_id', user.id),
   ])
 
-  const vinculos = ((vinculosCrudos ?? []) as unknown as {
-    id: string
-    estudiantes: EstudianteVinculado | null
-  }[])
+  const vinculos = (vinculosCrudos ?? [])
     .filter((v): v is Vinculo => Boolean(v.estudiantes))
     .sort((a, b) =>
       `${a.estudiantes.nombres} ${a.estudiantes.apellidos}`.localeCompare(
@@ -52,22 +47,20 @@ export const obtenerSesionAcudiente = cache(async () => {
       )
     )
 
-  // Si falla (sin personalizacion_setup.sql), se usan los colores por defecto.
-  const idsInstituciones = Array.from(new Set(vinculos.map((v) => v.estudiantes.institucion_id)))
+  // Colores de cada institución, en orden alfabético para que el marco use siempre la misma.
   const apariencias = new Map<string, Apariencia>()
-  if (idsInstituciones.length) {
-    const { data: aparienciasCrudas } = await supabase
-      .from('instituciones')
-      .select('id, nombre, paleta, fondo')
-      .in('id', idsInstituciones)
-      .order('nombre', { ascending: true })
-    for (const a of (aparienciasCrudas ?? []) as ({ id: string } & Apariencia)[]) {
-      apariencias.set(a.id, { paleta: a.paleta, fondo: a.fondo })
+  for (const { estudiantes: e } of [...vinculos].sort((a, b) =>
+    (a.estudiantes.instituciones?.nombre ?? '').localeCompare(b.estudiantes.instituciones?.nombre ?? '', 'es')
+  )) {
+    if (!apariencias.has(e.institucion_id)) {
+      apariencias.set(e.institucion_id, {
+        paleta: e.instituciones?.paleta ?? null,
+        fondo: e.instituciones?.fondo ?? null,
+      })
     }
   }
 
-  const nombre =
-    [persona?.nombres, persona?.apellidos].filter(Boolean).join(' ').trim() || user.email || ''
+  const nombre = nombrePersona(persona, user.email ?? '')
 
   return {
     supabase,

@@ -1,6 +1,8 @@
+import { ui } from '@/lib/ui'
 import { obtenerSesionInstitucion } from '@/lib/sesionInstitucion'
 import { FONDOS, FONDO_POR_DEFECTO, PALETAS, PALETA_POR_DEFECTO, estiloPaleta } from '@/lib/paletas'
 import { guardarApariencia } from './actions'
+import FormularioAccion from '@/components/FormularioAccion'
 
 export const metadata = { title: 'Personalización' }
 
@@ -26,7 +28,7 @@ export default async function PersonalizacionPage() {
         </p>
       </div>
 
-      <form action={guardarApariencia} className="flex flex-col gap-6">
+      <FormularioAccion action={guardarApariencia} vaciarAlTerminar={false} className="flex flex-col gap-6">
         <fieldset className="rounded-xl border border-gray-200 bg-white p-5">
           <legend className="px-1 text-sm font-semibold text-gray-900">Paleta de colores</legend>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -82,7 +84,7 @@ export default async function PersonalizacionPage() {
             Guardar colores
           </button>
         </div>
-      </form>
+      </FormularioAccion>
 
       <section>
         <h2 className="mb-2 text-sm font-semibold text-gray-900">Así se ve ahora</h2>
@@ -93,7 +95,7 @@ export default async function PersonalizacionPage() {
           <div className="rounded-lg border border-gray-200 bg-white p-4">
             <div className="flex flex-wrap items-center gap-2">
               <p className="font-semibold text-gray-900">Salida al Parque del Café</p>
-              <span className="rounded bg-primario-suave px-1.5 py-0.5 text-xs font-medium text-primario">
+              <span className={`${ui.pildora} border-primario-borde bg-primario-suave text-primario`}>
                 Pago abierto
               </span>
             </div>
