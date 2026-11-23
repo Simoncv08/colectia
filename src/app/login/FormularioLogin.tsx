@@ -45,14 +45,14 @@ function traducirError(error: AuthError): string {
   return 'No se pudo completar. Intenta de nuevo en un momento.'
 }
 
-export default function FormularioLogin() {
+export default function FormularioLogin({ modoInicial = 'entrar' }: { modoInicial?: 'entrar' | 'registro' }) {
   const router = useRouter()
   // refresh() para que el servidor vuelva a leer las cookies de la sesión nueva.
   function irAlInicio() {
     router.replace('/')
     router.refresh()
   }
-  const [modo, setModo] = useState<Modo>('entrar')
+  const [modo, setModo] = useState<Modo>(modoInicial)
   const [correo, setCorreo] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [mensaje, setMensaje] = useState<Mensaje>(null)

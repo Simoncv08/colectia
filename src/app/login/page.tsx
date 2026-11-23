@@ -5,7 +5,11 @@ import FormularioLogin from './FormularioLogin'
 import Marca from '@/components/Marca'
 import { ui } from '@/lib/ui'
 
-export default async function LoginPage() {
+export const metadata = { title: 'Entrar' }
+
+// /login?modo=registro abre directamente "Crear cuenta" (lo usa la página de inicio).
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ modo?: string }> }) {
+  const { modo } = await searchParams
   const supabase = await createClient()
   const {
     data: { user },
@@ -20,12 +24,14 @@ export default async function LoginPage() {
       <div className="w-full max-w-[400px]">
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <h1>
-            <Marca tamano="grande" />
+            <Link href="/" aria-label="Colectia, ir a la página de inicio">
+              <Marca tamano="grande" />
+            </Link>
           </h1>
           <p className={ui.textoSecundario}>Pagos escolares claros para familias y colegios.</p>
         </div>
         <div className={ui.tarjeta}>
-          <FormularioLogin />
+          <FormularioLogin modoInicial={modo === 'registro' ? 'registro' : 'entrar'} />
         </div>
         <p className="mt-4 text-center text-[13px] text-gray-600">
           Al usar Colectia aceptas los{' '}
