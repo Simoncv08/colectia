@@ -6,6 +6,7 @@ import TextoLegal from '@/components/TextoLegal'
 import { DOCUMENTOS_LEGALES, fechaLegal, type TipoLegal } from '@/lib/legal'
 import { icono } from '@/lib/iconos'
 import { ui } from '@/lib/ui'
+import { CORREO_CONTACTO } from '@/lib/contacto'
 
 // /terminos y /privacidad: públicas, se pueden leer sin iniciar sesión. Con ?version=N se ve una
 // versión anterior (el super administrador las enlaza desde su historial).
@@ -70,6 +71,10 @@ export default async function PaginaLegal({ tipo, version }: { tipo: TipoLegal; 
           <Link href={otro.ruta} className={ui.enlace}>
             {otro.titulo.toLowerCase()}
           </Link>
+          . ¿Preguntas sobre este documento o sobre tus datos? Escríbenos a{' '}
+          <a href={`mailto:${CORREO_CONTACTO}`} className={ui.enlace}>
+            {CORREO_CONTACTO}
+          </a>
           .
         </p>
       </main>

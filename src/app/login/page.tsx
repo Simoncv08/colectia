@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import FormularioLogin from './FormularioLogin'
 import Marca from '@/components/Marca'
 import { ui } from '@/lib/ui'
+import { CORREO_CONTACTO } from '@/lib/contacto'
 
 export const metadata = { title: 'Entrar' }
 
@@ -42,6 +43,13 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <Link href="/privacidad" className={ui.enlace}>
             política de privacidad
           </Link>
+          .
+        </p>
+        <p className="mt-2 text-center text-[13px] text-gray-600">
+          ¿Problemas para entrar? Escríbenos a{' '}
+          <a href={`mailto:${CORREO_CONTACTO}`} className={ui.enlace}>
+            {CORREO_CONTACTO}
+          </a>
           .
         </p>
       </div>

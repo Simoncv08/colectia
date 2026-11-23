@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { ChevronDown, FileText, House, LogOut, ShieldCheck, UserRound } from 'lucide-react'
+import { ChevronDown, FileText, House, LifeBuoy, LogOut, ShieldCheck, UserRound } from 'lucide-react'
 import { cerrarSesion } from '@/app/actions'
 import MenuDesplegable from '@/components/MenuDesplegable'
+import { CORREO_CONTACTO } from '@/lib/contacto'
 import { DOCUMENTOS_LEGALES } from '@/lib/legal'
 import { icono, iconoGrande } from '@/lib/iconos'
 import { ui } from '@/lib/ui'
@@ -10,7 +11,7 @@ const enlaceMenu =
   'flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900'
 
 // Menú de cuenta de la barra superior, igual para todos los roles: Mi cuenta, términos,
-// privacidad y cerrar sesión. Con soloIcono, en celular el botón muestra solo el ícono.
+// privacidad, soporte (abre el correo) y cerrar sesión. Con soloIcono, en celular el botón muestra solo el ícono.
 export default function MenuCuenta({
   nombre,
   correo,
@@ -57,6 +58,10 @@ export default function MenuCuenta({
           <ShieldCheck {...iconoGrande} />
           {DOCUMENTOS_LEGALES.privacidad.titulo}
         </Link>
+        <a href={`mailto:${CORREO_CONTACTO}`} className={enlaceMenu}>
+          <LifeBuoy {...iconoGrande} />
+          Soporte
+        </a>
       </div>
       <form action={cerrarSesion} className="mt-1 border-t border-gray-200 pt-1">
         <button type="submit" className={`${ui.botonFantasma} w-full justify-start text-gray-700`}>

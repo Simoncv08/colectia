@@ -1,4 +1,4 @@
-// Correo de contacto público de Colectia. Mientras esté vacío, la página de inicio no muestra
-// la invitación para colegios. Debe ser un correo que reciba mensajes (colectia.org hoy solo
-// envía correos).
-export const CORREO_CONTACTO = ''
+// Correo de soporte de Colectia: recibe con ImprovMX (reenvío a Gmail) y responde por Resend.
+// Aparece en la página de inicio, el menú de cuenta, el inicio de sesión, las páginas legales y
+// los correos.
+export const CORREO_CONTACTO = 'soporte@colectia.org'

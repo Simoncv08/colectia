@@ -335,6 +335,9 @@ export default function PaginaInicio() {
             <Link href="/privacidad" className="inline-flex min-h-11 items-center text-gray-700 hover:text-gray-900 sm:min-h-0">
               Política de privacidad
             </Link>
+            <a href={`mailto:${CORREO_CONTACTO}`} className="inline-flex min-h-11 items-center text-gray-700 hover:text-gray-900 sm:min-h-0">
+              Soporte: {CORREO_CONTACTO}
+            </a>
             <span className="inline-flex min-h-11 items-center text-gray-600 sm:min-h-0">© {anio} Colectia</span>
           </nav>
         </div>
