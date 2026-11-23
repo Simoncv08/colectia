@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import {
   Banknote,
+  KeyRound,
   Building2,
   CalendarDays,
   ChartColumn,
@@ -8,6 +9,7 @@ import {
   Lock,
   Mail,
   Palette,
+  Trash2,
   ShieldCheck,
   UserRoundPlus,
   Users,
@@ -105,6 +107,17 @@ const CONFIANZA: { Icono: LucideIcon; titulo: string; texto: string }[] = [
     Icono: Lock,
     titulo: 'Datos de estudiantes protegidos',
     texto: 'Los estudiantes no tienen cuenta y su documento solo lo ve el administrador de su colegio.',
+  },
+  {
+    Icono: KeyRound,
+    titulo: 'Si entras con Google',
+    texto:
+      'Colectia solo recibe tu nombre y tu correo para crear tu cuenta e identificarte. No lee tu Gmail, tus contactos ni tus archivos, y nunca usa tus datos para publicidad.',
+  },
+  {
+    Icono: Trash2,
+    titulo: 'Tus datos son tuyos',
+    texto: `Puedes actualizarlos en "Mi cuenta" o pedir que los borremos escribiendo a ${CORREO_CONTACTO}.`,
   },
   {
     Icono: Palette,
@@ -233,6 +246,27 @@ export default function PaginaInicio() {
               <p className="text-[13px] font-medium text-tinta/85">Para las familias, Colectia es gratis.</p>
             </div>
             <Vistazo />
+          </div>
+        </section>
+
+        {/* Qué es Colectia, dicho sin rodeos (Google lo revisa para verificar la marca) */}
+        <section aria-labelledby="titulo-que-es" className="border-b border-tinta/10 bg-white">
+          <div className="mx-auto grid max-w-[1120px] gap-4 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[1fr_2fr] lg:gap-10">
+            <h2 id="titulo-que-es" className="text-2xl font-bold text-tinta">
+              ¿Qué es Colectia?
+            </h2>
+            <div className="flex flex-col gap-3 text-[17px] leading-7 text-gray-700">
+              <p>
+                Colectia es una aplicación web para instituciones educativas de Colombia. Los colegios la usan
+                para publicar las actividades que requieren un pago (salidas pedagógicas, eventos, celebraciones
+                y actividades de grado), registrar quién ya pagó y ver reportes del recaudo.
+              </p>
+              <p>
+                Los padres, madres y acudientes crean una cuenta, vinculan a sus estudiantes con los datos que
+                les da el colegio y consultan sus actividades y los pagos registrados. Para entrar pueden usar
+                su correo y una contraseña, un enlace que llega al correo o su cuenta de Google.
+              </p>
+            </div>
           </div>
         </section>
 
