@@ -50,13 +50,14 @@ export default function SeccionProductos({
             <div className="grid gap-4 sm:grid-cols-2">
               <label className={ui.etiqueta}>
                 Precio (COP)
-                <input name="precio_unitario" type="number" min="1" step="0.01" required className={ui.campo} />
+                <input name="precio_unitario" type="number" inputMode="numeric" min="1" step="1" required className={ui.campo} />
               </label>
               <label className={ui.etiqueta}>
                 Máximo por estudiante (opcional)
                 <input
                   name="cantidad_maxima_por_estudiante"
                   type="number"
+                  inputMode="numeric"
                   min="1"
                   step="1"
                   className={ui.campo}

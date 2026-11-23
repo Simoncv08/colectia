@@ -316,7 +316,7 @@ export default function CobroRapidoTabla({
               const sel = seleccion[e.id]
               return (
                 <tr key={e.id} className={`${ui.filaResponsiva} text-gray-900`}>
-                  <td data-titulo="Cobrar" className={ui.celdaResponsiva}>
+                  <td className={ui.celdaCasilla}>
                     {pagado === 0 && (
                       <label className="-m-3 inline-flex p-3">
                         <input
@@ -329,14 +329,14 @@ export default function CobroRapidoTabla({
                       </label>
                     )}
                   </td>
-                  <td data-titulo="Estudiante" className={ui.celdaResponsiva}>
+                  <td className={`${ui.celdaTitulo} pl-10 sm:pl-4`}>
                     {e.apellidos} {e.nombres}
                     {curso === TODOS && e.curso_grado && (
                       <span className="ml-1 text-gray-600">({e.curso_grado})</span>
                     )}
                   </td>
                   <td data-titulo="Estado" className={ui.celdaResponsiva}>
-                    <div className="flex flex-col items-end gap-1 sm:items-start">
+                    <div className="flex flex-col items-start gap-1">
                     {pagado > 0 ? (
                       <EstadoPago
                         estado="pagado_efectivo"
@@ -386,6 +386,7 @@ export default function CobroRapidoTabla({
                       ) : (
                         <input
                           type="number"
+                          inputMode="numeric"
                           min={1}
                           step={1}
                           aria-label={`Cantidad para ${e.nombres} ${e.apellidos}`}
@@ -410,6 +411,7 @@ export default function CobroRapidoTabla({
                         {sel.devuelta && (
                           <input
                             type="number"
+                            inputMode="numeric"
                             min={1}
                             step="1"
                             value={sel.monto}

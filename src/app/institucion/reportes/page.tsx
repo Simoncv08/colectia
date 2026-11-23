@@ -90,13 +90,13 @@ export default async function ReportesPage({ searchParams }: Params) {
         <BotonDescargarExcel parametros={filtrosAParametros(f, { vista: f.vista })} />
       </div>
 
-      <nav className="mb-4 flex flex-wrap gap-2 border-b border-gray-200">
+      <nav aria-label="Tipo de reporte" className={`${ui.pestanas} mb-4`}>
         {VISTAS.map((v) => (
           <Link
             key={v.valor}
             href={`/institucion/reportes?${filtrosAParametros(f, { vista: v.valor })}`}
             aria-current={f.vista === v.valor ? 'page' : undefined}
-            className={`-mb-px inline-flex min-h-11 items-center border-b-2 px-4 text-sm ${
+            className={`-mb-px inline-flex min-h-11 shrink-0 items-center whitespace-nowrap border-b-2 px-4 text-sm ${
               f.vista === v.valor
                 ? 'border-primario font-semibold text-primario'
                 : 'border-transparent text-gray-700 hover:text-gray-900'
@@ -108,9 +108,9 @@ export default async function ReportesPage({ searchParams }: Params) {
       </nav>
       <p className="mb-4 text-sm text-gray-700">{vistaActual.descripcion}</p>
 
-      <form method="get" className={`${ui.tarjeta} mb-6 flex flex-wrap items-end gap-3 md:p-4`}>
+      <form method="get" className={`${ui.tarjeta} ${ui.filtros} mb-6 md:p-4`}>
         {f.vista !== 'eventos' && <input type="hidden" name="vista" value={f.vista} />}
-        <label className={ui.etiqueta}>
+        <label className={`${ui.etiqueta} col-span-2`}>
           Evento
           <select
             name="evento"
@@ -182,7 +182,7 @@ export default async function ReportesPage({ searchParams }: Params) {
         )}
         <button
           type="submit"
-          className={`${ui.botonPrimario} sm:min-h-9`}
+          className={`${ui.botonPrimario} col-span-2 sm:min-h-9`}
         >
           Aplicar filtros
         </button>

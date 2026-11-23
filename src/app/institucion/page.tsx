@@ -33,7 +33,7 @@ export default async function InicioInstitucionPage() {
           <h1 className={ui.titulo}>Inicio</h1>
           <p className={ui.textoSecundario}>Cómo va el recaudo de los eventos abiertos.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className={ui.accionesPagina}>
           <Link href="/institucion/eventos" className={ui.botonSecundario}>
             <Banknote {...iconoGrande} />
             Registrar pago en efectivo
@@ -50,10 +50,10 @@ export default async function InicioInstitucionPage() {
       )}
 
       <section aria-label="Resumen" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <TarjetaDato titulo="Total recaudado" valor={pesos(totalRecaudado)} nota="En los eventos abiertos" />
+        <TarjetaDato titulo="Total recaudado" valor={pesos(totalRecaudado)} nota="En los eventos abiertos" ancho />
         <TarjetaDato titulo="Eventos abiertos" valor={activos.length} />
-        <TarjetaDato titulo="Estudiantes con pago" valor={conPago} nota={`de ${dirigidos}`} />
         <TarjetaDato titulo="Pagos en efectivo de hoy" valor={pagosHoy} />
+        <TarjetaDato titulo="Estudiantes con pago" valor={conPago} nota={`de ${dirigidos}`} ancho />
       </section>
 
       {totalDevueltas > 0 && (
@@ -109,7 +109,7 @@ export default async function InicioInstitucionPage() {
                 </p>
               )}
 
-              <div className="mt-auto flex flex-wrap gap-2">
+              <div className="mt-auto grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                 <Link href={`/institucion/eventos/${x.evento.id}/pagos`} className={ui.botonSecundario}>
                   Ver pagos
                 </Link>

@@ -68,7 +68,7 @@ export default function FormularioVincular({ instituciones }: { instituciones: I
       ) : (
         <label className={ui.etiqueta}>
           Número de documento del estudiante
-          <input name="numero_documento" required className={ui.campo} key="documento" />
+          <input name="numero_documento" required inputMode="numeric" autoComplete="off" className={ui.campo} key="documento" />
         </label>
       )}
 

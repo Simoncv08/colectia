@@ -99,7 +99,7 @@ export default async function EstudiantesPage({ searchParams }: Params) {
           <p className={ui.textoSecundario}>{todos.length} estudiante(s) en total</p>
         </div>
         {esAdmin && (
-          <div className="flex flex-wrap gap-2">
+          <div className={ui.accionesPagina}>
             <Ventana textoBoton="Cargar desde Excel" titulo="Cargar estudiantes desde Excel" variante="secundario">
               <FormularioAccion
                 action={cargarEstudiantesExcel}
@@ -172,7 +172,7 @@ export default async function EstudiantesPage({ searchParams }: Params) {
                   </label>
                   <label className={ui.etiqueta}>
                     Número de documento
-                    <input name="numero_documento" required className={ui.campo} />
+                    <input name="numero_documento" required inputMode="numeric" className={ui.campo} />
                   </label>
                   <label className={ui.etiqueta}>
                     Fecha de nacimiento
@@ -198,8 +198,8 @@ export default async function EstudiantesPage({ searchParams }: Params) {
         )}
       </div>
 
-      <form method="get" className="flex flex-wrap items-end gap-2">
-        <label className={`${ui.etiqueta} min-w-0 flex-1 basis-56`}>
+      <form method="get" className={ui.filtros}>
+        <label className={`${ui.etiqueta} col-span-2 sm:min-w-0 sm:flex-1 sm:basis-56`}>
           Buscar
           <input
             name="q"
@@ -253,7 +253,7 @@ export default async function EstudiantesPage({ searchParams }: Params) {
             <tbody className={ui.cuerpoResponsivo}>
               {enPagina.map((e) => (
                 <tr key={e.id} className={ui.filaResponsiva}>
-                  <td data-titulo="Estudiante" className={`${ui.celdaResponsiva} font-semibold text-gray-900`}>
+                  <td className={ui.celdaTitulo}>
                     {e.apellidos} {e.nombres}
                   </td>
                   <td data-titulo="Código" className={`${ui.celdaResponsiva} text-gray-600`}>
@@ -263,7 +263,7 @@ export default async function EstudiantesPage({ searchParams }: Params) {
                     {nombreCurso(e.curso_grado)}
                   </td>
                   {esAdmin && (
-                    <td className={`${ui.celdaResponsiva} sm:text-right`}>
+                    <td className={ui.celdaAccion}>
                       <Link href={`/institucion/estudiantes/${e.id}`} className={ui.enlace}>
                         Editar
                       </Link>

@@ -111,7 +111,7 @@ export default async function InstitucionesPage() {
             <tbody className={ui.cuerpoResponsivo}>
               {instituciones.map((inst) => (
                 <tr key={inst.id} className={ui.filaResponsiva}>
-                  <td data-titulo="Nombre" className={`${ui.celdaResponsiva} font-semibold`}>{inst.nombre}</td>
+                  <td className={ui.celdaTitulo}>{inst.nombre}</td>
                   <td data-titulo="Código" className={ui.celdaResponsiva}>{inst.prefijo_codigo}</td>
                   <td data-titulo="Estado" className={ui.celdaResponsiva}>
                     <EstadoInstitucion estado={inst.estado} />
@@ -130,7 +130,7 @@ export default async function InstitucionesPage() {
                       </button>
                     </FormularioAccion>
                   </td>
-                  <td data-titulo="Asignar administrador" className={`${ui.celdaResponsiva} flex-col items-stretch sm:items-start`}>
+                  <td data-titulo="Asignar administrador" className={ui.celdaBloque}>
                     <FormularioAccion
                       action={asignarAdminInstitucion.bind(null, inst.id)}
                       className="flex items-center gap-2"

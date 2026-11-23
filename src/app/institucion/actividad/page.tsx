@@ -193,7 +193,7 @@ export default async function ActividadPage({ searchParams }: Params) {
         </p>
       </div>
 
-      <form method="get" className="flex flex-wrap items-end gap-2">
+      <form method="get" className={ui.filtros}>
         <label className={ui.etiqueta}>
           Tipo de cambio
           <select
@@ -227,7 +227,7 @@ export default async function ActividadPage({ searchParams }: Params) {
         </label>
         <button
           type="submit"
-          className={`${ui.botonPrimario} sm:min-h-9`}
+          className={`${ui.botonPrimario} col-span-2 sm:min-h-9`}
         >
           Filtrar
         </button>

@@ -43,7 +43,7 @@ export default function ConfirmSubmitButton({
       <dialog
         ref={ref}
         aria-labelledby={idTitulo}
-        className="mx-auto mb-0 mt-auto w-full max-w-none rounded-t-xl bg-white p-0 text-gray-900 shadow-lg sm:m-auto sm:w-[calc(100%-2rem)] sm:max-w-md sm:rounded-xl"
+        className="mx-auto mb-0 mt-auto w-full max-w-none overscroll-contain rounded-t-xl bg-white p-0 text-gray-900 shadow-lg sm:m-auto sm:w-[calc(100%-2rem)] sm:max-w-md sm:rounded-xl"
         onClick={(ev) => {
           if (ev.target === ref.current) ref.current?.close()
         }}

@@ -71,7 +71,16 @@ export default async function InstitucionLayout({ children }: { children: React.
           <Link href="/institucion" className="py-2">
             <Marca />
           </Link>
-          <MenuDesplegable boton={<Menu {...iconoGrande} />} etiqueta="Abrir menú" className="w-64">
+          <MenuDesplegable
+            boton={
+              <>
+                <Menu {...iconoGrande} />
+                Menú
+              </>
+            }
+            etiqueta="Abrir menú"
+            className="w-64"
+          >
             <NavInstitucion esAdmin={sesion.esAdmin} />
             <div className="mt-2 border-t border-gray-200 pt-2">
               <p className="truncate px-3 pb-1 text-[13px] text-gray-600">{sesion.correo}</p>

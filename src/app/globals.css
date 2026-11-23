@@ -58,6 +58,12 @@
 
 html {
   color-scheme: light;
+  scrollbar-gutter: stable;
+}
+
+/* Con una ventana abierta, la página de atrás no se desplaza. */
+html:has(dialog[open]) {
+  overflow: hidden;
 }
 
 body {

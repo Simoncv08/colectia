@@ -147,12 +147,12 @@ export default async function AcudientePage() {
                       {cobro.estudiantes.map((x) => (
                         <li
                           key={x.estudiante.id}
-                          className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-3 last:pb-0"
+                          className="flex items-start justify-between gap-3 py-3 last:pb-0"
                         >
-                          <span className="font-semibold text-gray-900">
+                          <span className="min-w-0 font-semibold text-gray-900">
                             {x.estudiante.nombres} {x.estudiante.apellidos}
                           </span>
-                          <span className="flex items-center gap-3">
+                          <span className="flex shrink-0 flex-col items-end gap-1 text-right">
                             <EstadoPago estado={x.estado} />
                             {x.estado === 'pagado' ? (
                               <span className={`${ui.monto} text-gray-900`}>{pesos(x.pagado)}</span>

@@ -174,7 +174,7 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
       {errorPagos && <p className={ui.avisoRojo}>No se pudieron cargar los pagos. Recarga la página para intentar de nuevo.</p>}
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <TarjetaDato titulo="Recaudado" valor={pesos(totalRecaudado)} />
+        <TarjetaDato titulo="Recaudado" valor={pesos(totalRecaudado)} ancho />
         <TarjetaDato
           titulo="Pagaron"
           valor={
@@ -187,6 +187,7 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
         <TarjetaDato titulo="Faltan" valor={estudiantes.length - pagaronTotal} />
         <TarjetaDato
           titulo="Devueltas pendientes"
+          ancho
           alerta={devueltasPendientes.length > 0}
           valor={pesos(devueltasPendientes.reduce((s, g) => s + g.devuelta, 0))}
         />

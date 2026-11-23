@@ -118,6 +118,7 @@ export default async function EditarEstudiantePage({ params }: Params) {
           Número de documento
           <input
             name="numero_documento"
+            inputMode="numeric"
             defaultValue={documento ?? ''}
             required
             className={ui.campo}
