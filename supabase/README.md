@@ -29,3 +29,5 @@ Después de correr `23_documentos_legales.sql`, publica la primera versión de c
 ## Correos
 
 Las plantillas de correo en español y los pasos para el servicio de correo propio están en `correos/README.md`.
+
+`24_seguridad_fase3.sql` cambia cómo se maneja el personal: el administrador **invita** y la persona tiene el rol solo cuando acepta la invitación al entrar a Colectia; al **quitar** a alguien, su fila queda como `retirado` (sin permisos) para que sus pagos y eventos sigan a su nombre. También hace que una institución suspendida o cancelada quede en solo lectura de verdad. Corre esta migración antes de desplegar la versión de la app que la usa.

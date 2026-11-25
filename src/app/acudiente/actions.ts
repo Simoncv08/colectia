@@ -21,6 +21,11 @@ const MENSAJES: Record<string, Resultado> = {
     tipo: 'error',
     texto: 'Ya tienes 10 estudiantes vinculados, el máximo por cuenta. Si necesitas más, contacta al colegio.',
   },
+  estudiante_bloqueado: {
+    tipo: 'error',
+    texto:
+      'Hubo demasiados intentos fallidos para vincular a este estudiante hoy, así que se pausó por seguridad. Intenta mañana o pide ayuda al colegio.',
+  },
   institucion_no_disponible: {
     tipo: 'error',
     texto: 'Esa institución no está disponible en este momento. Contacta al colegio.',

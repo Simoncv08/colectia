@@ -46,9 +46,18 @@ export async function agregarGrados(formData: FormData) {
   })
 }
 
-export async function eliminarGrado(gradoId: string, nombreGrado: string, _formData: FormData) {
+export async function eliminarGrado(gradoId: string, _nombreMostrado: string, _formData: FormData) {
   return accion(async () => {
     const sesion = await requerirPersonal({ soloAdmin: true })
+    // El nombre se lee de la base: el que llega con la llamada lo controla el navegador.
+    const { data: grado } = await sesion.supabase
+      .from('grados')
+      .select('nombre')
+      .eq('id', gradoId)
+      .eq('institucion_id', sesion.institucionId)
+      .maybeSingle()
+    if (!grado) throw new Error('Ese curso ya no existe.')
+    const nombreGrado = grado.nombre
     const { count, error: errorConteo } = await sesion.supabase
       .from('estudiantes')
       .select('id', { count: 'exact', head: true })

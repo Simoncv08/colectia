@@ -445,6 +445,7 @@ export type Database = {
       membresias: {
         Row: {
           codigo: string | null
+          correo_invitacion: string | null
           created_at: string
           id: string
           institucion_id: string | null
@@ -453,6 +454,7 @@ export type Database = {
         }
         Insert: {
           codigo?: string | null
+          correo_invitacion?: string | null
           created_at?: string
           id?: string
           institucion_id?: string | null
@@ -461,6 +463,7 @@ export type Database = {
         }
         Update: {
           codigo?: string | null
+          correo_invitacion?: string | null
           created_at?: string
           id?: string
           institucion_id?: string | null
@@ -661,6 +664,10 @@ export type Database = {
         Args: { p_tipos: string[] }
         Returns: undefined
       }
+      aceptar_invitacion: {
+        Args: { p_membresia_id: string }
+        Returns: string
+      }
       actividad_anotar: {
         Args: {
           p_accion: string
@@ -749,6 +756,10 @@ export type Database = {
       puede_gestionar_imagen_evento: {
         Args: { p_nombre: string }
         Returns: boolean
+      }
+      rechazar_invitacion: {
+        Args: { p_membresia_id: string }
+        Returns: undefined
       }
       registrar_pagos_efectivo: {
         Args: { p_evento_id: string; p_filas: Json; p_producto_id: string }

@@ -55,6 +55,6 @@ export async function cargarPersonal(supabase: Supabase, institucionId: string) 
     .from('membresias')
     .select('id, personas(nombres, apellidos, correo)')
     .eq('institucion_id', institucionId)
-    .in('rol', ['admin_institucion', 'recaudador'])
+    .in('rol', ['admin_institucion', 'recaudador', 'retirado'])
   return new Map((data ?? []).map((s) => [s.id, nombrePersona(s.personas)]))
 }

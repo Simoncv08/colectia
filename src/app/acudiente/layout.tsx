@@ -4,6 +4,7 @@ import { estiloPaleta } from '@/lib/paletas'
 import Marca from '@/components/Marca'
 import MenuCuenta from '@/components/MenuCuenta'
 import PuertaLegal from '@/components/PuertaLegal'
+import InvitacionesPendientes from '@/components/InvitacionesPendientes'
 
 export default async function AcudienteLayout({ children }: { children: React.ReactNode }) {
   const sesion = await obtenerSesionAcudiente()
@@ -20,7 +21,10 @@ export default async function AcudienteLayout({ children }: { children: React.Re
         </div>
       </header>
       <main className="mx-auto flex max-w-[640px] flex-col gap-6 px-4 py-6">
-        <PuertaLegal>{children}</PuertaLegal>
+        <PuertaLegal>
+          <InvitacionesPendientes />
+          {children}
+        </PuertaLegal>
       </main>
     </div>
   )

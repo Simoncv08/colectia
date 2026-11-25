@@ -1,5 +1,6 @@
 import ExcelJS from 'exceljs'
 import { Readable } from 'stream'
+import { inflateRawSync } from 'zlib'
 import { normalizar } from '@/lib/formato'
 
 export type FilaEstudiante = {
@@ -70,13 +71,74 @@ function leerTexto(valor: unknown): string {
   return String(valor).trim()
 }
 
-async function leerHoja(archivo: File): Promise<ExcelJS.Worksheet | undefined> {
+// Límites del archivo: un .xlsx es un ZIP y puede ocupar mucho más al descomprimirse.
+export const MAX_BYTES_ARCHIVO = 1_000_000
+const MAX_BYTES_DESCOMPRIMIDO = 20_000_000
+const MAX_ENTRADAS_ZIP = 200
+export const MAX_FILAS_IMPORTACION = 5000
+
+// Revisa el ZIP antes de entregárselo a ExcelJS: descomprime cada parte con un tope real de
+// tamaño, así un archivo pequeño que se infla a cientos de MB se rechaza sin agotar la memoria.
+function revisarZip(buffer: Buffer): string | null {
+  const invalido = 'El archivo no es un Excel (.xlsx) válido.'
+  const grande = 'El archivo es demasiado grande. Divide la lista en varios archivos.'
+  const inicioBusqueda = Math.max(0, buffer.length - 65_557)
+  let fin = -1
+  for (let i = buffer.length - 22; i >= inicioBusqueda; i--) {
+    if (buffer.readUInt32LE(i) === 0x06054b50) {
+      fin = i
+      break
+    }
+  }
+  if (fin < 0) return invalido
+
+  const entradas = buffer.readUInt16LE(fin + 10)
+  let pos = buffer.readUInt32LE(fin + 16)
+  if (entradas === 0xffff || pos === 0xffffffff) return grande // ZIP64: no se necesita para una lista
+  if (entradas > MAX_ENTRADAS_ZIP) return grande
+
+  let total = 0
+  for (let n = 0; n < entradas; n++) {
+    if (pos + 46 > buffer.length || buffer.readUInt32LE(pos) !== 0x02014b50) return invalido
+    const metodo = buffer.readUInt16LE(pos + 10)
+    const comprimido = buffer.readUInt32LE(pos + 20)
+    const largoNombre = buffer.readUInt16LE(pos + 28)
+    const largoExtra = buffer.readUInt16LE(pos + 30)
+    const largoComentario = buffer.readUInt16LE(pos + 32)
+    const local = buffer.readUInt32LE(pos + 42)
+    pos += 46 + largoNombre + largoExtra + largoComentario
+
+    if (local + 30 > buffer.length || buffer.readUInt32LE(local) !== 0x04034b50) return invalido
+    const inicio = local + 30 + buffer.readUInt16LE(local + 26) + buffer.readUInt16LE(local + 28)
+    if (inicio + comprimido > buffer.length) return invalido
+    const datos = buffer.subarray(inicio, inicio + comprimido)
+
+    if (metodo === 0) {
+      total += datos.length
+    } else if (metodo === 8) {
+      try {
+        total += inflateRawSync(datos, { maxOutputLength: MAX_BYTES_DESCOMPRIMIDO - total + 1 }).length
+      } catch (e) {
+        return (e as { code?: string })?.code === 'ERR_BUFFER_TOO_LARGE' ? grande : invalido
+      }
+    } else {
+      return invalido
+    }
+    if (total > MAX_BYTES_DESCOMPRIMIDO) return grande
+  }
+  return null
+}
+
+async function leerHoja(archivo: File): Promise<ExcelJS.Worksheet | string | undefined> {
+  if (archivo.size > MAX_BYTES_ARCHIVO) return 'El archivo es demasiado grande (máximo 1 MB). Divide la lista en varios archivos.'
   const buffer = Buffer.from(await archivo.arrayBuffer())
   const libro = new ExcelJS.Workbook()
   if (archivo.name.toLowerCase().endsWith('.csv')) {
     // map deja cada valor como texto: sin esto, ExcelJS convierte el código 00123 en 123.
     return libro.csv.read(Readable.from(buffer), { map: (valor: string) => valor })
   }
+  const problema = revisarZip(buffer)
+  if (problema) return problema
   await libro.xlsx.load(buffer as unknown as ArrayBuffer)
   return libro.worksheets[0]
 }
@@ -86,12 +148,22 @@ export async function importarEstudiantes(
   archivo: File,
   cursos: Map<string, string>
 ): Promise<{ filas: FilaEstudiante[] } | { error: string }> {
-  const hoja = await leerHoja(archivo)
+  let hoja: Awaited<ReturnType<typeof leerHoja>>
+  try {
+    hoja = await leerHoja(archivo)
+  } catch {
+    return { error: 'No se pudo leer el archivo. Revisa que sea un Excel (.xlsx) o un CSV.' }
+  }
+  if (typeof hoja === 'string') return { error: hoja }
   if (!hoja) return { error: 'No se pudo leer ninguna hoja del archivo.' }
+  if (hoja.rowCount > MAX_FILAS_IMPORTACION + 1) {
+    return { error: `El archivo tiene más de ${MAX_FILAS_IMPORTACION} filas. Divide la lista en varios archivos.` }
+  }
 
   const columnas: (keyof FilaEstudiante | undefined)[] = []
   hoja.getRow(1).eachCell({ includeEmpty: false }, (celda, numero) => {
-    columnas[numero] = ENCABEZADOS[normalizar(String(celda.value ?? ''))]
+    const clave = normalizar(String(celda.value ?? ''))
+    columnas[numero] = Object.hasOwn(ENCABEZADOS, clave) ? ENCABEZADOS[clave] : undefined
   })
 
   const filas: FilaEstudiante[] = []

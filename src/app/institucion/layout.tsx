@@ -11,6 +11,7 @@ import { iconoGrande } from '@/lib/iconos'
 import { ProveedorSoloLectura } from '@/components/SoloLectura'
 import MenuCuenta from '@/components/MenuCuenta'
 import PuertaLegal from '@/components/PuertaLegal'
+import InvitacionesPendientes from '@/components/InvitacionesPendientes'
 import { ui } from '@/lib/ui'
 
 export default async function InstitucionLayout({ children }: { children: React.ReactNode }) {
@@ -100,7 +101,10 @@ export default async function InstitucionLayout({ children }: { children: React.
           )}
           <main className="flex flex-col gap-6">
             <ProveedorSoloLectura activo={estado === 'suspendida' || estado === 'cancelada'}>
-              <PuertaLegal>{children}</PuertaLegal>
+              <PuertaLegal>
+                <InvitacionesPendientes />
+                {children}
+              </PuertaLegal>
             </ProveedorSoloLectura>
           </main>
         </div>

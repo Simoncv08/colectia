@@ -122,7 +122,7 @@ export default async function AcudientePage() {
                 >
                   {ev.imagen_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={ev.imagen_url} alt="" className="aspect-video w-full rounded-lg object-cover" />
+                    <img src={ev.imagen_url} alt="" referrerPolicy="no-referrer" className="aspect-video w-full rounded-lg object-cover" />
                   ) : (
                     <div aria-hidden="true" className="-mx-4 -mt-4 h-1.5 bg-primario sm:-mx-5 sm:-mt-5 md:-mx-6 md:-mt-6" />
                   )}

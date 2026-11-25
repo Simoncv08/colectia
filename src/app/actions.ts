@@ -71,3 +71,25 @@ export async function aceptarDocumentosLegales(tipos: string[]): Promise<Resulta
   revalidatePath('/', 'layout')
   return { tipo: 'ok', texto: 'Gracias. Ya puedes seguir usando Colectia.' }
 }
+
+// Invitaciones al personal de una institución: solo la persona invitada las acepta o rechaza
+// (aceptar_invitacion y rechazar_invitacion en 24_seguridad_fase3.sql).
+export async function aceptarInvitacion(membresiaId: string, _formData: FormData): Promise<Resultado> {
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('aceptar_invitacion', { p_membresia_id: membresiaId })
+  if (error) {
+    return { tipo: 'error', texto: error.message.includes('ya no está disponible') ? 'Esa invitación ya no está disponible.' : mensajeBD(error) }
+  }
+  revalidatePath('/', 'layout')
+  redirect('/institucion')
+}
+
+export async function rechazarInvitacion(membresiaId: string, _formData: FormData): Promise<Resultado> {
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('rechazar_invitacion', { p_membresia_id: membresiaId })
+  if (error) {
+    return { tipo: 'error', texto: error.message.includes('ya no está disponible') ? 'Esa invitación ya no está disponible.' : mensajeBD(error) }
+  }
+  revalidatePath('/', 'layout')
+  return { tipo: 'ok', texto: 'Rechazaste la invitación.' }
+}

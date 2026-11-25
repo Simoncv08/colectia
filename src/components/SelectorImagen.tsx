@@ -108,8 +108,8 @@ export default function SelectorImagen({
   function usarEnlace() {
     const valor = enlace.trim()
     if (!valor) return
-    if (!/^https?:\/\//i.test(valor)) {
-      setError('El enlace debe empezar por http:// o https://')
+    if (!/^https:\/\//i.test(valor)) {
+      setError('El enlace debe empezar por https://')
       return
     }
     setError(null)
@@ -138,7 +138,7 @@ export default function SelectorImagen({
       <input
         type="hidden"
         name="imagen_url"
-        value={url || (/^https?:\/\//i.test(enlace.trim()) ? enlace.trim() : '')}
+        value={url || (/^https:\/\//i.test(enlace.trim()) ? enlace.trim() : '')}
       />
       <p className="text-sm font-medium text-gray-800">Imagen del evento (opcional)</p>
 
@@ -146,6 +146,7 @@ export default function SelectorImagen({
         <div className="flex flex-wrap items-start gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            referrerPolicy="no-referrer"
             src={url}
             alt="Imagen del evento"
             className="h-40 w-auto max-w-full rounded border border-gray-200 object-cover"

@@ -17,8 +17,8 @@ function leerDatosEvento(formData: FormData) {
   const fecha_evento = leerFecha(formData, 'fecha_evento')
 
   if (!nombre) throw new Error('El nombre del evento es obligatorio.')
-  if (imagen_url && !/^https?:\/\//i.test(imagen_url)) {
-    throw new Error('El enlace de la imagen debe empezar por http:// o https://')
+  if (imagen_url && !/^https:\/\//i.test(imagen_url)) {
+    throw new Error('El enlace de la imagen debe empezar por https://')
   }
   validarFechas(fecha_limite_pago, fecha_evento)
 

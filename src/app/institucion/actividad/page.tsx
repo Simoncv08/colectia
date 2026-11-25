@@ -93,7 +93,7 @@ export default async function ActividadPage({ searchParams }: Params) {
     .from('membresias')
     .select('persona_id, personas(nombres, apellidos, correo)')
     .eq('institucion_id', institucionId)
-    .in('rol', ['admin_institucion', 'recaudador'])
+    .in('rol', ['admin_institucion', 'recaudador', 'retirado'])
 
   const personal = Array.from(
     new Map(

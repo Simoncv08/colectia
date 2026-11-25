@@ -7,6 +7,7 @@ import { nombrePersona } from '@/lib/formato'
 import FormularioAccion from '@/components/FormularioAccion'
 import { Plus } from 'lucide-react'
 import { iconoGrande } from '@/lib/iconos'
+import { ROLES_INVITACION, rolDeInvitacion } from '@/lib/membresias'
 
 export const metadata = { title: 'Personal' }
 
@@ -20,9 +21,9 @@ export default async function PersonalPage() {
 
   const { data } = await sesion.supabase
     .from('membresias')
-    .select('id, persona_id, rol, personas(correo, nombres, apellidos)')
+    .select('id, persona_id, rol, correo_invitacion, personas(correo, nombres, apellidos)')
     .eq('institucion_id', sesion.institucionId)
-    .in('rol', ['admin_institucion', 'recaudador'])
+    .in('rol', ['admin_institucion', 'recaudador', ...ROLES_INVITACION])
     .order('created_at', { ascending: true })
 
   const miembros = data ?? []
@@ -56,8 +57,9 @@ export default async function PersonalPage() {
                 </select>
               </label>
               <p className={ui.ayuda}>
-                La persona debe haber entrado una vez a Colectia y confirmado su correo. Si ya está
-                en el personal con otro rol, se le cambia el rol.
+                La persona debe haber entrado una vez a Colectia y confirmado su correo. Le llegará
+                una invitación al entrar y tendrá el rol cuando la acepte. Si ya está en el personal
+                con otro rol, se le cambia el rol.
               </p>
               <button type="submit" className={`${ui.botonPrimario} self-start`}>
                 Invitar
@@ -69,7 +71,10 @@ export default async function PersonalPage() {
 
       <ul className={`${ui.tarjeta} divide-y divide-gray-100 p-0`}>
         {miembros.map((m) => {
-          const nombre = nombrePersona(m.personas)
+          const invitacion = rolDeInvitacion(m.rol)
+          const rolMostrado = invitacion ?? m.rol
+          // Mientras la invitación está pendiente solo se conoce el correo que se escribió.
+          const nombre = invitacion ? (m.correo_invitacion ?? 'Invitación pendiente') : nombrePersona(m.personas)
           return (
             <li key={m.id} className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
               <div className="min-w-0 flex-1">
@@ -79,27 +84,34 @@ export default async function PersonalPage() {
                     <span className="ml-2 text-xs font-normal text-gray-600">(tú)</span>
                   )}
                 </p>
-                {m.personas?.correo && nombre !== m.personas.correo && (
+                {invitacion && <p className="text-sm text-gray-600">Invitación pendiente de aceptar</p>}
+                {!invitacion && m.personas?.correo && nombre !== m.personas.correo && (
                   <p className="text-sm text-gray-600 [overflow-wrap:anywhere]">{m.personas.correo}</p>
                 )}
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-3">
                 <span
                   className={`${ui.pildora} ${
-                    m.rol === 'admin_institucion'
-                      ? 'bg-primario-suave text-primario'
-                      : 'bg-gray-100 text-gray-800'
+                    invitacion
+                      ? ui.estadoPendiente
+                      : rolMostrado === 'admin_institucion'
+                        ? 'bg-primario-suave text-primario'
+                        : 'bg-gray-100 text-gray-800'
                   }`}
                 >
-                  {m.rol === 'admin_institucion' ? 'Administrador' : 'Recaudador'}
+                  {rolMostrado === 'admin_institucion' ? 'Administrador' : 'Recaudador'}
                 </span>
                 {m.persona_id !== sesion.userId && (
                   <FormularioAccion action={eliminarMiembro.bind(null, m.id)}>
                     <ConfirmSubmitButton
-                      confirmMessage={`¿Quitar a ${nombre} del personal de la institución?`}
+                      confirmMessage={
+                        invitacion
+                          ? `¿Cancelar la invitación de ${nombre}?`
+                          : `¿Quitar a ${nombre} del personal de la institución? Sus pagos y eventos registrados se conservan.`
+                      }
                       className={ui.botonQuitar}
                     >
-                      Quitar
+                      {invitacion ? 'Cancelar' : 'Quitar'}
                     </ConfirmSubmitButton>
                   </FormularioAccion>
                 )}

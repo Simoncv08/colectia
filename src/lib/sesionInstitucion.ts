@@ -75,7 +75,8 @@ export const obtenerSesionInstitucion = cache(async (): Promise<SesionInstitucio
 // Para las acciones del personal: la institución sale de la sesión, nunca del formulario.
 export async function requerirPersonal({
   soloAdmin = false,
-  institucionActiva = false,
+  // Toda acción del personal cambia datos; con la institución suspendida o cancelada solo se consulta.
+  institucionActiva = true,
 }: { soloAdmin?: boolean; institucionActiva?: boolean } = {}): Promise<SesionInstitucion> {
   const sesion = await obtenerSesionInstitucion()
   if (!sesion) {

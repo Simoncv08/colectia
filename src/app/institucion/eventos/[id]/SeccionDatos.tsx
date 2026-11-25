@@ -52,6 +52,7 @@ export default function SeccionDatos({
         {evento.imagen_url && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
+            referrerPolicy="no-referrer"
             src={evento.imagen_url}
             alt={evento.nombre}
             className="h-28 w-40 rounded-lg border border-gray-200 object-cover"
