@@ -17,12 +17,12 @@ En Supabase: **Authentication → Emails → Templates** (en el proyecto `kbxswl
 
 El logo (la abeja) se carga desde `https://www.colectia.org/colectia-abeja-correo.png`, así que el cambio debe estar publicado en Vercel para que se vea.
 
-Los enlaces usan `{{ .ConfirmationURL }}`, que lleva a `/auth/callback` de la app; no hay que cambiar código. No borres las partes entre `{{ }}`: Supabase las reemplaza por el enlace, el correo o el código.
+Los enlaces llevan a la página `/auth/confirmar` de la app con `{{ .TokenHash }}` y el tipo de enlace (`email`, `invite`, `email_change` o `recovery`). Esa página solo muestra un botón; el enlace se usa cuando la persona lo toca. Así:
 
-Dos cosas para tener en cuenta:
+- Los escáneres de correo (por ejemplo, Outlook con "Vínculos seguros") abren el enlace sin gastarlo, porque no tocan botones.
+- El enlace funciona aunque se abra en otro navegador o celular distinto al que lo pidió.
 
-- El enlace hay que abrirlo en el mismo navegador donde se pidió (por eso el correo lo dice).
-- Algunos correos de empresa (por ejemplo, Outlook con "Vínculos seguros") abren los enlaces antes que la persona y los dejan vencidos. Si un acudiente reporta "el enlace ya venció", esa es la causa probable.
+`{{ .SiteURL }}` es el "Site URL" de **Authentication → URL Configuration**, que debe ser `https://www.colectia.org`. No borres las partes entre `{{ }}`: Supabase las reemplaza por el enlace, el correo o el código. El inicio de sesión con Google sigue usando `/auth/callback`.
 
 ## 2. Servicio de correo propio con Resend
 

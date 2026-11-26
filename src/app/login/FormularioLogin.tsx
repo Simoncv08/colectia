@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { AuthError } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { ui } from '@/lib/ui'
+import Turnstile from '@/components/Turnstile'
 
 type Modo = 'entrar' | 'registro' | 'enlace' | 'olvido'
 
@@ -15,6 +16,9 @@ const LARGO_MINIMO = 8
 function traducirError(error: AuthError): string {
   const codigo = error.code ?? ''
   const texto = error.message.toLowerCase()
+  if (codigo === 'captcha_failed' || texto.includes('captcha')) {
+    return 'No se pudo completar la verificación de seguridad. Espera a que aparezca la marca de verificación y vuelve a intentar.'
+  }
   if (codigo === 'invalid_credentials' || texto.includes('invalid login credentials')) {
     return 'Correo o contraseña incorrectos.'
   }
@@ -57,6 +61,9 @@ export default function FormularioLogin({ modoInicial = 'entrar' }: { modoInicia
   const [enviando, setEnviando] = useState(false)
   const [mensaje, setMensaje] = useState<Mensaje>(null)
   const [verContrasena, setVerContrasena] = useState(false)
+  // Token de Cloudflare Turnstile: sirve para un solo envío, después se pide otro.
+  const [captcha, setCaptcha] = useState<string | null>(null)
+  const [reiniciarCaptcha, setReiniciarCaptcha] = useState(0)
 
   function cambiarModo(nuevo: Modo) {
     setModo(nuevo)
@@ -86,10 +93,15 @@ export default function FormularioLogin({ modoInicial = 'entrar' }: { modoInicia
     const supabase = createClient()
 
     setMensaje(null)
+    if (!captcha) {
+      setMensaje({ tipo: 'error', texto: 'Espera un momento a que termine la verificación de seguridad.' })
+      return
+    }
+    const captchaToken = captcha
     setEnviando(true)
     try {
       if (modo === 'entrar') {
-        const { error } = await supabase.auth.signInWithPassword({ email, password: contrasena })
+        const { error } = await supabase.auth.signInWithPassword({ email, password: contrasena, options: { captchaToken } })
         if (error) {
           setMensaje({ tipo: 'error', texto: traducirError(error) })
           return
@@ -118,6 +130,7 @@ export default function FormularioLogin({ modoInicial = 'entrar' }: { modoInicia
           password: contrasena,
           options: {
             emailRedirectTo: urlRegreso(),
+            captchaToken,
             data: { nombres, apellidos, full_name: `${nombres} ${apellidos}`.trim() },
           },
         })
@@ -147,7 +160,7 @@ export default function FormularioLogin({ modoInicial = 'entrar' }: { modoInicia
       if (modo === 'enlace') {
         const { error } = await supabase.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: urlRegreso(), shouldCreateUser: true },
+          options: { emailRedirectTo: urlRegreso(), shouldCreateUser: true, captchaToken },
         })
         if (error) {
           setMensaje({ tipo: 'error', texto: traducirError(error) })
@@ -155,13 +168,14 @@ export default function FormularioLogin({ modoInicial = 'entrar' }: { modoInicia
         }
         setMensaje({
           tipo: 'ok',
-          texto: `Te enviamos un enlace a ${email}. Ábrelo en este mismo navegador para entrar.`,
+          texto: `Te enviamos un enlace a ${email}. Ábrelo y toca "Confirmar" para entrar.`,
         })
         return
       }
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: urlRegreso('/restablecer'),
+        captchaToken,
       })
       if (error) {
         setMensaje({ tipo: 'error', texto: traducirError(error) })
@@ -169,10 +183,13 @@ export default function FormularioLogin({ modoInicial = 'entrar' }: { modoInicia
       }
       setMensaje({
         tipo: 'ok',
-        texto: `Si existe una cuenta con ${email}, te llegará un correo con un enlace para crear una contraseña nueva. Ábrelo en este mismo navegador.`,
+        texto: `Si existe una cuenta con ${email}, te llegará un correo con un enlace para crear una contraseña nueva.`,
       })
     } finally {
       setEnviando(false)
+      // Cada token se usa una vez: se pide uno nuevo para el siguiente intento.
+      setCaptcha(null)
+      setReiniciarCaptcha((n) => n + 1)
     }
   }
 
@@ -315,6 +332,8 @@ export default function FormularioLogin({ modoInicial = 'entrar' }: { modoInicia
         {modo === 'olvido' && (
           <p className={ui.ayuda}>Te enviaremos un enlace para crear una contraseña nueva.</p>
         )}
+
+        <Turnstile onToken={setCaptcha} reiniciar={reiniciarCaptcha} />
 
         {mensaje && (
           <p
