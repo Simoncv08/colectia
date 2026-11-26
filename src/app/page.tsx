@@ -1,11 +1,14 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import type { Metadata } from 'next'
 import PaginaInicio from '@/components/PaginaInicio'
+import { DESCRIPCION_SITIO, OPEN_GRAPH_BASE, TITULO_SITIO } from '@/lib/sitio'
 
-export const metadata = {
-  title: { absolute: 'Colectia · Pagos escolares claros para familias y colegios' },
-  description:
-    'Colectia organiza el recaudo de las actividades escolares: el colegio sabe quién ya pagó y las familias ven sus actividades y pagos.',
+export const metadata: Metadata = {
+  title: { absolute: TITULO_SITIO },
+  description: DESCRIPCION_SITIO,
+  alternates: { canonical: '/' },
+  openGraph: { ...OPEN_GRAPH_BASE, url: '/', title: TITULO_SITIO, description: DESCRIPCION_SITIO },
 }
 
 // Sin sesión: la página de inicio pública. Con sesión: el panel de cada rol. Si alguien es

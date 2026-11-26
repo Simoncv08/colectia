@@ -1,4 +1,8 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
+import { SIN_INDEXAR } from '@/lib/sitio'
+
+export const metadata: Metadata = { title: 'No se pudo iniciar sesión', robots: SIN_INDEXAR }
 
 export default function AuthCodeErrorPage() {
   return (

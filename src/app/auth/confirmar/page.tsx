@@ -3,8 +3,10 @@ import Marca from '@/components/Marca'
 import { ui } from '@/lib/ui'
 import { confirmarEnlace } from './actions'
 import { esTipoEnlace, esTokenValido } from '@/lib/enlacesCorreo'
+import type { Metadata } from 'next'
+import { SIN_INDEXAR } from '@/lib/sitio'
 
-export const metadata = { title: 'Confirmar' }
+export const metadata: Metadata = { title: 'Confirmar', robots: SIN_INDEXAR }
 
 const TEXTOS: Record<string, { titulo: string; boton: string }> = {
   email: { titulo: 'Confirma para entrar a Colectia', boton: 'Confirmar y entrar' },

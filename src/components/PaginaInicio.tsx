@@ -20,6 +20,7 @@ import Marca from '@/components/Marca'
 import type { CSSProperties } from 'react'
 import LogoAbeja from '@/components/LogoAbeja'
 import { CORREO_CONTACTO } from '@/lib/contacto'
+import { DESCRIPCION_SITIO, URL_SITIO } from '@/lib/sitio'
 import { icono, iconoGrande } from '@/lib/iconos'
 import { ui } from '@/lib/ui'
 
@@ -126,6 +127,88 @@ const CONFIANZA: { Icono: LucideIcon; titulo: string; texto: string }[] = [
   },
 ]
 
+// Cada respuesta se entiende sola: así la pueden citar Google y los asistentes de IA. El mismo
+// texto va en los datos estructurados (FAQPage), que deben coincidir con lo visible.
+const PREGUNTAS: { pregunta: string; respuesta: string }[] = [
+  {
+    pregunta: '¿Cuánto le cuesta Colectia a las familias?',
+    respuesta:
+      'Nada. Para padres, madres y acudientes, crear la cuenta, vincular estudiantes y consultar actividades y pagos es gratis. El valor de cada actividad lo define el colegio.',
+  },
+  {
+    pregunta: '¿Quién recibe el dinero de las actividades?',
+    respuesta:
+      'El colegio. Colectia no recibe ni guarda el dinero. Hoy las familias pagan en efectivo al recaudador del colegio, que registra el pago en Colectia. Con los pagos en línea, el dinero llegará directo a la cuenta del colegio.',
+  },
+  {
+    pregunta: '¿Cómo vinculo a mi estudiante?',
+    respuesta:
+      'Crea tu cuenta, toca "Vincular estudiante" y escribe el código o el número de documento que te dio el colegio. Desde ese momento ves las actividades de su curso y los pagos registrados.',
+  },
+  {
+    pregunta: '¿Los estudiantes necesitan una cuenta?',
+    respuesta:
+      'No. La cuenta es del padre, madre o acudiente, y desde ella ve a todos sus estudiantes, aunque estudien en colegios distintos. Los estudiantes no manejan dinero ni contraseñas en Colectia.',
+  },
+  {
+    pregunta: '¿Quién puede ver los datos de mi estudiante?',
+    respuesta:
+      'Su colegio y sus acudientes. Cada colegio ve únicamente a sus estudiantes, y el número de documento solo lo ve el administrador del colegio. Colectia no usa los datos para publicidad.',
+  },
+  {
+    pregunta: '¿Se puede pagar en línea?',
+    respuesta:
+      'Todavía no. Estamos preparando los pagos con PSE y Botón Bancolombia para que los estudiantes no tengan que llevar efectivo. Mientras tanto, el pago se hace con el recaudador del colegio y queda registrado en Colectia.',
+  },
+  {
+    pregunta: '¿Cómo empieza mi colegio a usar Colectia?',
+    respuesta: `Escríbenos a ${CORREO_CONTACTO}. Te mostramos cómo funciona, creamos el espacio del colegio y su administrador carga los cursos y los estudiantes desde un archivo de Excel.`,
+  },
+]
+
+// Quién es Colectia y qué hace, en schema.org, para buscadores y asistentes de IA.
+const DATOS_ESTRUCTURADOS = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${URL_SITIO}/#organizacion`,
+      name: 'Colectia',
+      url: URL_SITIO,
+      logo: `${URL_SITIO}/colectia-logo.png`,
+      email: CORREO_CONTACTO,
+      areaServed: { '@type': 'Country', name: 'Colombia' },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${URL_SITIO}/#sitio`,
+      url: URL_SITIO,
+      name: 'Colectia',
+      inLanguage: 'es-CO',
+      publisher: { '@id': `${URL_SITIO}/#organizacion` },
+    },
+    {
+      '@type': 'WebApplication',
+      name: 'Colectia',
+      url: URL_SITIO,
+      description: DESCRIPCION_SITIO,
+      applicationCategory: 'FinanceApplication',
+      operatingSystem: 'Web',
+      inLanguage: 'es-CO',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'COP', description: 'Gratis para las familias.' },
+      publisher: { '@id': `${URL_SITIO}/#organizacion` },
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: PREGUNTAS.map(({ pregunta, respuesta }) => ({
+        '@type': 'Question',
+        name: pregunta,
+        acceptedAnswer: { '@type': 'Answer', text: respuesta },
+      })),
+    },
+  ],
+}
+
 // En esta página "primario" es la tinta de Colectia, así los componentes compartidos (botones,
 // enlaces, foco) quedan en azul noche, y los tonos suaves son miel.
 const COLORES_MARCA = {
@@ -200,6 +283,11 @@ export default function PaginaInicio() {
   const anio = new Date().getFullYear()
   return (
     <div className="flex min-h-screen flex-col bg-fondo text-tinta" style={COLORES_MARCA}>
+      <script
+        type="application/ld+json"
+        // Datos propios y fijos; igual se escapa "<" como recomienda la guía de Next.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(DATOS_ESTRUCTURADOS).replace(/</g, '\\u003c') }}
+      />
       <header className="sticky top-0 z-30 border-b border-tinta/10 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1120px] items-center justify-between gap-3 px-4 py-2 sm:px-6">
           <Link href="/" className="py-2" aria-label="Colectia, inicio">
@@ -346,6 +434,23 @@ export default function PaginaInicio() {
               </Link>
               .
             </p>
+          </div>
+        </section>
+
+        {/* Preguntas frecuentes */}
+        <section aria-labelledby="titulo-preguntas" className="border-b border-tinta/10 bg-white">
+          <div className="mx-auto max-w-[1120px] px-4 py-12 sm:px-6 sm:py-16">
+            <h2 id="titulo-preguntas" className="text-2xl font-bold text-tinta">
+              Preguntas frecuentes
+            </h2>
+            <ul className="mt-6 grid gap-x-10 gap-y-6 md:grid-cols-2">
+              {PREGUNTAS.map(({ pregunta, respuesta }) => (
+                <li key={pregunta} className="flex flex-col gap-1">
+                  <h3 className="font-semibold text-tinta">{pregunta}</h3>
+                  <p className="text-[15px] leading-6 text-gray-700">{respuesta}</p>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 

@@ -1,6 +1,10 @@
 import Link from 'next/link'
 import FormularioContrasena from '@/components/FormularioContrasena'
 import { ui } from '@/lib/ui'
+import type { Metadata } from 'next'
+import { SIN_INDEXAR } from '@/lib/sitio'
+
+export const metadata: Metadata = { title: 'Nueva contraseña', robots: SIN_INDEXAR }
 
 // Se llega desde el correo de recuperación, después de que /auth/callback abrió la sesión.
 export default function RestablecerPage() {

@@ -6,6 +6,10 @@ import MenuCuenta from '@/components/MenuCuenta'
 import NavAdmin from '@/components/NavAdmin'
 import PuertaLegal from '@/components/PuertaLegal'
 import { ui } from '@/lib/ui'
+import type { Metadata } from 'next'
+import { SIN_INDEXAR } from '@/lib/sitio'
+
+export const metadata: Metadata = { robots: SIN_INDEXAR }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const sesion = await obtenerSesionSuperAdmin()

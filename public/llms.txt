@@ -1,0 +1,36 @@
+# Colectia
+
+> Colectia es una aplicación web para colegios de Colombia que organiza el recaudo de las actividades escolares que requieren un pago (salidas pedagógicas, eventos, celebraciones y actividades de grado). El colegio sabe quién ya pagó y quién falta, y cada familia ve las actividades de sus estudiantes y los pagos registrados.
+
+Colectia no recibe ni guarda el dinero: el dinero de las actividades es del colegio. Para las familias es gratis. Hoy los pagos se hacen en efectivo con el recaudador del colegio, que los registra en Colectia; los pagos en línea con PSE y Botón Bancolombia están en preparación y llevarán el dinero directo a la cuenta de cada colegio.
+
+## Para familias y acudientes
+
+- La cuenta es del padre, madre o acudiente; los estudiantes no tienen cuenta.
+- Se vincula a cada estudiante con el código o el número de documento que entrega el colegio, aunque estudien en colegios distintos.
+- Se entra con correo y contraseña, con un enlace enviado al correo o con una cuenta de Google.
+
+## Para colegios
+
+- Actividades con uno o varios productos, precio fijo o por unidad, fecha límite y dirigidas a cursos o grupos de cursos.
+- Cobro por salón y registro de pagos en efectivo, con devueltas.
+- Reportes del recaudo por actividad, curso y persona, en pantalla y en Excel.
+- Equipo con roles (administradores y recaudadores) y registro de cada acción.
+- Carga de cursos y estudiantes desde un archivo de Excel.
+
+## Datos y seguridad
+
+- La información de cada colegio está separada de la de los demás.
+- El número de documento del estudiante solo lo ve el administrador de su colegio.
+- Colectia no usa los datos para publicidad.
+
+## Páginas
+
+- [Inicio](https://www.colectia.org/): qué es Colectia, cómo funciona y preguntas frecuentes.
+- [Entrar o crear cuenta](https://www.colectia.org/login)
+- [Términos y condiciones](https://www.colectia.org/terminos)
+- [Política de privacidad](https://www.colectia.org/privacidad)
+
+## Contacto
+
+- Soporte y colegios interesados: soporte@colectia.org

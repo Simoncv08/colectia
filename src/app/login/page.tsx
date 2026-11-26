@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
@@ -6,7 +7,13 @@ import Marca from '@/components/Marca'
 import { ui } from '@/lib/ui'
 import { CORREO_CONTACTO } from '@/lib/contacto'
 
-export const metadata = { title: 'Entrar' }
+export const metadata: Metadata = {
+  title: 'Entrar o crear cuenta',
+  description:
+    'Entra a Colectia o crea tu cuenta gratis para ver las actividades del colegio de tus estudiantes y los pagos registrados.',
+  // /login?modo=registro es la misma página.
+  alternates: { canonical: '/login' },
+}
 
 // /login?modo=registro abre directamente "Crear cuenta" (lo usa la página de inicio).
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ modo?: string }> }) {

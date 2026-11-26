@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Manrope } from 'next/font/google'
 import './globals.css'
 import ProveedorAvisos from '@/components/Avisos'
+import { DESCRIPCION_SITIO, OPEN_GRAPH_BASE, URL_SITIO } from '@/lib/sitio'
 
 // Por qué Manrope: ver DESIGN.md.
 const manrope = Manrope({
@@ -11,8 +12,12 @@ const manrope = Manrope({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(URL_SITIO),
   title: { template: '%s · Colectia', default: 'Colectia' },
-  description: 'Pagos de actividades escolares, sin efectivo en manos de los estudiantes.',
+  description: DESCRIPCION_SITIO,
+  applicationName: 'Colectia',
+  openGraph: OPEN_GRAPH_BASE,
+  twitter: { card: 'summary_large_image' },
 }
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

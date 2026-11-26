@@ -6,8 +6,10 @@ import DosPasosConfigurar from '@/components/DosPasosConfigurar'
 import DosPasosRecuperacion from '@/components/DosPasosRecuperacion'
 import { obtenerAccesoSuperAdmin } from '@/lib/sesionSuperAdmin'
 import { ui } from '@/lib/ui'
+import type { Metadata } from 'next'
+import { SIN_INDEXAR } from '@/lib/sitio'
 
-export const metadata = { title: 'Verificación en dos pasos' }
+export const metadata: Metadata = { title: 'Verificación en dos pasos', robots: SIN_INDEXAR }
 
 // Fuera del layout de /admin: ese layout manda aquí al super administrador sin el segundo paso.
 export default async function VerificacionPage() {
