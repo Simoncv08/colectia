@@ -42,7 +42,7 @@ export async function eliminarMiembro(membresiaId: string, _formData: FormData) 
         throw new Error(mensajeBD(error))
       }
       revalidatePath('/institucion', 'layout')
-      return 'La invitación quedó cancelada.'
+      return 'La invitación quedó eliminada.'
     }
 
     await retirar(sesion.supabase, miembro.id)

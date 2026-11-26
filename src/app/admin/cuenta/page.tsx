@@ -1,6 +1,7 @@
 import { obtenerSesionSuperAdmin } from '@/lib/sesionSuperAdmin'
 import { TarjetaContrasena, TarjetaDocumentosLegales, TarjetaMisDatos } from '@/components/Cuenta'
 import { ui } from '@/lib/ui'
+import TarjetaDosPasos from './TarjetaDosPasos'
 
 export const metadata = { title: 'Mi cuenta' }
 
@@ -12,10 +13,13 @@ export default async function CuentaSuperAdminPage() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <div>
         <h1 className={ui.titulo}>Mi cuenta</h1>
-        <p className={ui.textoSecundario}>Tus datos personales, tu contraseña y los documentos que aceptaste.</p>
+        <p className={ui.textoSecundario}>
+          Tus datos personales, tu contraseña, la verificación en dos pasos y los documentos que aceptaste.
+        </p>
       </div>
       <TarjetaMisDatos persona={sesion.persona} correo={sesion.correo} />
       <TarjetaContrasena />
+      <TarjetaDosPasos />
       <TarjetaDocumentosLegales personaId={sesion.userId} />
     </div>
   )

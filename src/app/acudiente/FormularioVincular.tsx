@@ -1,9 +1,10 @@
 'use client'
 
-import { startTransition, useActionState, useState, type FormEvent } from 'react'
+import { startTransition, useActionState, useEffect, useRef, useState, type FormEvent } from 'react'
 import { vincularEstudiante } from './actions'
 import type { Resultado } from '@/lib/resultado'
 import { ui } from '@/lib/ui'
+import { useAvisos } from '@/components/Avisos'
 
 type Institucion = { id: string; nombre: string }
 
@@ -13,6 +14,16 @@ export default function FormularioVincular({ instituciones }: { instituciones: I
     vincularEstudiante,
     null
   )
+  const formulario = useRef<HTMLFormElement>(null)
+  const mostrarAviso = useAvisos()
+
+  // Al vincular bien: aviso abajo, formulario vacío y la ventana cerrada.
+  useEffect(() => {
+    if (resultado?.tipo !== 'ok') return
+    mostrarAviso(resultado)
+    formulario.current?.reset()
+    formulario.current?.closest('dialog')?.close()
+  }, [resultado, mostrarAviso])
 
   // Con onSubmit y no con action={...}: React vacía el formulario al usar action.
   function enviar(ev: FormEvent<HTMLFormElement>) {
@@ -22,7 +33,7 @@ export default function FormularioVincular({ instituciones }: { instituciones: I
   }
 
   return (
-    <form onSubmit={enviar} className="flex flex-col gap-4">
+    <form ref={formulario} onSubmit={enviar} className="flex flex-col gap-4">
       <input type="hidden" name="metodo" value={metodo} />
 
       <fieldset className="flex flex-col gap-2">
@@ -82,15 +93,8 @@ export default function FormularioVincular({ instituciones }: { instituciones: I
         funcionan, contacta directamente al colegio.
       </p>
 
-      {resultado && (
-        <p
-          role={resultado.tipo === 'error' ? 'alert' : 'status'}
-          className={
-            resultado.tipo === 'ok'
-              ? ui.avisoVerde
-              : ui.avisoRojo
-          }
-        >
+      {resultado?.tipo === 'error' && (
+        <p role="alert" className={ui.avisoRojo}>
           {resultado.texto}
         </p>
       )}

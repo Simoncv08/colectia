@@ -10,13 +10,7 @@ type DatosEvento = {
 }
 
 // Campos del evento, iguales al crear y al editar. Sin "evento" es el formulario de creación.
-export default function CamposEvento({
-  institucionId,
-  evento,
-}: {
-  institucionId: string
-  evento?: DatosEvento
-}) {
+export default function CamposEvento({ evento }: { evento?: DatosEvento }) {
   const opcional = evento ? '' : ' (opcional)'
   return (
     <>
@@ -55,13 +49,9 @@ export default function CamposEvento({
       </p>
       {evento ? (
         // La key reinicia el selector cuando cambia la imagen guardada.
-        <SelectorImagen
-          key={evento.imagen_url ?? 'sin-imagen'}
-          institucionId={institucionId}
-          valorInicial={evento.imagen_url}
-        />
+        <SelectorImagen key={evento.imagen_url ?? 'sin-imagen'} valorInicial={evento.imagen_url} />
       ) : (
-        <SelectorImagen institucionId={institucionId} limpiarAlReiniciar />
+        <SelectorImagen limpiarAlReiniciar />
       )}
     </>
   )

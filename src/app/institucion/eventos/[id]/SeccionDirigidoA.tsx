@@ -10,6 +10,8 @@ import {
 } from '../actions'
 import { Plus, X } from 'lucide-react'
 import { icono, iconoGrande } from '@/lib/iconos'
+import { compararCursos, compararEstudiantes } from '@/lib/formato'
+import { agrupar } from '@/lib/colecciones'
 
 type Opcion = { id: string; nombre: string }
 type EstudianteOpcion = { id: string; nombres: string; apellidos: string; curso_grado: string | null }
@@ -21,6 +23,14 @@ export type GrupoDirigido = {
 }
 
 const conCurso = (e: { curso_grado: string | null }) => (e.curso_grado ? ` (${e.curso_grado})` : '')
+
+// Para elegir un estudiante puntual: por salón de menor a mayor y, dentro, por apellido.
+function agruparPorSalon(estudiantes: EstudianteOpcion[]) {
+  return Array.from(agrupar(estudiantes, (e) => e.curso_grado ?? ''), ([salon, lista]) => ({
+    salon,
+    estudiantes: [...lista].sort(compararEstudiantes),
+  })).sort((a, b) => compararCursos(a.salon, b.salon))
+}
 
 export default function SeccionDirigidoA({
   eventoId,
@@ -107,11 +117,14 @@ export default function SeccionDirigidoA({
                     <option value="" disabled>
                       Selecciona un estudiante
                     </option>
-                    {estudiantes.map((e) => (
-                      <option key={e.id} value={e.id}>
-                        {e.apellidos} {e.nombres}
-                        {conCurso(e)}
-                      </option>
+                    {agruparPorSalon(estudiantes).map(({ salon, estudiantes: delSalon }) => (
+                      <optgroup key={salon || 'sin-curso'} label={salon || 'Sin curso'}>
+                        {delSalon.map((e) => (
+                          <option key={e.id} value={e.id}>
+                            {e.apellidos} {e.nombres}
+                          </option>
+                        ))}
+                      </optgroup>
                     ))}
                   </select>
                 </label>

@@ -106,12 +106,13 @@ export default async function PersonalPage() {
                     <ConfirmSubmitButton
                       confirmMessage={
                         invitacion
-                          ? `¿Cancelar la invitación de ${nombre}?`
+                          ? `¿Eliminar la invitación de ${nombre}?`
                           : `¿Quitar a ${nombre} del personal de la institución? Sus pagos y eventos registrados se conservan.`
                       }
+                      textoConfirmar={invitacion ? 'Eliminar' : 'Quitar'}
                       className={ui.botonQuitar}
                     >
-                      {invitacion ? 'Cancelar' : 'Quitar'}
+                      {invitacion ? 'Eliminar invitación' : 'Quitar'}
                     </ConfirmSubmitButton>
                   </FormularioAccion>
                 )}

@@ -43,18 +43,18 @@ export default function BotonDescargarExcel({ parametros }: { parametros: string
   }
 
   return (
-    <div className="ml-auto flex flex-col items-end gap-1">
+    <div className="flex w-full flex-col gap-1 sm:ml-auto sm:w-auto sm:items-end">
       <button
         type="button"
         onClick={descargar}
         disabled={descargando}
-        className={`${ui.botonSecundario} disabled:cursor-wait`}
+        className={`${ui.botonSecundario} w-full disabled:cursor-wait sm:w-auto`}
       >
         <Download {...iconoGrande} />
         {descargando ? 'Preparando Excel…' : 'Descargar Excel'}
       </button>
       {error && (
-        <p role="alert" className="max-w-xs text-right text-xs text-peligro">
+        <p role="alert" className="max-w-xs text-xs text-peligro sm:text-right">
           {error}
         </p>
       )}

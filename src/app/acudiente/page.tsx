@@ -5,6 +5,7 @@ import Ventana from '@/components/Ventana'
 import { pesos } from '@/lib/formato'
 import { estadoEvento, formatearFecha, hoyColombia } from '@/lib/estadoEvento'
 import { obtenerSesionAcudiente, type EstudianteVinculado } from '@/lib/sesionAcudiente'
+import ActividadesQueGestionas from './ActividadesQueGestionas'
 import { cobrosPorEvento, type CobroEvento } from '@/lib/saldoAcudiente'
 import { estiloPaleta } from '@/lib/paletas'
 import { icono, iconoGrande } from '@/lib/iconos'
@@ -13,9 +14,10 @@ import { ui } from '@/lib/ui'
 export const metadata = { title: 'Mis estudiantes' }
 
 export default async function AcudientePage() {
-  const { supabase, vinculos, apariencias, persona } = await obtenerSesionAcudiente()
+  const { supabase, vinculos, apariencias, persona, personal } = await obtenerSesionAcudiente()
 
-  // La RLS ya deja solo los eventos de sus estudiantes y oculta los finalizados.
+  // La RLS deja los eventos de sus estudiantes y, si la cuenta es personal de un colegio, todos
+  // los de ese colegio. Abajo se separan.
   const { data: eventosCrudos, error: errorEventos } = await supabase
     .from('eventos')
     .select(
@@ -24,25 +26,36 @@ export default async function AcudientePage() {
     .order('created_at', { ascending: false })
 
   const hoy = hoyColombia()
-  const eventos = (eventosCrudos ?? [])
+  const vigentes = (eventosCrudos ?? [])
     .map((ev) => ({ ...ev, estado: estadoEvento(ev, hoy) }))
     .filter((ev) => ev.estado !== 'finalizado')
     // Primero las que cierran antes; las que no tienen fecha límite, al final.
     .sort((a, b) => (a.fecha_limite_pago ?? '9999').localeCompare(b.fecha_limite_pago ?? '9999'))
 
-  // Las dos consultas solo devuelven filas de sus propios estudiantes (RLS).
-  const ids = eventos.map((ev) => ev.id)
-  const [{ data: grupos }, { data: pagos }] = ids.length
+  // Los grupos dicen a qué estudiantes va cada evento; los pagos, solo los de sus estudiantes.
+  const ids = vigentes.map((ev) => ev.id)
+  const idsEstudiantes = vinculos.map((v) => v.estudiantes.id)
+  const [{ data: grupos }, { data: pagos }] = ids.length && idsEstudiantes.length
     ? await Promise.all([
         supabase.from('evento_grupos').select('evento_id, curso_grado, estudiante_id').in('evento_id', ids),
-        supabase.from('registros_pago').select('evento_id, estudiante_id, monto').in('evento_id', ids),
+        supabase
+          .from('registros_pago')
+          .select('evento_id, estudiante_id, monto')
+          .in('evento_id', ids)
+          .in('estudiante_id', idsEstudiantes),
       ])
     : [{ data: [] }, { data: [] }]
   const cobros = cobrosPorEvento(
-    eventos,
+    vigentes,
     grupos ?? [],
     pagos ?? [],
     vinculos.map((v) => v.estudiantes)
+  )
+  // Una actividad aparece como de la familia solo si va dirigida a uno de sus estudiantes.
+  const eventos = vigentes.filter((ev) => (cobros.get(ev.id)?.estudiantes.length ?? 0) > 0)
+  const institucionesPersonal = new Set(personal.map((p) => p.institucionId))
+  const eventosGestion = vigentes.filter(
+    (ev) => !cobros.get(ev.id)?.estudiantes.length && institucionesPersonal.has(ev.institucion_id)
   )
 
   // Resumen de arriba, sin hablar de deudas: muchas actividades son opcionales.
@@ -89,7 +102,7 @@ export default async function AcudientePage() {
         <>
           <section aria-labelledby="titulo-actividades" className="flex flex-col gap-4">
             <h2 id="titulo-actividades" className={ui.subtitulo}>
-              Actividades
+              Actividades de tus estudiantes
             </h2>
             {!eventos.length && (
               <div className={`${ui.tarjeta} flex flex-col items-center gap-2 text-center`}>
@@ -202,6 +215,8 @@ export default async function AcudientePage() {
           </section>
         </>
       )}
+
+      {personal.length > 0 && <ActividadesQueGestionas eventos={eventosGestion} personal={personal} />}
 
       <p className="flex items-start gap-2 text-[13px] text-gray-600">
         <Info {...icono} className="mt-0.5 shrink-0" />

@@ -1,5 +1,5 @@
 import EsqueletoCuenta from '@/components/EsqueletoCuenta'
 
 export default function CargandoPagina() {
-  return <EsqueletoCuenta />
+  return <EsqueletoCuenta tarjetasExtra={1} />
 }

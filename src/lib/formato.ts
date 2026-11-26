@@ -40,11 +40,24 @@ export function nombreCurso(curso: string | null | undefined) {
   return curso || 'Sin curso asignado'
 }
 
-// Orden natural (2A antes que 10A); los que no tienen curso van al final.
+// Preescolar antes de primero, en el orden en que se cursa.
+const PREESCOLAR = ['parvulos', 'prejardin', 'prekinder', 'jardin', 'kinder', 'transicion']
+
+function rangoPreescolar(curso: string) {
+  const base = curso.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().replace(/[^a-z]/g, '')
+  const i = PREESCOLAR.findIndex((p) => base.startsWith(p))
+  return i === -1 ? PREESCOLAR.length : i
+}
+
+// Orden de salones de menor a mayor: preescolar y luego 1A, 2A … 11B (2A antes que 10A).
+// Sin curso, al final.
 export function compararCursos(a: string | null | undefined, b: string | null | undefined) {
   if (!a) return b ? 1 : 0
   if (!b) return -1
-  return a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' })
+  return (
+    rangoPreescolar(a) - rangoPreescolar(b) ||
+    a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' })
+  )
 }
 
 type ConApellidos = { nombres: string; apellidos: string }

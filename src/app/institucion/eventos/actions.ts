@@ -3,13 +3,21 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { exigirEventoPropio, requerirPersonal, type SesionInstitucion } from '@/lib/sesionInstitucion'
-import { accion, mensajeBD } from '@/lib/resultado'
+import { accion, accionConValor, mensajeBD } from '@/lib/resultado'
 import { leerFecha, validarFechas } from '@/lib/estadoEvento'
+import { limpiarImagen } from '@/lib/imagenes'
 
 // Enlace público del bucket "eventos" (supabase/migraciones/10_storage_imagenes_eventos.sql).
 const PREFIJO_IMAGENES = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/eventos/`
 
-function leerDatosEvento(formData: FormData) {
+// Solo imágenes del bucket de Colectia y de la carpeta de esta institución (las sube
+// subirImagenEvento; las extensiones viejas son de imágenes subidas antes de la migración 25).
+function esImagenPropia(url: string, institucionId: string) {
+  if (!url.startsWith(PREFIJO_IMAGENES)) return false
+  return new RegExp(`^${institucionId}/[0-9a-f-]{36}\\.(webp|jpe?g|png|gif)$`).test(url.slice(PREFIJO_IMAGENES.length))
+}
+
+function leerDatosEvento(formData: FormData, institucionId: string) {
   const nombre = String(formData.get('nombre') ?? '').trim()
   const descripcion = String(formData.get('descripcion') ?? '').trim()
   const imagen_url = String(formData.get('imagen_url') ?? '').trim()
@@ -17,8 +25,8 @@ function leerDatosEvento(formData: FormData) {
   const fecha_evento = leerFecha(formData, 'fecha_evento')
 
   if (!nombre) throw new Error('El nombre del evento es obligatorio.')
-  if (imagen_url && !/^https:\/\//i.test(imagen_url)) {
-    throw new Error('El enlace de la imagen debe empezar por https://')
+  if (imagen_url && !esImagenPropia(imagen_url, institucionId)) {
+    throw new Error('La imagen del evento debe subirse desde tu equipo o celular.')
   }
   validarFechas(fecha_limite_pago, fecha_evento)
 
@@ -44,10 +52,29 @@ function revalidarEvento(eventoId?: string) {
   revalidatePath('/acudiente', 'layout')
 }
 
+// La imagen pasa por el servidor: se revisa que sea una imagen de verdad y se vuelve a
+// codificar antes de guardarla en la carpeta de la institución. Devuelve su dirección pública.
+export async function subirImagenEvento(formData: FormData) {
+  return accionConValor(async () => {
+    const sesion = await requerirPersonal()
+    const archivo = formData.get('imagen')
+    if (!(archivo instanceof File)) throw new Error('Elige una imagen.')
+    const contenido = await limpiarImagen(archivo)
+
+    const ruta = `${sesion.institucionId}/${crypto.randomUUID()}.webp`
+    const { error } = await sesion.supabase.storage
+      .from('eventos')
+      .upload(ruta, contenido, { contentType: 'image/webp', upsert: false })
+    if (error) throw new Error('No se pudo guardar la imagen. Intenta de nuevo en un momento.')
+
+    return sesion.supabase.storage.from('eventos').getPublicUrl(ruta).data.publicUrl
+  })
+}
+
 export async function crearEvento(formData: FormData) {
   return accion(async () => {
     const sesion = await requerirPersonal({ institucionActiva: true })
-    const datos = leerDatosEvento(formData)
+    const datos = leerDatosEvento(formData, sesion.institucionId)
 
     const { error } = await sesion.supabase.from('eventos').insert({
       ...datos,
@@ -64,7 +91,7 @@ export async function crearEvento(formData: FormData) {
 export async function actualizarEvento(eventoId: string, formData: FormData) {
   return accion(async () => {
     const sesion = await requerirPersonal()
-    const datos = leerDatosEvento(formData)
+    const datos = leerDatosEvento(formData, sesion.institucionId)
 
     const { data: anterior } = await sesion.supabase
       .from('eventos')

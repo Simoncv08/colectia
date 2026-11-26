@@ -10,6 +10,7 @@ import EstadoInstitucion from '@/components/EstadoInstitucion'
 import { iconoGrande } from '@/lib/iconos'
 import { ProveedorSoloLectura } from '@/components/SoloLectura'
 import MenuCuenta from '@/components/MenuCuenta'
+import CambiarVista from '@/components/CambiarVista'
 import PuertaLegal from '@/components/PuertaLegal'
 import InvitacionesPendientes from '@/components/InvitacionesPendientes'
 import { ui } from '@/lib/ui'
@@ -68,6 +69,7 @@ export default async function InstitucionLayout({ children }: { children: React.
               <p className="text-[13px] text-gray-600">{rol}</p>
             </div>
             <div className="flex items-center gap-1">
+              <CambiarVista a="acudiente" />
               <MenuCuenta nombre={sesion.nombre} correo={sesion.correo} hrefCuenta="/institucion/cuenta" soloIcono />
               <div className="lg:hidden">
                 <MenuDesplegable

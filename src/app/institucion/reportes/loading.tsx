@@ -51,6 +51,11 @@ export default function CargandoPagina() {
               ))}
             </div>
             <Barra className="h-2 w-full" />
+            <Barra className="h-3.5 w-full max-w-md" />
+            <div className="flex items-center justify-between">
+              <Barra className="h-4 w-28" />
+              <Barra className="h-4 w-36" />
+            </div>
           </TarjetaEsqueleto>
         ))}
       </div>

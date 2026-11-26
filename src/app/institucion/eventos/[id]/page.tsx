@@ -88,7 +88,6 @@ export default async function ConfigurarEventoPage({ params }: Params) {
 
       <SeccionDatos
         evento={evento}
-        institucionId={institucionId}
         estado={estado}
         sePuedeReabrir={puedeReabrir(evento, hoy)}
         pagosDelEvento={pagosDelEvento ?? 0}

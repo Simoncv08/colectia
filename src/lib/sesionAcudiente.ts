@@ -3,6 +3,7 @@ import { nombrePersona } from '@/lib/formato'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import type { Tables } from '@/lib/supabase/tipos'
+import { ROLES_PERSONAL, esRolPersonal, type RolPersonal } from '@/lib/membresias'
 
 export type EstudianteVinculado = Pick<
   Tables<'estudiantes'>,
@@ -12,6 +13,9 @@ export type EstudianteVinculado = Pick<
 export type Vinculo = { id: string; estudiantes: EstudianteVinculado }
 
 export type Apariencia = { paleta: string | null; fondo: string | null }
+
+// Instituciones donde la cuenta también es parte del personal.
+export type PersonalEn = { institucionId: string; institucion: string; rol: RolPersonal }
 
 // Compartido por el layout y las páginas de /acudiente; cache() evita repetir las consultas.
 export const obtenerSesionAcudiente = cache(async () => {
@@ -24,7 +28,7 @@ export const obtenerSesionAcudiente = cache(async () => {
     redirect('/login')
   }
 
-  const [{ data: persona }, { data: vinculosCrudos }] = await Promise.all([
+  const [{ data: persona }, { data: vinculosCrudos }, { data: membresias }] = await Promise.all([
     supabase
       .from('personas')
       .select('nombres, apellidos, correo, telefono')
@@ -36,6 +40,11 @@ export const obtenerSesionAcudiente = cache(async () => {
         'id, estudiantes(id, nombres, apellidos, curso_grado, institucion_id, instituciones(nombre, estado, paleta, fondo))'
       )
       .eq('persona_id', user.id),
+    supabase
+      .from('membresias')
+      .select('institucion_id, rol, instituciones(nombre)')
+      .eq('persona_id', user.id)
+      .in('rol', Object.keys(ROLES_PERSONAL)),
   ])
 
   const vinculos = (vinculosCrudos ?? [])
@@ -61,6 +70,11 @@ export const obtenerSesionAcudiente = cache(async () => {
   }
 
   const nombre = nombrePersona(persona, user.email ?? '')
+  const personal: PersonalEn[] = (membresias ?? []).flatMap((m) =>
+    m.institucion_id && esRolPersonal(m.rol)
+      ? [{ institucionId: m.institucion_id, institucion: m.instituciones?.nombre ?? 'Tu institución', rol: m.rol }]
+      : []
+  )
 
   return {
     supabase,
@@ -73,6 +87,7 @@ export const obtenerSesionAcudiente = cache(async () => {
       telefono: persona?.telefono ?? '',
     },
     vinculos,
+    personal,
     apariencias,
     // El marco usa los colores de la primera institución; casi siempre hay una sola.
     aparienciaPrincipal: apariencias.values().next().value as Apariencia | undefined,

@@ -1,14 +1,13 @@
-import type { createClient } from '@/lib/supabase/server'
-import { enTrozos, traerTodasLasFilas } from '@/lib/consultas'
-import { estadoEvento, hoyColombia, type EstadoEvento } from '@/lib/estadoEvento'
-import { SIN_CURSO, compararCursos, compararEstudiantes } from '@/lib/formato'
-import { agruparPagos, cargarPersonal } from '@/lib/pagos'
+import { agrupar } from '@/lib/colecciones'
+import { formatearFecha } from '@/lib/estadoEvento'
+import { SIN_CURSO, compararCursos, nombreCurso } from '@/lib/formato'
+import type { DatosReporte, EventoR, PagoR, TipoProducto } from '@/lib/reportesDatos'
 
-// Reportes y su Excel salen de los mismos cálculos, para que la pantalla y el archivo coincidan.
+// Filtros y cálculos de los reportes. Reportes, informe por evento y Excel salen de las mismas
+// funciones, para que la pantalla y el archivo coincidan.
 
-type Supabase = Awaited<ReturnType<typeof createClient>>
-
-const ZONA = 'America/Bogota'
+// El inicio del panel importa la carga desde aquí.
+export { cargarDatosReporte } from '@/lib/reportesDatos'
 
 export type Vista = 'eventos' | 'recaudo' | 'pendientes'
 
@@ -23,6 +22,7 @@ export type FiltrosReporte = {
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/
 
+// Lo que llega en la URL, tal cual. Antes de calcular, pásalo por filtrosEfectivos.
 export function leerFiltros(sp: Record<string, string | string[] | undefined>): FiltrosReporte {
   const texto = (clave: string) => {
     const v = sp[clave]
@@ -39,6 +39,17 @@ export function leerFiltros(sp: Record<string, string | string[] | undefined>): 
   }
 }
 
+// "Quién no ha pagado" no mira fechas ni quién recibió: no hay dinero que filtrar.
+export function vistaUsaFiltrosDeDinero(vista: Vista) {
+  return vista !== 'pendientes'
+}
+
+// Los filtros que de verdad aplican a la vista. Las URLs conservan los de la URL, para que al
+// volver a otra pestaña sigan ahí.
+export function filtrosEfectivos(f: FiltrosReporte): FiltrosReporte {
+  return vistaUsaFiltrosDeDinero(f.vista) ? f : { ...f, desde: '', hasta: '', persona: '' }
+}
+
 export function filtrosAParametros(f: FiltrosReporte, cambios: Partial<FiltrosReporte> = {}) {
   const p = new URLSearchParams()
   for (const [k, v] of Object.entries({ ...f, ...cambios })) {
@@ -47,205 +58,83 @@ export function filtrosAParametros(f: FiltrosReporte, cambios: Partial<FiltrosRe
   return p.toString()
 }
 
-export type EventoR = {
-  id: string
-  nombre: string
-  fecha_limite_pago: string | null
-  fecha_evento: string | null
-  finalizado_en: string | null
-  created_at: string
-  estado: EstadoEvento
+// El informe completo siempre es de la vista de eventos; el evento va en la ruta.
+export function hrefInforme(eventoId: string, f: FiltrosReporte, cambios: Partial<FiltrosReporte> = {}) {
+  const parametros = filtrosAParametros({ ...f, vista: 'eventos', evento: '' }, cambios)
+  return `/institucion/reportes/evento/${eventoId}${parametros ? `?${parametros}` : ''}`
 }
 
-export type EstudianteR = {
-  id: string
-  codigo_institucional: string
-  nombres: string
-  apellidos: string
-  curso_grado: string | null
+// Fechas y quién recibió cambian los valores en dinero, no quién pagó.
+export function filtraDinero(f: FiltrosReporte) {
+  return Boolean(f.desde || f.hasta || f.persona)
 }
 
-type PagoCrudo = {
-  id: string
-  evento_id: string
-  estudiante_id: string
-  producto_id: string | null
-  cantidad: number
-  monto: number
-  dinero_recibido: number | null
-  devuelta_pendiente: boolean
-  grupo_pago_id: string
-  registrado_por: string | null
-  comprobante: string | null
-  pagado_en: string
-}
+export const NOTA_FILTROS_DINERO =
+  '"Pagaron" y "faltan" cuentan todos los pagos del evento; las fechas y quién recibió solo cambian los valores en dinero.'
 
-export type PagoR = PagoCrudo & {
-  fecha: string // AAAA-MM-DD, hora de Colombia
-  hora: string // HH:MM, hora de Colombia
-}
+export type EtiquetaFiltro = { campo: keyof FiltrosReporte; etiqueta: string }
 
-export type DatosReporte = {
-  eventos: EventoR[]
-  estudiantes: EstudianteR[]
-  estudiantesPorId: Map<string, EstudianteR>
-  productosPorId: Map<string, { id: string; nombre: string }>
-  personalPorId: Map<string, string> // membresía → nombre
-  pagos: PagoR[]
-  // Incluye a quien pagó aunque ya no esté dirigido (por ejemplo, si cambió de curso).
-  estudiantesPorEvento: Map<string, Set<string>>
-  // Por grupo de pago: dinero recibido menos la suma de sus líneas.
-  devueltaPorGrupo: Map<string, { valor: number; pendiente: boolean }>
-  errores: string[]
-}
-
-export async function cargarDatosReporte(
-  supabase: Supabase,
-  institucionId: string
-): Promise<DatosReporte> {
-  const errores: string[] = []
-  const hoy = hoyColombia()
-
-  const { data: eventosCrudos, error: errorEventos } = await traerTodasLasFilas<
-    Omit<EventoR, 'estado'>
-  >((desde, hasta) =>
-    supabase
-      .from('eventos')
-      .select('id, nombre, fecha_limite_pago, fecha_evento, finalizado_en, created_at')
-      .eq('institucion_id', institucionId)
-      .order('created_at', { ascending: false })
-      .order('id', { ascending: true })
-      .range(desde, hasta)
-  )
-  if (errorEventos) errores.push(`eventos: ${errorEventos.message}`)
-  const eventos: EventoR[] = eventosCrudos.map((e) => ({ ...e, estado: estadoEvento(e, hoy) }))
-  const eventoIds = eventos.map((e) => e.id)
-
-  const { data: estudiantes, error: errorEst } = await traerTodasLasFilas<EstudianteR>(
-    (desde, hasta) =>
-      supabase
-        .from('estudiantes')
-        .select('id, codigo_institucional, nombres, apellidos, curso_grado')
-        .eq('institucion_id', institucionId)
-        .order('id', { ascending: true })
-        .range(desde, hasta)
-  )
-  if (errorEst) errores.push(`estudiantes: ${errorEst.message}`)
-  const estudiantesPorId = new Map(estudiantes.map((e) => [e.id, e]))
-
-  const grupos: { evento_id: string; curso_grado: string | null; estudiante_id: string | null }[] =
-    []
-  const productos: { id: string; nombre: string }[] = []
-  const pagosCrudos: PagoCrudo[] = []
-
-  for (const trozo of enTrozos(eventoIds)) {
-    const { data: g, error: eg } = await traerTodasLasFilas<(typeof grupos)[number]>(
-      (desde, hasta) =>
-        supabase
-          .from('evento_grupos')
-          .select('evento_id, curso_grado, estudiante_id')
-          .in('evento_id', trozo)
-          .order('id', { ascending: true })
-          .range(desde, hasta)
-    )
-    if (eg) errores.push(`grupos: ${eg.message}`)
-    grupos.push(...g)
-
-    const { data: p, error: ep } = await traerTodasLasFilas<{ id: string; nombre: string }>(
-      (desde, hasta) =>
-        supabase
-          .from('productos')
-          .select('id, nombre')
-          .in('evento_id', trozo)
-          .order('id', { ascending: true })
-          .range(desde, hasta)
-    )
-    if (ep) errores.push(`productos: ${ep.message}`)
-    productos.push(...p)
-
-    const { data: pg, error: epg } = await traerTodasLasFilas<PagoCrudo>((desde, hasta) =>
-      supabase
-        .from('registros_pago')
-        .select(
-          'id, evento_id, estudiante_id, producto_id, cantidad, monto, dinero_recibido, devuelta_pendiente, grupo_pago_id, registrado_por, comprobante, pagado_en'
-        )
-        .in('evento_id', trozo)
-        .order('id', { ascending: true })
-        .range(desde, hasta)
-    )
-    if (epg) errores.push(`pagos: ${epg.message}`)
-    pagosCrudos.push(...pg)
+// Los filtros aplicados en palabras: chips en pantalla y encabezado del Excel.
+export function etiquetasFiltros(
+  datos: DatosReporte,
+  f: FiltrosReporte,
+  formatoFecha: (fecha: string) => string = formatearFecha
+): EtiquetaFiltro[] {
+  const lista: EtiquetaFiltro[] = []
+  if (f.evento) {
+    const nombre = datos.eventos.find((e) => e.id === f.evento)?.nombre ?? 'elegido'
+    lista.push({ campo: 'evento', etiqueta: `Evento: ${nombre}` })
   }
-
-  const personalPorId = await cargarPersonal(supabase, institucionId)
-
-  const pagos: PagoR[] = pagosCrudos
-    .map((p) => {
-      const d = new Date(p.pagado_en)
-      return {
-        ...p,
-        monto: Number(p.monto),
-        dinero_recibido: p.dinero_recibido == null ? null : Number(p.dinero_recibido),
-        fecha: d.toLocaleDateString('en-CA', { timeZone: ZONA }),
-        hora: d.toLocaleTimeString('es-CO', {
-          timeZone: ZONA,
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }),
-      }
-    })
-    .sort((a, b) => b.pagado_en.localeCompare(a.pagado_en))
-
-  const porCurso = new Map<string, string[]>()
-  for (const e of estudiantes) {
-    if (!e.curso_grado) continue
-    const lista = porCurso.get(e.curso_grado) ?? []
-    lista.push(e.id)
-    porCurso.set(e.curso_grado, lista)
+  if (f.curso) {
+    lista.push({ campo: 'curso', etiqueta: `Curso: ${nombreCurso(f.curso === SIN_CURSO ? '' : f.curso)}` })
   }
-  const estudiantesPorEvento = new Map<string, Set<string>>()
-  for (const ev of eventos) estudiantesPorEvento.set(ev.id, new Set())
-  for (const g of grupos) {
-    const set = estudiantesPorEvento.get(g.evento_id)
-    if (!set) continue
-    if (g.curso_grado) for (const id of porCurso.get(g.curso_grado) ?? []) set.add(id)
-    if (g.estudiante_id) set.add(g.estudiante_id)
+  if (f.desde) lista.push({ campo: 'desde', etiqueta: `Desde ${formatoFecha(f.desde)}` })
+  if (f.hasta) lista.push({ campo: 'hasta', etiqueta: `Hasta ${formatoFecha(f.hasta)}` })
+  if (f.persona) {
+    const nombre = datos.personalPorId.get(f.persona) ?? 'otra persona'
+    lista.push({ campo: 'persona', etiqueta: `Recibió: ${nombre}` })
   }
-  for (const p of pagos) estudiantesPorEvento.get(p.evento_id)?.add(p.estudiante_id)
-
-  const devueltaPorGrupo = new Map(
-    agruparPagos(pagos).map((g) => [g.grupoPagoId, { valor: g.devuelta, pendiente: g.devueltaPendiente }])
-  )
-
-  return {
-    eventos,
-    estudiantes,
-    estudiantesPorId,
-    productosPorId: new Map(productos.map((p) => [p.id, p])),
-    personalPorId,
-    pagos,
-    estudiantesPorEvento,
-    devueltaPorGrupo,
-    errores,
-  }
+  return lista
 }
 
-function cursoDe(datos: DatosReporte, estudianteId: string) {
+export function cursoDe(datos: DatosReporte, estudianteId: string) {
   return datos.estudiantesPorId.get(estudianteId)?.curso_grado ?? ''
 }
 
-function coincideCurso(datos: DatosReporte, estudianteId: string, curso: string) {
+export function coincideCurso(datos: DatosReporte, estudianteId: string, curso: string) {
   if (!curso) return true
   const c = cursoDe(datos, estudianteId)
   return curso === SIN_CURSO ? !c : c === curso
 }
 
+export function nombreDeQuienRecibio(datos: DatosReporte, membresiaId: string | null) {
+  if (!membresiaId) return 'Sin registrar'
+  return datos.personalPorId.get(membresiaId) ?? 'Persona que ya no está en el personal'
+}
+
+// El Excel guarda la proporción exacta (0,6667) y la pantalla el porcentaje redondeado (67).
+export function proporcionDe(parte: number, total: number) {
+  return total ? parte / total : 0
+}
+
+export function porcentajeDe(parte: number, total: number) {
+  return Math.round(proporcionDe(parte, total) * 100)
+}
+
+export function sumarMontos(pagos: PagoR[]) {
+  return pagos.reduce((s, p) => s + p.monto, 0)
+}
+
+// Un pago es un grupo de líneas (una por producto).
+export function contarPagos(pagos: PagoR[]) {
+  return new Set(pagos.map((p) => p.grupo_pago_id)).size
+}
+
 // Las sumas de dinero respetan todos los filtros, incluidas fechas y quién recibió.
 export function pagosFiltrados(datos: DatosReporte, f: FiltrosReporte) {
-  return datos.pagos.filter(
+  const base = f.evento ? datos.pagosPorEvento.get(f.evento) ?? [] : datos.pagos
+  return base.filter(
     (p) =>
-      (!f.evento || p.evento_id === f.evento) &&
       coincideCurso(datos, p.estudiante_id, f.curso) &&
       (!f.desde || p.fecha >= f.desde) &&
       (!f.hasta || p.fecha <= f.hasta) &&
@@ -253,7 +142,7 @@ export function pagosFiltrados(datos: DatosReporte, f: FiltrosReporte) {
   )
 }
 
-function devueltasDe(datos: DatosReporte, pagos: PagoR[]) {
+export function devueltasDe(datos: DatosReporte, pagos: PagoR[]) {
   let cantidad = 0
   let valor = 0
   for (const id of new Set(pagos.map((p) => p.grupo_pago_id))) {
@@ -266,16 +155,28 @@ function devueltasDe(datos: DatosReporte, pagos: PagoR[]) {
   return { cantidad, valor }
 }
 
-// "Pagaron" y "faltan" cuentan todos los pagos del evento, sin mirar fechas ni quién recibió.
-
 export type FilaCurso = {
   curso: string
   estudiantes: number
   pagaron: number
   faltan: number
+  porcentaje: number
   recaudado: number
 }
 
+export type FilaProducto = {
+  productoId: string // vacío para pagos antiguos que no quedaron ligados a un producto
+  nombre: string
+  tipo: TipoProducto | null
+  precio: number | null
+  unidades: number
+  estudiantes: number
+  recaudado: number
+  porcentaje: number // del recaudado del evento
+}
+
+// "Pagaron" y "faltan" cuentan todos los pagos del evento, sin mirar fechas ni quién recibió;
+// los valores en dinero sí respetan todos los filtros.
 export type FilaEvento = {
   evento: EventoR
   estudiantes: number
@@ -284,172 +185,95 @@ export type FilaEvento = {
   porcentaje: number
   recaudado: number
   pagos: number
+  // Recaudado entre los estudiantes con algún pago dentro de los filtros.
+  promedioPorEstudiante: number
   devueltasPendientes: number
   valorDevueltasPendientes: number
   cursos: FilaCurso[]
+  productos: FilaProducto[]
+}
+
+function filasPorCurso(datos: DatosReporte, universo: string[], conPago: Set<string>, pagos: PagoR[]) {
+  const porCurso = new Map<string, FilaCurso>()
+  const fila = (curso: string) => {
+    let f = porCurso.get(curso)
+    if (!f) {
+      f = { curso, estudiantes: 0, pagaron: 0, faltan: 0, porcentaje: 0, recaudado: 0 }
+      porCurso.set(curso, f)
+    }
+    return f
+  }
+  for (const id of universo) {
+    const f = fila(cursoDe(datos, id))
+    f.estudiantes++
+    if (conPago.has(id)) f.pagaron++
+    else f.faltan++
+  }
+  for (const p of pagos) fila(cursoDe(datos, p.estudiante_id)).recaudado += p.monto
+  return Array.from(porCurso.values())
+    .map((f) => ({ ...f, porcentaje: porcentajeDe(f.pagaron, f.estudiantes) }))
+    .sort((a, b) => compararCursos(a.curso, b.curso))
+}
+
+// Todos los productos del evento, también los que nadie ha comprado; el que más recauda primero.
+function filasPorProducto(datos: DatosReporte, eventoId: string, pagos: PagoR[], total: number) {
+  const productos = datos.productosPorEvento.get(eventoId) ?? []
+  const delEvento = new Set(productos.map((p) => p.id))
+  const porProducto = agrupar(pagos, (p) => (p.producto_id && delEvento.has(p.producto_id) ? p.producto_id : ''))
+
+  const fila = (
+    productoId: string,
+    nombre: string,
+    tipo: TipoProducto | null,
+    precio: number | null
+  ): FilaProducto => {
+    const lista = porProducto.get(productoId) ?? []
+    const recaudado = sumarMontos(lista)
+    return {
+      productoId,
+      nombre,
+      tipo,
+      precio,
+      unidades: lista.reduce((s, p) => s + p.cantidad, 0),
+      estudiantes: new Set(lista.map((p) => p.estudiante_id)).size,
+      recaudado,
+      porcentaje: porcentajeDe(recaudado, total),
+    }
+  }
+  const filas = productos.map((p) => fila(p.id, p.nombre, p.tipo, p.precio_unitario))
+  if (porProducto.has('')) filas.push(fila('', 'Sin producto', null, null))
+  return filas.sort((a, b) => b.recaudado - a.recaudado)
+}
+
+export function resumenEvento(datos: DatosReporte, ev: EventoR, f: FiltrosReporte): FilaEvento {
+  const todos = datos.pagosPorEvento.get(ev.id) ?? []
+  const pagosEvento = pagosFiltrados(datos, { ...f, evento: ev.id })
+  const universo = Array.from(datos.estudiantesPorEvento.get(ev.id) ?? []).filter((id) =>
+    coincideCurso(datos, id, f.curso)
+  )
+  const conPago = new Set(todos.map((p) => p.estudiante_id))
+  const pagaron = universo.filter((id) => conPago.has(id)).length
+  const recaudado = sumarMontos(pagosEvento)
+  const estudiantesConPagoFiltrado = new Set(pagosEvento.map((p) => p.estudiante_id)).size
+  const devueltas = devueltasDe(datos, pagosEvento)
+
+  return {
+    evento: ev,
+    estudiantes: universo.length,
+    pagaron,
+    faltan: universo.length - pagaron,
+    porcentaje: porcentajeDe(pagaron, universo.length),
+    recaudado,
+    pagos: contarPagos(pagosEvento),
+    promedioPorEstudiante: estudiantesConPagoFiltrado ? recaudado / estudiantesConPagoFiltrado : 0,
+    devueltasPendientes: devueltas.cantidad,
+    valorDevueltasPendientes: devueltas.valor,
+    cursos: filasPorCurso(datos, universo, conPago, pagosEvento),
+    productos: filasPorProducto(datos, ev.id, pagosEvento, recaudado),
+  }
 }
 
 export function resumenPorEvento(datos: DatosReporte, f: FiltrosReporte): FilaEvento[] {
-  const filtrados = pagosFiltrados(datos, f)
   const eventos = f.evento ? datos.eventos.filter((e) => e.id === f.evento) : datos.eventos
-
-  return eventos.map((ev) => {
-    const universo = Array.from(datos.estudiantesPorEvento.get(ev.id) ?? []).filter((id) =>
-      coincideCurso(datos, id, f.curso)
-    )
-    const conPago = new Set(
-      datos.pagos.filter((p) => p.evento_id === ev.id).map((p) => p.estudiante_id)
-    )
-    const pagosEvento = filtrados.filter((p) => p.evento_id === ev.id)
-    const devueltas = devueltasDe(datos, pagosEvento)
-
-    const porCurso = new Map<string, FilaCurso>()
-    for (const id of universo) {
-      const c = cursoDe(datos, id)
-      const fila = porCurso.get(c) ?? { curso: c, estudiantes: 0, pagaron: 0, faltan: 0, recaudado: 0 }
-      fila.estudiantes++
-      if (conPago.has(id)) fila.pagaron++
-      else fila.faltan++
-      porCurso.set(c, fila)
-    }
-    for (const p of pagosEvento) {
-      const c = cursoDe(datos, p.estudiante_id)
-      const fila = porCurso.get(c) ?? { curso: c, estudiantes: 0, pagaron: 0, faltan: 0, recaudado: 0 }
-      fila.recaudado += p.monto
-      porCurso.set(c, fila)
-    }
-
-    const pagaron = universo.filter((id) => conPago.has(id)).length
-    return {
-      evento: ev,
-      estudiantes: universo.length,
-      pagaron,
-      faltan: universo.length - pagaron,
-      porcentaje: universo.length ? Math.round((pagaron / universo.length) * 100) : 0,
-      recaudado: pagosEvento.reduce((s, p) => s + p.monto, 0),
-      pagos: new Set(pagosEvento.map((p) => p.grupo_pago_id)).size,
-      devueltasPendientes: devueltas.cantidad,
-      valorDevueltasPendientes: devueltas.valor,
-      cursos: Array.from(porCurso.values()).sort((a, b) => compararCursos(a.curso, b.curso)),
-    }
-  })
-}
-
-export type FilaPersona = {
-  personaId: string
-  nombre: string
-  pagos: number
-  total: number
-  devueltasPendientes: number
-  valorDevueltasPendientes: number
-  porDia: { fecha: string; pagos: number; total: number }[]
-}
-
-export function recaudoPorPersona(datos: DatosReporte, f: FiltrosReporte): FilaPersona[] {
-  const filtrados = pagosFiltrados(datos, f)
-  const porPersona = new Map<string, PagoR[]>()
-  for (const p of filtrados) {
-    const clave = p.registrado_por ?? ''
-    const lista = porPersona.get(clave) ?? []
-    lista.push(p)
-    porPersona.set(clave, lista)
-  }
-
-  return Array.from(porPersona.entries())
-    .map(([personaId, lista]) => {
-      const dias = new Map<string, PagoR[]>()
-      for (const p of lista) {
-        const l = dias.get(p.fecha) ?? []
-        l.push(p)
-        dias.set(p.fecha, l)
-      }
-      const devueltas = devueltasDe(datos, lista)
-      return {
-        personaId,
-        nombre: personaId
-          ? datos.personalPorId.get(personaId) ?? 'Persona que ya no está en el personal'
-          : 'Sin registrar',
-        pagos: new Set(lista.map((p) => p.grupo_pago_id)).size,
-        total: lista.reduce((s, p) => s + p.monto, 0),
-        devueltasPendientes: devueltas.cantidad,
-        valorDevueltasPendientes: devueltas.valor,
-        porDia: Array.from(dias.entries())
-          .sort(([a], [b]) => b.localeCompare(a))
-          .map(([fecha, l]) => ({
-            fecha,
-            pagos: new Set(l.map((p) => p.grupo_pago_id)).size,
-            total: l.reduce((s, p) => s + p.monto, 0),
-          })),
-      }
-    })
-    .sort((a, b) => b.total - a.total)
-}
-
-// Una fila por producto pagado.
-export function detallePagos(datos: DatosReporte, f: FiltrosReporte) {
-  const eventos = new Map(datos.eventos.map((e) => [e.id, e.nombre]))
-  return pagosFiltrados(datos, f).map((p) => {
-    const est = datos.estudiantesPorId.get(p.estudiante_id)
-    const devuelta = datos.devueltaPorGrupo.get(p.grupo_pago_id)
-    return {
-      fecha: p.fecha,
-      hora: p.hora,
-      evento: eventos.get(p.evento_id) ?? '',
-      codigo: est?.codigo_institucional ?? '',
-      estudiante: est ? `${est.apellidos} ${est.nombres}` : '(estudiante eliminado)',
-      curso: est?.curso_grado ?? '',
-      producto: (p.producto_id && datos.productosPorId.get(p.producto_id)?.nombre) || '',
-      cantidad: p.cantidad,
-      monto: p.monto,
-      dineroRecibido: p.dinero_recibido,
-      devuelta: devuelta?.valor ?? 0,
-      devueltaPendiente: Boolean(devuelta?.pendiente),
-      recibio: p.registrado_por
-        ? datos.personalPorId.get(p.registrado_por) ?? 'Persona que ya no está en el personal'
-        : 'Sin registrar',
-      comprobante: p.comprobante ?? '',
-      grupo: p.grupo_pago_id,
-    }
-  })
-}
-
-// Sin evento elegido, revisa todos los eventos que no estén finalizados.
-
-export type FilaPendiente = {
-  evento: EventoR
-  curso: string
-  estudiante: EstudianteR
-}
-
-export function pendientesDePago(datos: DatosReporte, f: FiltrosReporte): FilaPendiente[] {
-  const eventos = f.evento
-    ? datos.eventos.filter((e) => e.id === f.evento)
-    : datos.eventos.filter((e) => e.estado !== 'finalizado')
-
-  const filas: FilaPendiente[] = []
-  for (const ev of eventos) {
-    const conPago = new Set(
-      datos.pagos.filter((p) => p.evento_id === ev.id).map((p) => p.estudiante_id)
-    )
-    for (const id of datos.estudiantesPorEvento.get(ev.id) ?? []) {
-      if (conPago.has(id) || !coincideCurso(datos, id, f.curso)) continue
-      const est = datos.estudiantesPorId.get(id)
-      if (!est) continue
-      filas.push({ evento: ev, curso: est.curso_grado ?? '', estudiante: est })
-    }
-  }
-
-  const ordenEvento = new Map(eventos.map((e, i) => [e.id, i]))
-  return filas.sort(
-    (a, b) =>
-      (ordenEvento.get(a.evento.id) ?? 0) - (ordenEvento.get(b.evento.id) ?? 0) ||
-      compararCursos(a.curso, b.curso) ||
-      compararEstudiantes(a.estudiante, b.estudiante)
-  )
-}
-
-export function cursosDisponibles(datos: DatosReporte) {
-  return Array.from(new Set(datos.estudiantes.map((e) => e.curso_grado ?? ''))).sort(
-    compararCursos
-  )
+  return eventos.map((ev) => resumenEvento(datos, ev, f))
 }

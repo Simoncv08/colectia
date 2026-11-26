@@ -17,13 +17,11 @@ type Evento = {
 
 export default function SeccionDatos({
   evento,
-  institucionId,
   estado,
   sePuedeReabrir,
   pagosDelEvento,
 }: {
   evento: Evento
-  institucionId: string
   estado: EstadoEvento
   sePuedeReabrir: boolean
   pagosDelEvento: number
@@ -39,7 +37,7 @@ export default function SeccionDatos({
               vaciarAlTerminar={false}
               className="flex flex-col gap-4"
             >
-              <CamposEvento institucionId={institucionId} evento={evento} />
+              <CamposEvento evento={evento} />
               <button type="submit" className={`${ui.botonPrimario} self-start`}>
                 Guardar cambios
               </button>

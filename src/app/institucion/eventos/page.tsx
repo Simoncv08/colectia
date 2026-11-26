@@ -91,7 +91,7 @@ export default async function EventosPage() {
                 action={crearEvento}
                 className="flex flex-col gap-4"
               >
-                <CamposEvento institucionId={institucionId} />
+                <CamposEvento />
                 <p className={ui.ayuda}>
                   Después de crearlo, entra a <strong>Configurar</strong> para elegir a qué cursos va
                   dirigido y agregar sus productos.
