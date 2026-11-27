@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Manrope } from 'next/font/google'
 import './globals.css'
 import ProveedorAvisos from '@/components/Avisos'
+import MedicionVelocidad from '@/components/MedicionVelocidad'
 import { DESCRIPCION_SITIO, OPEN_GRAPH_BASE, SIN_INDEXAR, URL_SITIO } from '@/lib/sitio'
 import { zonaActual } from '@/lib/zonaServidor'
 
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
     <html lang="es-CO" className={`${manrope.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <ProveedorAvisos>{children}</ProveedorAvisos>
+        <MedicionVelocidad />
       </body>
     </html>
   )
