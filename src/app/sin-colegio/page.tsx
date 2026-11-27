@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 import Marca from '@/components/Marca'
 import { cerrarSesion } from '@/app/actions'
 import { SIN_INDEXAR } from '@/lib/sitio'
@@ -6,8 +8,15 @@ import { ui } from '@/lib/ui'
 
 export const metadata: Metadata = { title: 'Tu cuenta no tiene colegio', robots: SIN_INDEXAR }
 
-// Para una cuenta que todavía no es de ningún colegio y entró por www.colectia.co.
-export default function SinColegio() {
+// Para una cuenta que todavía no es de ningún colegio y entró por www.colectia.co. Si la cuenta se
+// creó registrando un colegio, su lugar es la solicitud.
+export default async function SinColegio() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (user?.user_metadata?.registro_colegio) redirect('/solicitud')
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-fondo px-4 py-10">
       <div className="w-full max-w-[400px]">

@@ -59,6 +59,7 @@ export function rutaInterna(zona: Zona, pathname: string): string | null {
     if (bajo('/admin')) return null
     if (pathname === '/inicio') return '/admin/instituciones'
     if (pathname === '/legal') return '/admin/legal'
+    if (pathname === '/tarifas') return '/admin/tarifas'
     if (pathname === '/cuenta') return '/admin/cuenta'
     return pathname
   }

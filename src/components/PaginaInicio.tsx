@@ -277,7 +277,14 @@ function Vistazo() {
   )
 }
 
-export default function PaginaInicio() {
+// diasPrueba y preciosPublicados salen de configuracion_plataforma (los pasa la página).
+export default function PaginaInicio({
+  diasPrueba,
+  preciosPublicados,
+}: {
+  diasPrueba: number
+  preciosPublicados: boolean
+}) {
   const anio = new Date().getFullYear()
   return (
     <div className="flex min-h-screen flex-col bg-fondo text-tinta" style={COLORES_MARCA}>
@@ -320,9 +327,14 @@ export default function PaginaInicio() {
                 pagó y las familias ven sus actividades y lo que pagaron, sin listas en papel.
               </p>
               <div className="flex flex-col gap-2 sm:flex-row">
-                <a href={`mailto:${CORREO_CONTACTO}`} className={`${ui.botonPrimario} w-full sm:w-auto`}>
-                  Escríbenos para tu colegio
-                </a>
+                <Link href="/registro" className={`${ui.botonPrimario} w-full sm:w-auto`}>
+                  Probar gratis {diasPrueba} días
+                </Link>
+                {preciosPublicados && (
+                  <Link href="/precios" className={`${botonClaro} w-full sm:w-auto`}>
+                    Ver precios
+                  </Link>
+                )}
               </div>
               <p className="text-[13px] font-medium text-tinta/85">
                 ¿Eres familia? Entra con el enlace que te envió tu colegio. Para las familias, Colectia es gratis.

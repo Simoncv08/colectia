@@ -28,6 +28,8 @@ Colectia no recibe ni guarda el dinero: el dinero de las actividades es del cole
 ## Páginas
 
 - [Inicio](https://www.colectia.co/): qué es Colectia, cómo funciona y preguntas frecuentes.
+- [Registrar un colegio y probarlo gratis](https://www.colectia.co/registro)
+- [Precios](https://www.colectia.co/precios)
 - [Términos y condiciones](https://www.colectia.co/terminos)
 - [Política de privacidad](https://www.colectia.co/privacidad)
 

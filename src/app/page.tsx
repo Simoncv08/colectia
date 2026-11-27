@@ -33,7 +33,13 @@ export default async function Inicio() {
   }
 
   if (!colegio) {
-    if (!user) return <PaginaInicio />
+    if (!user) {
+      const { data: config } = await supabase
+        .from('configuracion_plataforma')
+        .select('dias_prueba, precios_publicados')
+        .maybeSingle()
+      return <PaginaInicio diasPrueba={config?.dias_prueba ?? 7} preciosPublicados={Boolean(config?.precios_publicados)} />
+    }
     return irAMiZona(supabase, user.id)
   }
 

@@ -412,6 +412,13 @@ export type Database = {
       instituciones: {
         Row: {
           created_at: string
+          ciudad: string | null
+          contacto_cargo: string | null
+          contacto_telefono: string | null
+          nit: string | null
+          pagado_hasta: string | null
+          prueba_hasta: string | null
+          tramo_id: number | null
           estado: string
           fondo: string
           id: string
@@ -426,6 +433,13 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          ciudad?: string | null
+          contacto_cargo?: string | null
+          contacto_telefono?: string | null
+          nit?: string | null
+          pagado_hasta?: string | null
+          prueba_hasta?: string | null
+          tramo_id?: number | null
           estado?: string
           fondo?: string
           id?: string
@@ -440,6 +454,13 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          ciudad?: string | null
+          contacto_cargo?: string | null
+          contacto_telefono?: string | null
+          nit?: string | null
+          pagado_hasta?: string | null
+          prueba_hasta?: string | null
+          tramo_id?: number | null
           estado?: string
           fondo?: string
           id?: string
@@ -577,6 +598,30 @@ export type Database = {
           orden?: number
           siempre_activo?: boolean
         }
+        Relationships: []
+      }
+      configuracion_plataforma: {
+        Row: { dias_prueba: number; id: boolean; precios_publicados: boolean }
+        Insert: { dias_prueba?: number; id?: boolean; precios_publicados?: boolean }
+        Update: { dias_prueba?: number; id?: boolean; precios_publicados?: boolean }
+        Relationships: []
+      }
+      tarifa_descuentos: {
+        Row: { modulos_minimos: number; porcentaje: number }
+        Insert: { modulos_minimos: number; porcentaje: number }
+        Update: { modulos_minimos?: number; porcentaje?: number }
+        Relationships: []
+      }
+      tarifa_tramos: {
+        Row: { desde: number; etiqueta: string; hasta: number | null; id: number }
+        Insert: { desde: number; etiqueta: string; hasta?: number | null; id: number }
+        Update: { desde?: number; etiqueta?: string; hasta?: number | null; id?: number }
+        Relationships: []
+      }
+      tarifas: {
+        Row: { concepto: string; tramo_id: number; valor_anual: number }
+        Insert: { concepto: string; tramo_id: number; valor_anual: number }
+        Update: { concepto?: string; tramo_id?: number; valor_anual?: number }
         Relationships: []
       }
       personas: {
@@ -802,6 +847,14 @@ export type Database = {
         Args: { p_correo: string }
         Returns: string
       }
+      ajustar_prueba: {
+        Args: { p_dias: number; p_institucion_id: string }
+        Returns: string
+      }
+      calcular_plan: {
+        Args: { p_modulos?: string[]; p_tramo: number }
+        Returns: number
+      }
       cambiar_modulo: {
         Args: { p_activo: boolean; p_institucion_id: string; p_modulo: string }
         Returns: undefined
@@ -899,6 +952,25 @@ export type Database = {
       rechazar_invitacion: {
         Args: { p_membresia_id: string }
         Returns: undefined
+      }
+      registrar_colegio: {
+        Args: {
+          p_apellidos: string
+          p_cargo: string
+          p_ciudad: string
+          p_modulos?: string[]
+          p_nit: string
+          p_nombre: string
+          p_nombres: string
+          p_subdominio: string
+          p_telefono: string
+          p_tramo: number
+        }
+        Returns: string
+      }
+      revisar_registro: {
+        Args: { p_nit: string; p_subdominio: string }
+        Returns: string
       }
       rechazar_subdominio: {
         Args: { p_institucion_id: string; p_motivo: string }

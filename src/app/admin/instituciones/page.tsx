@@ -1,5 +1,6 @@
 import { obtenerSesionSuperAdmin } from '@/lib/sesionSuperAdmin'
-import { crearInstitucion, cambiarEstadoInstitucion, asignarAdminInstitucion } from './actions'
+import { crearInstitucion, cambiarEstadoInstitucion, asignarAdminInstitucion, ajustarPrueba } from './actions'
+import { formatearFecha } from '@/lib/estadoEvento'
 import { ui } from '@/lib/ui'
 import FormularioAccion from '@/components/FormularioAccion'
 import EstadoInstitucion from '@/components/EstadoInstitucion'
@@ -16,7 +17,7 @@ export default async function InstitucionesPage() {
   const [{ data: instituciones, error }, { data: proximos }, { data: pedidos }] = await Promise.all([
     supabase
       .from('instituciones')
-      .select('id, nombre, prefijo_codigo, estado, plan, created_at, subdominio, subdominio_estado, subdominio_motivo')
+      .select('id, nombre, prefijo_codigo, estado, plan, created_at, subdominio, subdominio_estado, subdominio_motivo, nit, ciudad, prueba_hasta')
       .order('created_at', { ascending: false }),
     supabase.from('modulos').select('clave, nombre').eq('estado', 'proximamente').order('orden'),
     supabase.from('modulo_interes').select('modulo, instituciones(nombre)'),
@@ -106,7 +107,15 @@ export default async function InstitucionesPage() {
             <tbody className={ui.cuerpoResponsivo}>
               {instituciones.map((inst) => (
                 <tr key={inst.id} className={ui.filaResponsiva}>
-                  <td className={ui.celdaTitulo}>{inst.nombre}</td>
+                  <td className={ui.celdaTitulo}>
+                    {inst.nombre}
+                    {inst.nit && (
+                      <span className="block text-xs font-normal text-gray-600">
+                        NIT {inst.nit}
+                        {inst.ciudad ? ` · ${inst.ciudad}` : ''}
+                      </span>
+                    )}
+                  </td>
                   <td data-titulo="Código" className={ui.celdaResponsiva}>{inst.prefijo_codigo}</td>
                   <td data-titulo="Dirección" className={ui.celdaBloque}>
                     <CeldaSubdominio
@@ -119,6 +128,32 @@ export default async function InstitucionesPage() {
                   </td>
                   <td data-titulo="Estado" className={ui.celdaResponsiva}>
                     <EstadoInstitucion estado={inst.estado} />
+                    {inst.estado === 'en_prueba' && inst.prueba_hasta && (
+                      <FormularioAccion
+                        action={ajustarPrueba.bind(null, inst.id)}
+                        className="mt-1 flex items-center gap-1 text-xs text-gray-600"
+                      >
+                        Prueba hasta {formatearFecha(inst.prueba_hasta)}
+                        <select
+                          name="dias"
+                          aria-label={`Días de prueba de ${inst.nombre}`}
+                          defaultValue=""
+                          className={`${ui.campoCompacto} w-20`}
+                        >
+                          <option value="" disabled>
+                            Días
+                          </option>
+                          {[3, 4, 5, 6, 7].map((d) => (
+                            <option key={d} value={d}>
+                              {d}
+                            </option>
+                          ))}
+                        </select>
+                        <button type="submit" className={ui.botonCompacto}>
+                          Ajustar
+                        </button>
+                      </FormularioAccion>
+                    )}
                   </td>
                   <td data-titulo="Plan" className={ui.celdaResponsiva}>{inst.plan ?? 'Sin plan'}</td>
                   <td data-titulo="Cambiar estado" className={ui.celdaResponsiva}>

@@ -30,7 +30,8 @@ export const zonaActual = cache(async (): Promise<ZonaActual> => {
   }
 })
 
-// La dirección del colegio de la cuenta (lcp.colectia.co), o null si no tiene uno aprobado.
+// La dirección del colegio de la cuenta (lcp.colectia.co); si su dirección aún no está aprobada,
+// la página de la solicitud en www; null si la cuenta no tiene colegio.
 async function direccionDeMiColegio(supabase: SupabaseClient<Database>, personaId: string, host: string) {
   const { data } = await supabase
     .from('personas')
@@ -38,15 +39,20 @@ async function direccionDeMiColegio(supabase: SupabaseClient<Database>, personaI
     .eq('id', personaId)
     .maybeSingle()
   const inst = data?.instituciones
-  return inst?.subdominio && inst.subdominio_estado === 'aprobado' ? urlDeZona(host, inst.subdominio) : null
+  if (!inst) return null
+  return inst.subdominio && inst.subdominio_estado === 'aprobado'
+    ? urlDeZona(host, inst.subdominio)
+    : urlDeZona(host, 'www', '/solicitud')
 }
 
 // Para quien ya inició sesión fuera de su colegio: lo lleva a donde le corresponde. Si el destino
-// fuera esta misma dirección (la zona no se reconoció bien), no redirige para no dar vueltas.
+// fuera el inicio de esta misma dirección (la zona no se reconoció bien), no redirige para no dar
+// vueltas.
 export async function irAMiZona(supabase: SupabaseClient<Database>, personaId: string): Promise<never> {
   const { host } = await zonaActual()
   const ir = (destino: string): never => {
-    if (new URL(destino).host === host) throw new Error('No se pudo reconocer la dirección de Colectia.')
+    const url = new URL(destino)
+    if (url.host === host && url.pathname === '/') throw new Error('No se pudo reconocer la dirección de Colectia.')
     redirect(destino)
   }
   const { data: superAdmin } = await supabase

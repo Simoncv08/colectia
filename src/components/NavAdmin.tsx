@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Building2, FileText } from 'lucide-react'
+import { Building2, FileText, Receipt } from 'lucide-react'
 import { iconoGrande } from '@/lib/iconos'
 import { ui } from '@/lib/ui'
 
 const PESTANAS = [
   { href: '/inicio', etiqueta: 'Instituciones', Icono: Building2 },
+  { href: '/tarifas', etiqueta: 'Tarifas', Icono: Receipt },
   { href: '/legal', etiqueta: 'Términos y privacidad', Icono: FileText },
 ]
 

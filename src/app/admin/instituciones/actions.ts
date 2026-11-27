@@ -5,6 +5,7 @@ import { accion, mensajeBD } from '@/lib/resultado'
 import { darRolEnInstitucion } from '@/lib/membresias'
 import { requerirSuperAdmin } from '@/lib/sesionSuperAdmin'
 import { direccionColegio, leerSubdominio } from '@/lib/subdominios'
+import { formatearFecha } from '@/lib/estadoEvento'
 
 const ESTADOS = ['activa', 'en_prueba', 'suspendida', 'cancelada']
 
@@ -88,5 +89,20 @@ export async function rechazarSubdominio(institucionId: string, formData: FormDa
 
     revalidar()
     return 'Rechazada. El colegio verá el motivo y podrá proponer otra.'
+  })
+}
+
+// Prueba de 3 a 7 días contados desde la aprobación de la dirección (ajustar_prueba).
+export async function ajustarPrueba(institucionId: string, formData: FormData) {
+  return accion(async () => {
+    const { supabase } = await requerirSuperAdmin()
+    const { data, error } = await supabase.rpc('ajustar_prueba', {
+      p_institucion_id: institucionId,
+      p_dias: Number(formData.get('dias')),
+    })
+    if (error) throw new Error(mensajeBD(error))
+
+    revalidar()
+    return `La prueba quedó hasta el ${formatearFecha(data)}.`
   })
 }
