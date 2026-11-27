@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { accion, mensajeBD } from '@/lib/resultado'
 import { darRolEnInstitucion } from '@/lib/membresias'
 import { requerirSuperAdmin } from '@/lib/sesionSuperAdmin'
+import { direccionColegio, leerSubdominio } from '@/lib/subdominios'
 
 const ESTADOS = ['activa', 'en_prueba', 'suspendida', 'cancelada']
 
@@ -56,5 +57,36 @@ export async function asignarAdminInstitucion(institucionId: string, formData: F
     )
     revalidar()
     return texto
+  })
+}
+
+// Aprueba el subdominio propuesto o, si el formulario trae uno, asigna ese (colegios creados
+// aquí o un cambio excepcional; el anterior redirige 90 días).
+export async function aprobarSubdominio(institucionId: string, formData: FormData) {
+  return accion(async () => {
+    const { supabase } = await requerirSuperAdmin()
+    const elegido = leerSubdominio(formData)
+    const { error } = await supabase.rpc('aprobar_subdominio', {
+      p_institucion_id: institucionId,
+      ...(elegido ? { p_subdominio: elegido } : {}),
+    })
+    if (error) throw new Error(mensajeBD(error))
+
+    revalidar()
+    return elegido ? `${direccionColegio(elegido)} quedó aprobada.` : 'La dirección quedó aprobada.'
+  })
+}
+
+export async function rechazarSubdominio(institucionId: string, formData: FormData) {
+  return accion(async () => {
+    const { supabase } = await requerirSuperAdmin()
+    const { error } = await supabase.rpc('rechazar_subdominio', {
+      p_institucion_id: institucionId,
+      p_motivo: String(formData.get('motivo') ?? ''),
+    })
+    if (error) throw new Error(mensajeBD(error))
+
+    revalidar()
+    return 'Rechazada. El colegio verá el motivo y podrá proponer otra.'
   })
 }

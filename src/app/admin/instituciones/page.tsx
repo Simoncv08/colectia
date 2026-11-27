@@ -3,6 +3,8 @@ import { crearInstitucion, cambiarEstadoInstitucion, asignarAdminInstitucion } f
 import { ui } from '@/lib/ui'
 import FormularioAccion from '@/components/FormularioAccion'
 import EstadoInstitucion from '@/components/EstadoInstitucion'
+import type { EstadoSubdominio } from '@/lib/subdominios'
+import CeldaSubdominio from './CeldaSubdominio'
 
 export const metadata = { title: 'Instituciones' }
 
@@ -13,15 +15,27 @@ export default async function InstitucionesPage() {
 
   const { data: instituciones, error } = await supabase
     .from('instituciones')
-    .select('id, nombre, prefijo_codigo, estado, plan, created_at')
+    .select('id, nombre, prefijo_codigo, estado, plan, created_at, subdominio, subdominio_estado, subdominio_motivo')
     .order('created_at', { ascending: false })
+
+  const porAprobar = (instituciones ?? []).filter((i) => i.subdominio_estado === 'propuesto').length
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className={ui.titulo}>Instituciones</h1>
-        <p className={ui.textoSecundario}>Crea colegios, cambia su estado y asigna su primer administrador.</p>
+        <p className={ui.textoSecundario}>
+          Crea colegios, aprueba su dirección, cambia su estado y asigna su primer administrador.
+        </p>
       </div>
+
+      {porAprobar > 0 && (
+        <p className={ui.avisoAmbar}>
+          {porAprobar === 1
+            ? '1 colegio espera que apruebes su dirección.'
+            : `${porAprobar} colegios esperan que apruebes su dirección.`}
+        </p>
+      )}
 
       <FormularioAccion action={crearInstitucion} className={`${ui.tarjeta} grid grid-cols-1 gap-4 sm:grid-cols-3`}>
         <h2 className={`${ui.subtitulo} sm:col-span-3`}>Crear institución</h2>
@@ -48,11 +62,12 @@ export default async function InstitucionesPage() {
 
       {instituciones?.length ? (
         <div className={ui.contenedorTabla}>
-          <table className={`${ui.tablaResponsiva} sm:min-w-[720px]`}>
+          <table className={`${ui.tablaResponsiva} sm:min-w-[960px]`}>
             <thead className={ui.encabezadoResponsivo}>
               <tr>
                 <th scope="col">Nombre</th>
                 <th scope="col">Código</th>
+                <th scope="col">Dirección</th>
                 <th scope="col">Estado</th>
                 <th scope="col">Plan</th>
                 <th scope="col">
@@ -66,6 +81,15 @@ export default async function InstitucionesPage() {
                 <tr key={inst.id} className={ui.filaResponsiva}>
                   <td className={ui.celdaTitulo}>{inst.nombre}</td>
                   <td data-titulo="Código" className={ui.celdaResponsiva}>{inst.prefijo_codigo}</td>
+                  <td data-titulo="Dirección" className={ui.celdaBloque}>
+                    <CeldaSubdominio
+                      institucionId={inst.id}
+                      nombre={inst.nombre}
+                      subdominio={inst.subdominio}
+                      estado={inst.subdominio_estado as EstadoSubdominio | null}
+                      motivo={inst.subdominio_motivo}
+                    />
+                  </td>
                   <td data-titulo="Estado" className={ui.celdaResponsiva}>
                     <EstadoInstitucion estado={inst.estado} />
                   </td>

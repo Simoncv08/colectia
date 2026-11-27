@@ -419,6 +419,10 @@ export type Database = {
           paleta: string
           plan: string | null
           prefijo_codigo: string
+          subdominio: string | null
+          subdominio_decidido_en: string | null
+          subdominio_estado: string | null
+          subdominio_motivo: string | null
         }
         Insert: {
           created_at?: string
@@ -429,6 +433,10 @@ export type Database = {
           paleta?: string
           plan?: string | null
           prefijo_codigo: string
+          subdominio?: string | null
+          subdominio_decidido_en?: string | null
+          subdominio_estado?: string | null
+          subdominio_motivo?: string | null
         }
         Update: {
           created_at?: string
@@ -439,6 +447,10 @@ export type Database = {
           paleta?: string
           plan?: string | null
           prefijo_codigo?: string
+          subdominio?: string | null
+          subdominio_decidido_en?: string | null
+          subdominio_estado?: string | null
+          subdominio_motivo?: string | null
         }
         Relationships: []
       }
@@ -691,9 +703,25 @@ export type Database = {
         Args: { p_fondo: string; p_institucion_id: string; p_paleta: string }
         Returns: undefined
       }
+      aprobar_subdominio: {
+        Args: { p_institucion_id: string; p_subdominio?: string }
+        Returns: undefined
+      }
       buscar_persona_id_por_correo: {
         Args: { p_correo: string }
         Returns: string
+      }
+      colegio_publico: {
+        Args: { p_subdominio: string }
+        Returns: {
+          estado: string
+          fondo: string
+          id: string
+          nombre: string
+          paleta: string
+          redirigir_a: string | null
+          subdominio: string
+        }[]
       }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       documento_estudiante: {
@@ -753,12 +781,20 @@ export type Database = {
         }
         Returns: number
       }
+      proponer_subdominio: {
+        Args: { p_institucion_id: string; p_subdominio: string }
+        Returns: undefined
+      }
       puede_gestionar_imagen_evento: {
         Args: { p_nombre: string }
         Returns: boolean
       }
       rechazar_invitacion: {
         Args: { p_membresia_id: string }
+        Returns: undefined
+      }
+      rechazar_subdominio: {
+        Args: { p_institucion_id: string; p_motivo: string }
         Returns: undefined
       }
       registrar_pagos_efectivo: {

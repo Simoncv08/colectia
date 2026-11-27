@@ -4,6 +4,8 @@ import { obtenerSesionInstitucion } from '@/lib/sesionInstitucion'
 import { FONDOS, FONDO_POR_DEFECTO, PALETAS, PALETA_POR_DEFECTO, estiloPaleta } from '@/lib/paletas'
 import { guardarApariencia } from './actions'
 import FormularioAccion from '@/components/FormularioAccion'
+import type { EstadoSubdominio } from '@/lib/subdominios'
+import TarjetaDireccion from './TarjetaDireccion'
 
 export const metadata = { title: 'Personalización' }
 
@@ -12,8 +14,14 @@ export default async function PersonalizacionPage() {
   if (!sesion) return null
 
   if (!sesion.esAdmin) {
-    return <p className="text-gray-700">Solo el administrador puede cambiar los colores.</p>
+    return <p className="text-gray-700">Solo el administrador puede cambiar la dirección y los colores del colegio.</p>
   }
+
+  const { data: direccion } = await sesion.supabase
+    .from('instituciones')
+    .select('subdominio, subdominio_estado, subdominio_motivo')
+    .eq('id', sesion.institucionId)
+    .maybeSingle()
 
   const paletaActual = sesion.institucion.paleta ?? PALETA_POR_DEFECTO
   const fondoActual = sesion.institucion.fondo ?? FONDO_POR_DEFECTO
@@ -23,11 +31,17 @@ export default async function PersonalizacionPage() {
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Personalización</h1>
         <p className="mt-1 text-sm text-gray-700">
-          Elige los colores de tu institución. Los verán tu personal en este panel y los
+          Define la dirección y los colores de tu institución. Los verán tu personal en este panel y los
           acudientes en los eventos de tu institución. Todas las paletas están pensadas para que
           el texto se lea bien.
         </p>
       </div>
+
+      <TarjetaDireccion
+        subdominio={direccion?.subdominio ?? null}
+        estado={(direccion?.subdominio_estado as EstadoSubdominio | null) ?? null}
+        motivo={direccion?.subdominio_motivo ?? null}
+      />
 
       <FormularioAccion action={guardarApariencia} vaciarAlTerminar={false} className="flex flex-col gap-6">
         <fieldset className={ui.tarjeta}>

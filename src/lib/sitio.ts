@@ -1,8 +1,11 @@
 import type { Metadata } from 'next'
 
+// Cada colegio vive en un subdominio de este dominio (lcp.colectia.co).
+export const DOMINIO_RAIZ = 'colectia.co'
+
 // Dirección pública de Colectia: base de las URL canónicas, el sitemap y los datos estructurados.
 // Así colectia.vercel.app y colectia.co (sin www) no compiten con www.colectia.co en Google.
-export const URL_SITIO = 'https://www.colectia.co'
+export const URL_SITIO = `https://www.${DOMINIO_RAIZ}`
 
 export const TITULO_SITIO = 'Colectia · Pagos escolares claros para familias y colegios'
 
