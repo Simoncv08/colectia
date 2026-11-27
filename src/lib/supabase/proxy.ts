@@ -14,7 +14,7 @@ import {
 
 type CookieNueva = { name: string; value: string; options: CookieOptions }
 
-// Corre en cada solicitud (proxy.ts en la raíz): refresca la sesión de Supabase y resuelve qué
+// Corre en cada solicitud (src/proxy.ts): refresca la sesión de Supabase y resuelve qué
 // zona y qué colegio pide la dirección. La app lo lee de los encabezados x-colectia-*, que se
 // reemplazan siempre: los que mande el navegador no cuentan.
 export async function updateSession(request: NextRequest) {

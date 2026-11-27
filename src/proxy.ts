@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/proxy'
 
+// Va en src/, junto a app/: si queda en la raíz del proyecto, Next no lo ejecuta.
 export async function proxy(request: NextRequest) {
   return await updateSession(request)
 }
