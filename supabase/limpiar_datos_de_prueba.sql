@@ -8,7 +8,8 @@
 --     estudiantes vinculados y aceptaciones de términos.
 -- CONSERVA: las cuentas de super administrador (sin colegio, como debe ser), los términos y la
 -- política de privacidad publicados y los subdominios reservados del sistema.
--- Las imágenes de las actividades se borran aparte: Storage → eventos → seleccionar todo → Delete.
+-- ANTES de correrlo, borra las imágenes de las actividades: Storage → eventos → seleccionar todo
+-- → Delete (son de cuentas que este script borra).
 --
 -- Si algo falla, no se borra nada (todo va en una sola transacción).
 
@@ -22,16 +23,19 @@ begin
 end;
 $$;
 
--- El super administrador no pertenece a ningún colegio.
+-- El super administrador no pertenece a ningún colegio (si no, se borraría con él).
 update public.personas set institucion_id = null
 where id in (select persona_id from public.membresias where rol = 'super_admin');
+
+-- Los pagos protegen sus actividades y estudiantes (on delete restrict): van primero. Al borrar
+-- los colegios se borran juntas sus actividades y su personal, que se referencian entre sí.
+delete from public.registros_pago;
+delete from public.instituciones;
+
+-- Lo que quede del super administrador que no sea su rol de super administrador.
 delete from public.membresias
 where rol <> 'super_admin'
   and persona_id in (select persona_id from public.membresias where rol = 'super_admin');
-
--- Los pagos protegen sus actividades y estudiantes (on delete restrict): van primero.
-delete from public.registros_pago;
-delete from public.instituciones;
 
 delete from auth.users u
 where not exists (select 1 from public.membresias m where m.persona_id = u.id and m.rol = 'super_admin');
