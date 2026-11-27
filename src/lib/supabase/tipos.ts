@@ -523,6 +523,35 @@ export type Database = {
         }
         Relationships: []
       }
+      modulo_interes: {
+        Row: {
+          creado_en: string
+          institucion_id: string
+          modulo: string
+          pedido_por: string | null
+        }
+        Insert: {
+          creado_en?: string
+          institucion_id: string
+          modulo: string
+          pedido_por?: string | null
+        }
+        Update: {
+          creado_en?: string
+          institucion_id?: string
+          modulo?: string
+          pedido_por?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modulo_interes_institucion_id_fkey"
+            columns: ["institucion_id"]
+            isOneToOne: false
+            referencedRelation: "instituciones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       modulos: {
         Row: {
           clave: string
@@ -854,6 +883,10 @@ export type Database = {
           p_tipo: string
         }
         Returns: number
+      }
+      pedir_aviso_modulo: {
+        Args: { p_institucion_id: string; p_modulo: string }
+        Returns: undefined
       }
       proponer_subdominio: {
         Args: { p_institucion_id: string; p_subdominio: string }

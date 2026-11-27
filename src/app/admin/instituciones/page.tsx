@@ -13,10 +13,14 @@ export default async function InstitucionesPage() {
   if (!sesion) return null
   const { supabase } = sesion
 
-  const { data: instituciones, error } = await supabase
-    .from('instituciones')
-    .select('id, nombre, prefijo_codigo, estado, plan, created_at, subdominio, subdominio_estado, subdominio_motivo')
-    .order('created_at', { ascending: false })
+  const [{ data: instituciones, error }, { data: proximos }, { data: pedidos }] = await Promise.all([
+    supabase
+      .from('instituciones')
+      .select('id, nombre, prefijo_codigo, estado, plan, created_at, subdominio, subdominio_estado, subdominio_motivo')
+      .order('created_at', { ascending: false }),
+    supabase.from('modulos').select('clave, nombre').eq('estado', 'proximamente').order('orden'),
+    supabase.from('modulo_interes').select('modulo, instituciones(nombre)'),
+  ])
 
   const porAprobar = (instituciones ?? []).filter((i) => i.subdominio_estado === 'propuesto').length
 
@@ -57,6 +61,29 @@ export default async function InstitucionesPage() {
           </button>
         </div>
       </FormularioAccion>
+
+      {proximos?.length ? (
+        <section className={ui.tarjeta} aria-labelledby="titulo-pedidos">
+          <h2 id="titulo-pedidos" className={ui.subtitulo}>
+            Módulos que piden los colegios
+          </h2>
+          <ul className="mt-3 flex flex-col gap-2">
+            {proximos.map((m) => {
+              const colegios = (pedidos ?? []).filter((p) => p.modulo === m.clave)
+              return (
+                <li key={m.clave} className="flex flex-col gap-0.5">
+                  <span className="font-medium text-gray-900">
+                    {m.nombre}: {colegios.length === 1 ? '1 colegio' : `${colegios.length} colegios`}
+                  </span>
+                  {colegios.length > 0 && (
+                    <span className={ui.ayuda}>{colegios.map((p) => p.instituciones?.nombre).join(', ')}</span>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      ) : null}
 
       {error && <p className={ui.avisoRojo}>No se pudieron cargar las instituciones. Recarga la página para intentar de nuevo.</p>}
 
