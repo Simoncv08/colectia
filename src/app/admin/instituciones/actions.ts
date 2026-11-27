@@ -106,3 +106,15 @@ export async function ajustarPrueba(institucionId: string, formData: FormData) {
     return `La prueba quedó hasta el ${formatearFecha(data)}.`
   })
 }
+
+// Mientras llega el cobro con Wompi: el colegio pagó por fuera y queda activo un año más.
+export async function registrarPagoAnual(institucionId: string, _formData: FormData) {
+  return accion(async () => {
+    const { supabase } = await requerirSuperAdmin()
+    const { data, error } = await supabase.rpc('registrar_pago_anual', { p_institucion_id: institucionId })
+    if (error) throw new Error(mensajeBD(error))
+
+    revalidar()
+    return `Pago registrado: activa hasta el ${formatearFecha(data)}.`
+  })
+}

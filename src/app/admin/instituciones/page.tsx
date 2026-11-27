@@ -1,5 +1,12 @@
 import { obtenerSesionSuperAdmin } from '@/lib/sesionSuperAdmin'
-import { crearInstitucion, cambiarEstadoInstitucion, asignarAdminInstitucion, ajustarPrueba } from './actions'
+import {
+  crearInstitucion,
+  cambiarEstadoInstitucion,
+  asignarAdminInstitucion,
+  ajustarPrueba,
+  registrarPagoAnual,
+} from './actions'
+import ConfirmSubmitButton from '@/components/ConfirmSubmitButton'
 import { formatearFecha } from '@/lib/estadoEvento'
 import { ui } from '@/lib/ui'
 import FormularioAccion from '@/components/FormularioAccion'
@@ -17,7 +24,7 @@ export default async function InstitucionesPage() {
   const [{ data: instituciones, error }, { data: proximos }, { data: pedidos }] = await Promise.all([
     supabase
       .from('instituciones')
-      .select('id, nombre, prefijo_codigo, estado, plan, created_at, subdominio, subdominio_estado, subdominio_motivo, nit, ciudad, prueba_hasta')
+      .select('id, nombre, prefijo_codigo, estado, plan, created_at, subdominio, subdominio_estado, subdominio_motivo, nit, ciudad, prueba_hasta, pagado_hasta, borrar_el')
       .order('created_at', { ascending: false }),
     supabase.from('modulos').select('clave, nombre').eq('estado', 'proximamente').order('orden'),
     supabase.from('modulo_interes').select('modulo, instituciones(nombre)'),
@@ -128,6 +135,24 @@ export default async function InstitucionesPage() {
                   </td>
                   <td data-titulo="Estado" className={ui.celdaResponsiva}>
                     <EstadoInstitucion estado={inst.estado} />
+                    {inst.pagado_hasta && (
+                      <p className="mt-1 text-xs text-gray-600">Pagado hasta {formatearFecha(inst.pagado_hasta)}</p>
+                    )}
+                    {inst.borrar_el && (
+                      <p className="mt-1 text-xs font-semibold text-peligro">Se borra el {formatearFecha(inst.borrar_el)}</p>
+                    )}
+                    {inst.estado !== 'cancelada' && (
+                      <FormularioAccion action={registrarPagoAnual.bind(null, inst.id)} className="mt-1">
+                        <ConfirmSubmitButton
+                          confirmMessage={`¿Registrar el pago anual de ${inst.nombre}? Queda activa un año más desde hoy, o desde su fecha de pago actual si aún no vence.`}
+                          textoConfirmar="Registrar pago"
+                          peligro={false}
+                          className={ui.botonCompacto}
+                        >
+                          Registrar pago anual
+                        </ConfirmSubmitButton>
+                      </FormularioAccion>
+                    )}
                     {inst.estado === 'en_prueba' && inst.prueba_hasta && (
                       <FormularioAccion
                         action={ajustarPrueba.bind(null, inst.id)}

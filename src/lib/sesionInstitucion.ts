@@ -89,7 +89,7 @@ export async function requerirPersonal({
   if (soloAdmin && !sesion.esAdmin) {
     throw new Error('Solo el administrador de la institución puede hacer esto.')
   }
-  if (institucionActiva && sesion.institucion.estado !== 'activa') {
+  if (institucionActiva && !['activa', 'en_prueba'].includes(sesion.institucion.estado)) {
     throw new Error('Tu institución no está activa, así que no puedes hacer cambios.')
   }
   return sesion

@@ -412,6 +412,7 @@ export type Database = {
       instituciones: {
         Row: {
           created_at: string
+          borrar_el: string | null
           ciudad: string | null
           contacto_cargo: string | null
           contacto_telefono: string | null
@@ -430,9 +431,11 @@ export type Database = {
           subdominio_decidido_en: string | null
           subdominio_estado: string | null
           subdominio_motivo: string | null
+          suspendida_desde: string | null
         }
         Insert: {
           created_at?: string
+          borrar_el?: string | null
           ciudad?: string | null
           contacto_cargo?: string | null
           contacto_telefono?: string | null
@@ -451,9 +454,11 @@ export type Database = {
           subdominio_decidido_en?: string | null
           subdominio_estado?: string | null
           subdominio_motivo?: string | null
+          suspendida_desde?: string | null
         }
         Update: {
           created_at?: string
+          borrar_el?: string | null
           ciudad?: string | null
           contacto_cargo?: string | null
           contacto_telefono?: string | null
@@ -472,6 +477,7 @@ export type Database = {
           subdominio_decidido_en?: string | null
           subdominio_estado?: string | null
           subdominio_motivo?: string | null
+          suspendida_desde?: string | null
         }
         Relationships: []
       }
@@ -966,6 +972,10 @@ export type Database = {
           p_telefono: string
           p_tramo: number
         }
+        Returns: string
+      }
+      registrar_pago_anual: {
+        Args: { p_institucion_id: string }
         Returns: string
       }
       revisar_registro: {

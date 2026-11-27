@@ -25,7 +25,7 @@ export default async function EventosPage() {
   const sesion = await obtenerSesionInstitucion()
   if (!sesion) return null
   const { supabase, institucionId } = sesion
-  const institucionActiva = sesion.institucion.estado === 'activa'
+  const institucionActiva = ['activa', 'en_prueba'].includes(sesion.institucion.estado)
 
   const { data: eventosCrudos, error } = await supabase
     .from('eventos')
