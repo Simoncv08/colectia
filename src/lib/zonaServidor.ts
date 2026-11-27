@@ -7,6 +7,7 @@ import {
   ENCABEZADO_COLEGIO,
   ENCABEZADO_ZONA,
   decodificarColegio,
+  hostDeLaSolicitud,
   urlDeZona,
   type ColegioDeLaDireccion,
 } from '@/lib/zona'
@@ -25,7 +26,7 @@ export const zonaActual = cache(async (): Promise<ZonaActual> => {
   return {
     tipo: tipo === 'admin' ? 'admin' : colegio ? 'colegio' : 'sitio',
     colegio,
-    host: h.get('host') ?? '',
+    host: hostDeLaSolicitud(h) ?? '',
   }
 })
 
@@ -40,19 +41,24 @@ async function direccionDeMiColegio(supabase: SupabaseClient<Database>, personaI
   return inst?.subdominio && inst.subdominio_estado === 'aprobado' ? urlDeZona(host, inst.subdominio) : null
 }
 
-// Para quien ya inició sesión fuera de su colegio: lo lleva a donde le corresponde.
+// Para quien ya inició sesión fuera de su colegio: lo lleva a donde le corresponde. Si el destino
+// fuera esta misma dirección (la zona no se reconoció bien), no redirige para no dar vueltas.
 export async function irAMiZona(supabase: SupabaseClient<Database>, personaId: string): Promise<never> {
   const { host } = await zonaActual()
+  const ir = (destino: string): never => {
+    if (new URL(destino).host === host) throw new Error('No se pudo reconocer la dirección de Colectia.')
+    redirect(destino)
+  }
   const { data: superAdmin } = await supabase
     .from('membresias')
     .select('id')
     .eq('persona_id', personaId)
     .eq('rol', 'super_admin')
     .maybeSingle()
-  if (superAdmin) redirect(urlDeZona(host, 'admin'))
+  if (superAdmin) ir(urlDeZona(host, 'admin'))
 
   const propia = await direccionDeMiColegio(supabase, personaId, host)
-  redirect(propia ?? urlDeZona(host, 'www', '/sin-colegio'))
+  return ir(propia ?? urlDeZona(host, 'www', '/sin-colegio'))
 }
 
 // En la dirección de un colegio: la cuenta queda unida a ese colegio la primera vez; si es de

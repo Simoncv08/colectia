@@ -6,6 +6,7 @@ import {
   ENCABEZADO_COLEGIO,
   ENCABEZADO_ZONA,
   codificarColegio,
+  hostDeLaSolicitud,
   leerZona,
   rutaPermitida,
   urlDeZona,
@@ -18,8 +19,9 @@ type CookieNueva = { name: string; value: string; options: CookieOptions }
 // reemplazan siempre: los que mande el navegador no cuentan.
 export async function updateSession(request: NextRequest) {
   const url = request.nextUrl
-  const host = request.headers.get('host') ?? url.host
-  const zona = leerZona(url.hostname)
+  // La dirección real que pidió el navegador: en Vercel, nextUrl puede traer el host interno.
+  const host = hostDeLaSolicitud(request.headers) ?? url.host
+  const zona = leerZona(host.split(':')[0])
 
   if (zona.tipo === 'raiz') {
     return NextResponse.redirect(urlDeZona(host, 'www', url.pathname + url.search), 308)

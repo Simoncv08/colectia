@@ -69,6 +69,11 @@ export function decodificarColegio(valor: string | null): ColegioDeLaDireccion |
   }
 }
 
+// x-forwarded-host lo pone Vercel con el dominio que se visitó; host, en desarrollo.
+export function hostDeLaSolicitud(encabezados: Headers) {
+  return (encabezados.get('x-forwarded-host') ?? encabezados.get('host'))?.split(',')[0].trim().toLowerCase() || null
+}
+
 // Dirección completa de otra zona, con el mismo esquema y puerto que la actual (para desarrollo).
 export function urlDeZona(hostActual: string, destino: 'www' | 'admin' | string, ruta = '/') {
   const [hostname, puerto] = hostActual.toLowerCase().split(':')
