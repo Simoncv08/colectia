@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 
 // Dirección pública de Colectia: base de las URL canónicas, el sitemap y los datos estructurados.
-// Así colectia.vercel.app y colectia.org (sin www) no compiten con www.colectia.org en Google.
-export const URL_SITIO = 'https://www.colectia.org'
+// Así colectia.vercel.app y colectia.co (sin www) no compiten con www.colectia.co en Google.
+export const URL_SITIO = 'https://www.colectia.co'
 
 export const TITULO_SITIO = 'Colectia · Pagos escolares claros para familias y colegios'
 

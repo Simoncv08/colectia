@@ -24,7 +24,7 @@ import { DESCRIPCION_SITIO, URL_SITIO } from '@/lib/sitio'
 import { icono, iconoGrande } from '@/lib/iconos'
 import { ui } from '@/lib/ui'
 
-// Página de inicio pública (www.colectia.org sin sesión). Explica qué es Colectia a familias y
+// Página de inicio pública (www.colectia.co sin sesión). Explica qué es Colectia a familias y
 // colegios, y enlaza a crear cuenta, entrar, términos y privacidad (Google la pide para
 // verificar la marca del inicio de sesión).
 //
