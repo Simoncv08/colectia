@@ -6,9 +6,8 @@ import type { Resultado } from '@/lib/resultado'
 import { ui } from '@/lib/ui'
 import { useAvisos } from '@/components/Avisos'
 
-type Institucion = { id: string; nombre: string }
-
-export default function FormularioVincular({ instituciones }: { instituciones: Institucion[] }) {
+// Se vincula siempre en el colegio de la dirección; solo se muestra su nombre.
+export default function FormularioVincular({ colegio }: { colegio: string }) {
   const [metodo, setMetodo] = useState<'codigo' | 'documento'>('codigo')
   const [resultado, accion, enviando] = useActionState<Resultado | null, FormData>(
     vincularEstudiante,
@@ -57,19 +56,9 @@ export default function FormularioVincular({ instituciones }: { instituciones: I
         </div>
       </fieldset>
 
-      <label className={ui.etiqueta}>
-        Institución
-        <select name="institucion_id" required defaultValue="" className={ui.campo}>
-          <option value="" disabled>
-            Selecciona la institución
-          </option>
-          {instituciones.map((inst) => (
-            <option key={inst.id} value={inst.id}>
-              {inst.nombre}
-            </option>
-          ))}
-        </select>
-      </label>
+      <p className={ui.textoSecundario}>
+        Colegio: <span className="font-semibold text-gray-900">{colegio}</span>
+      </p>
 
       {metodo === 'codigo' ? (
         <label className={ui.etiqueta}>

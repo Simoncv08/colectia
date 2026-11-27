@@ -341,3 +341,19 @@ end;
 $$;
 revoke execute on function public.vincular_estudiante(uuid, text, text, date) from public, anon;
 grant execute on function public.vincular_estudiante(uuid, text, text, date) to authenticated;
+
+
+-- 6. Qué colegios ve cada cuenta ----------------------------------------------------------
+--
+-- Antes cualquier cuenta veía la lista de colegios activos para elegir dónde vincular; ahora el
+-- colegio sale de la dirección, así que la lista ya no se muestra a nadie. Cada cuenta ve el
+-- colegio al que pertenece (para llevarla a su dirección).
+
+drop policy if exists "cualquier persona autenticada ve instituciones activas para vincularse"
+  on public.instituciones;
+
+drop policy if exists "cada cuenta ve su colegio" on public.instituciones;
+create policy "cada cuenta ve su colegio"
+  on public.instituciones for select
+  to authenticated
+  using (id = (select p.institucion_id from public.personas p where p.id = auth.uid()));

@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { accion, mensajeBD, type Resultado } from '@/lib/resultado'
+import { zonaActual } from '@/lib/zonaServidor'
 
 const MENSAJES: Record<string, Resultado> = {
   ok: { tipo: 'ok', texto: 'Listo, el estudiante quedó vinculado a tu cuenta.' },
@@ -15,7 +16,7 @@ const MENSAJES: Record<string, Resultado> = {
   no_encontrado: {
     tipo: 'error',
     texto:
-      'No encontramos ningún estudiante con esos datos en esa institución. Revisa que el código (o el documento) y la fecha de nacimiento sean los que tiene el colegio.',
+      'No encontramos ningún estudiante con esos datos en el colegio. Revisa que el código (o el documento) y la fecha de nacimiento sean los que tiene el colegio.',
   },
   demasiados_intentos: {
     tipo: 'error',
@@ -44,7 +45,8 @@ export async function vincularEstudiante(
   formData: FormData
 ): Promise<Resultado> {
   const metodo = String(formData.get('metodo') ?? '')
-  const institucionId = String(formData.get('institucion_id') ?? '').trim()
+  // El colegio es el de la dirección (lcp.colectia.co), nunca uno que mande el formulario.
+  const institucionId = (await zonaActual()).colegio?.id
   const codigo = String(formData.get('codigo') ?? '').trim()
   const numeroDocumento = String(formData.get('numero_documento') ?? '').trim()
   const fechaNacimiento = String(formData.get('fecha_nacimiento') ?? '').trim()
@@ -55,8 +57,8 @@ export async function vincularEstudiante(
       tipo: 'error',
       texto:
         metodo === 'documento'
-          ? 'Selecciona la institución y escribe el número de documento y la fecha de nacimiento.'
-          : 'Selecciona la institución y escribe el código y la fecha de nacimiento del estudiante.',
+          ? 'Escribe el número de documento y la fecha de nacimiento del estudiante.'
+          : 'Escribe el código y la fecha de nacimiento del estudiante.',
     }
   }
 

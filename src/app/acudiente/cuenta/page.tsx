@@ -1,6 +1,7 @@
 import { obtenerSesionAcudiente } from '@/lib/sesionAcudiente'
 import { desvincularEstudiante } from '../actions'
 import FormularioVincular from '../FormularioVincular'
+import { zonaActual } from '@/lib/zonaServidor'
 import { TarjetaContrasena, TarjetaDocumentosLegales, TarjetaMisDatos } from '@/components/Cuenta'
 import ConfirmSubmitButton from '@/components/ConfirmSubmitButton'
 import Ventana from '@/components/Ventana'
@@ -13,13 +14,8 @@ export const metadata = { title: 'Mi cuenta' }
 
 export default async function CuentaAcudientePage() {
   const sesion = await obtenerSesionAcudiente()
-  const { supabase, vinculos, persona } = sesion
-
-  const { data: instituciones } = await supabase
-    .from('instituciones')
-    .select('id, nombre')
-    .in('estado', ['activa', 'en_prueba'])
-    .order('nombre', { ascending: true })
+  const { vinculos, persona } = sesion
+  const { colegio } = await zonaActual()
 
   return (
     <>
@@ -45,7 +41,7 @@ export default async function CuentaAcudientePage() {
             titulo="Vincular un estudiante"
             variante={vinculos.length ? 'secundario' : 'primario'}
           >
-            <FormularioVincular instituciones={instituciones ?? []} />
+            <FormularioVincular colegio={colegio?.nombre ?? ''} />
           </Ventana>
         </div>
 
