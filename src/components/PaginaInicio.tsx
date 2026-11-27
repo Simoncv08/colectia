@@ -24,9 +24,10 @@ import { DESCRIPCION_SITIO, URL_SITIO } from '@/lib/sitio'
 import { icono, iconoGrande } from '@/lib/iconos'
 import { ui } from '@/lib/ui'
 
-// Página de inicio pública (www.colectia.co sin sesión). Explica qué es Colectia a familias y
-// colegios, y enlaza a crear cuenta, entrar, términos y privacidad (Google la pide para
-// verificar la marca del inicio de sesión).
+// Página de inicio pública (www.colectia.co sin sesión), pensada para rectores y administradores:
+// qué es Colectia, cómo empieza un colegio, precios y prueba gratis. Las familias entran por la
+// dirección de su colegio; aquí solo se les dice eso. Enlaza a términos y privacidad (Google la
+// pide para verificar la marca del inicio de sesión).
 //
 // Usa los colores de la marca Colectia (DESIGN.md): miel (#f5c400, el de la abeja) para
 // fondos y botones con texto tinta, y tinta (#14213d, azul noche) para el texto, los botones
@@ -46,7 +47,7 @@ const PARA_FAMILIAS: { Icono: LucideIcon; titulo: string; texto: string }[] = [
   {
     Icono: UserRoundPlus,
     titulo: 'Todos tus estudiantes',
-    texto: 'Vincúlalos con el código o el documento que te da el colegio, aunque estudien en colegios distintos.',
+    texto: 'Se vinculan con el código o el documento que da el colegio, y la familia los ve a todos en su cuenta.',
   },
   {
     Icono: WalletCards,
@@ -80,16 +81,16 @@ const PARA_COLEGIOS: { Icono: LucideIcon; titulo: string; texto: string }[] = [
 
 const PASOS = [
   {
-    titulo: 'El colegio crea la actividad',
-    texto: 'Con sus productos, precios y fecha límite, y elige a qué cursos va dirigida.',
+    titulo: 'Registras tu colegio',
+    texto: 'Con su NIT y la dirección que quieres, por ejemplo lcp.colectia.co. La revisamos y empieza tu prueba gratis.',
   },
   {
-    titulo: 'La familia la ve en su cuenta',
-    texto: 'Después de vincular a su estudiante, ve la actividad, el precio y los detalles.',
+    titulo: 'Cargas cursos y estudiantes',
+    texto: 'Desde un archivo de Excel, y creas tu primera actividad con sus productos, precios y fecha límite.',
   },
   {
-    titulo: 'El pago queda registrado',
-    texto: 'Hoy en efectivo con el recaudador del colegio; muy pronto, también en línea.',
+    titulo: 'Compartes el enlace',
+    texto: 'Las familias crean su cuenta en la dirección de tu colegio, ven la actividad y el recaudador registra los pagos.',
   },
 ]
 
@@ -129,45 +130,48 @@ const CONFIANZA: { Icono: LucideIcon; titulo: string; texto: string }[] = [
 
 // Cada respuesta se entiende sola: así la pueden citar Google y los asistentes de IA. El mismo
 // texto va en los datos estructurados (FAQPage), que deben coincidir con lo visible.
-const PREGUNTAS: { pregunta: string; respuesta: string }[] = [
-  {
-    pregunta: '¿Cuánto le cuesta Colectia a las familias?',
-    respuesta:
-      'Nada. Para padres, madres y acudientes, crear la cuenta, vincular estudiantes y consultar actividades y pagos es gratis. El valor de cada actividad lo define el colegio.',
-  },
-  {
-    pregunta: '¿Quién recibe el dinero de las actividades?',
-    respuesta:
-      'El colegio. Colectia no recibe ni guarda el dinero. Hoy las familias pagan en efectivo al recaudador del colegio, que registra el pago en Colectia. Con los pagos en línea, el dinero llegará directo a la cuenta del colegio.',
-  },
-  {
-    pregunta: '¿Cómo vinculo a mi estudiante?',
-    respuesta:
-      'Entra con el enlace que te envió el colegio, crea tu cuenta, toca "Vincular estudiante" y escribe el código o el número de documento que te dio el colegio. Desde ese momento ves las actividades de su curso y los pagos registrados.',
-  },
-  {
-    pregunta: '¿Los estudiantes necesitan una cuenta?',
-    respuesta:
-      'No. La cuenta es del padre, madre o acudiente, y desde ella ve a todos sus estudiantes, aunque estudien en colegios distintos. Los estudiantes no manejan dinero ni contraseñas en Colectia.',
-  },
-  {
-    pregunta: '¿Quién puede ver los datos de mi estudiante?',
-    respuesta:
-      'Su colegio y sus acudientes. Cada colegio ve únicamente a sus estudiantes, y el número de documento solo lo ve el administrador del colegio. Colectia no usa los datos para publicidad.',
-  },
-  {
-    pregunta: '¿Se puede pagar en línea?',
-    respuesta:
-      'Todavía no. Estamos preparando los pagos con PSE y Botón Bancolombia para que los estudiantes no tengan que llevar efectivo. Mientras tanto, el pago se hace con el recaudador del colegio y queda registrado en Colectia.',
-  },
-  {
-    pregunta: '¿Cómo empieza mi colegio a usar Colectia?',
-    respuesta: `Escríbenos a ${CORREO_CONTACTO}. Te mostramos cómo funciona, creamos el espacio del colegio y su administrador carga los cursos y los estudiantes desde un archivo de Excel.`,
-  },
-]
+function preguntas(diasPrueba: number): { pregunta: string; respuesta: string }[] {
+  return [
+    {
+      pregunta: '¿Cuánto cuesta Colectia para un colegio?',
+      respuesta: `Un pago al año según el número de estudiantes del colegio, con IVA incluido y sin comisiones por pago. Puedes probarlo gratis ${diasPrueba} días antes de pagar. Para las familias es gratis.`,
+    },
+    {
+      pregunta: '¿Cuánto toma empezar?',
+      respuesta:
+        'Un día. Registras el colegio, aprobamos su dirección (por ejemplo, lcp.colectia.co), cargas los cursos y los estudiantes desde un archivo de Excel y compartes el enlace con las familias.',
+    },
+    {
+      pregunta: '¿Cómo pagan las familias?',
+      respuesta:
+        'Hoy en efectivo con el recaudador del colegio, que registra cada pago en Colectia, incluso por salón y con devueltas. Estamos preparando los pagos en línea con PSE y Botón Bancolombia para que los estudiantes no lleven efectivo.',
+    },
+    {
+      pregunta: '¿Quién recibe el dinero de las actividades?',
+      respuesta:
+        'El colegio. Colectia no recibe ni guarda el dinero de las actividades. Con los pagos en línea, el dinero llegará directo a la cuenta del colegio.',
+    },
+    {
+      pregunta: '¿Cómo se protegen los datos de los estudiantes?',
+      respuesta:
+        'Cada colegio tiene su propio espacio y su propia dirección, y no ve la información de otros. El número de documento de los estudiantes solo lo ve el administrador del colegio, los estudiantes no tienen cuenta y Colectia no usa los datos para publicidad.',
+    },
+    {
+      pregunta: '¿Cómo entran las familias?',
+      respuesta:
+        'Con el enlace de su colegio (por ejemplo, lcp.colectia.co). Crean su cuenta gratis, vinculan a sus estudiantes con el código o el documento que les da el colegio y ven sus actividades y los pagos registrados.',
+    },
+    {
+      pregunta: '¿Qué pasa cuando termina la prueba?',
+      respuesta:
+        'Si decides seguir, pagas la suscripción anual y todo sigue igual. Si no, el colegio queda en solo lectura 3 días para descargar su información en Excel y después la borramos, como dice nuestra política de privacidad.',
+    },
+  ]
+}
 
 // Quién es Colectia y qué hace, en schema.org, para buscadores y asistentes de IA.
-const DATOS_ESTRUCTURADOS = {
+function datosEstructurados(lista: ReturnType<typeof preguntas>) {
+  return {
   '@context': 'https://schema.org',
   '@graph': [
     {
@@ -200,13 +204,14 @@ const DATOS_ESTRUCTURADOS = {
     },
     {
       '@type': 'FAQPage',
-      mainEntity: PREGUNTAS.map(({ pregunta, respuesta }) => ({
+      mainEntity: lista.map(({ pregunta, respuesta }) => ({
         '@type': 'Question',
         name: pregunta,
         acceptedAnswer: { '@type': 'Answer', text: respuesta },
       })),
     },
   ],
+  }
 }
 
 // En esta página "primario" es la tinta de Colectia, así los componentes compartidos (botones,
@@ -286,12 +291,13 @@ export default function PaginaInicio({
   preciosPublicados: boolean
 }) {
   const anio = new Date().getFullYear()
+  const lista = preguntas(diasPrueba)
   return (
     <div className="flex min-h-screen flex-col bg-fondo text-tinta" style={COLORES_MARCA}>
       <script
         type="application/ld+json"
         // Datos propios y fijos; igual se escapa "<" como recomienda la guía de Next.
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(DATOS_ESTRUCTURADOS).replace(/</g, '\\u003c') }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(datosEstructurados(lista)).replace(/</g, '\\u003c') }}
       />
       <header className="sticky top-0 z-30 border-b border-tinta/10 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1120px] items-center justify-between gap-3 px-4 py-2 sm:px-6">
@@ -314,7 +320,7 @@ export default function PaginaInicio({
             <div className="flex flex-col gap-5">
               <span className="inline-flex items-center gap-2 self-start rounded-full bg-white/70 px-3 py-1 text-[13px] font-semibold text-tinta">
                 <LogoAbeja className="h-4 w-4" />
-                Para colegios y familias en Colombia
+                Para colegios en Colombia
               </span>
               <h1 className="text-[32px] font-bold leading-[1.2] tracking-tight text-tinta sm:text-[44px]">
                 Los pagos de las actividades del colegio,{' '}
@@ -323,8 +329,8 @@ export default function PaginaInicio({
                 </span>
               </h1>
               <p className="max-w-xl text-[17px] leading-7 text-tinta/85">
-                Colectia organiza el recaudo de salidas, eventos y celebraciones. El colegio sabe quién ya
-                pagó y las familias ven sus actividades y lo que pagaron, sin listas en papel.
+                Colectia organiza el recaudo de salidas, eventos y celebraciones de tu colegio: sabes quién
+                ya pagó, cobras por salón en minutos y cada familia ve lo suyo, sin listas en papel.
               </p>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Link href="/registro" className={`${ui.botonPrimario} w-full sm:w-auto`}>
@@ -366,23 +372,23 @@ export default function PaginaInicio({
         </section>
 
         {/* Familias y colegios */}
-        <section aria-labelledby="titulo-familias" className="mx-auto max-w-[1120px] px-4 py-12 sm:px-6 sm:py-16">
+        <section aria-labelledby="titulo-colegios" className="mx-auto max-w-[1120px] px-4 py-12 sm:px-6 sm:py-16">
           <div className="flex flex-col gap-12">
             <div className="flex flex-col gap-5">
               <div>
-                <p className="text-[13px] font-semibold text-miel-oscuro">Familias</p>
-                <h2 id="titulo-familias" className="mt-1 text-2xl font-bold text-tinta">
-                  Todo lo de tus estudiantes, a la mano
+                <p className="text-[13px] font-semibold text-miel-oscuro">Para el colegio</p>
+                <h2 id="titulo-colegios" className="mt-1 text-2xl font-bold text-tinta">
+                  El recaudo, sin cuadernos ni cuentas a mano
                 </h2>
               </div>
-              <Tarjetas items={PARA_FAMILIAS} />
+              <Tarjetas items={PARA_COLEGIOS} />
             </div>
             <div className="flex flex-col gap-5">
               <div>
-                <p className="text-[13px] font-semibold text-miel-oscuro">Colegios</p>
-                <h2 className="mt-1 text-2xl font-bold text-tinta">El recaudo, sin cuadernos ni cuentas a mano</h2>
+                <p className="text-[13px] font-semibold text-miel-oscuro">Para las familias</p>
+                <h2 className="mt-1 text-2xl font-bold text-tinta">Todo lo de sus estudiantes, a la mano</h2>
               </div>
-              <Tarjetas items={PARA_COLEGIOS} />
+              <Tarjetas items={PARA_FAMILIAS} />
             </div>
           </div>
         </section>
@@ -451,7 +457,7 @@ export default function PaginaInicio({
               Preguntas frecuentes
             </h2>
             <ul className="mt-6 grid gap-x-10 gap-y-6 md:grid-cols-2">
-              {PREGUNTAS.map(({ pregunta, respuesta }) => (
+              {lista.map(({ pregunta, respuesta }) => (
                 <li key={pregunta} className="flex flex-col gap-1">
                   <h3 className="font-semibold text-tinta">{pregunta}</h3>
                   <p className="text-[15px] leading-6 text-gray-700">{respuesta}</p>
@@ -465,12 +471,15 @@ export default function PaginaInicio({
         <section className="mx-auto max-w-[1120px] px-4 py-12 sm:px-6 sm:py-16">
           <div className="grid gap-4 rounded-xl bg-miel p-6 text-tinta sm:p-8 md:grid-cols-[1fr_auto] md:items-center">
             <div className="flex flex-col gap-1">
-              <h2 className="text-2xl font-bold">¿Tu colegio ya usa Colectia?</h2>
+              <h2 className="text-2xl font-bold">Pruébalo con tu próxima actividad</h2>
               <p className="text-[15px] text-tinta/85">
-                Entra con el enlace que te envió el colegio, crea tu cuenta y vincula a tus estudiantes con
-                el código o el documento que te dio.
+                {diasPrueba} días gratis desde que aprobemos la dirección de tu colegio. Si eres familia, entra
+                con el enlace que te envió el colegio.
               </p>
             </div>
+            <Link href="/registro" className={ui.botonPrimario}>
+              Probar gratis {diasPrueba} días
+            </Link>
           </div>
           {CORREO_CONTACTO && (
             <div className={`${ui.tarjeta} mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between`}>

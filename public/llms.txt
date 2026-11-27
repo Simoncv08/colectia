@@ -8,7 +8,7 @@ Colectia no recibe ni guarda el dinero: el dinero de las actividades es del cole
 
 - La cuenta es del padre, madre o acudiente; los estudiantes no tienen cuenta.
 - Cada colegio tiene su propia dirección (por ejemplo, lcp.colectia.co) y la comparte con sus familias; ahí se crea la cuenta.
-- Se vincula a cada estudiante con el código o el número de documento que entrega el colegio, aunque estudien en colegios distintos.
+- Se vincula a cada estudiante con el código o el número de documento que entrega el colegio. Cada cuenta es de un solo colegio.
 - Se entra con correo y contraseña, con un enlace enviado al correo o con una cuenta de Google.
 
 ## Para colegios
@@ -18,6 +18,7 @@ Colectia no recibe ni guarda el dinero: el dinero de las actividades es del cole
 - Reportes del recaudo por actividad, curso y persona, en pantalla y en Excel.
 - Equipo con roles (administradores y recaudadores) y registro de cada acción.
 - Carga de cursos y estudiantes desde un archivo de Excel.
+- Registro en línea con prueba gratis; después, una suscripción anual según el número de estudiantes, con IVA incluido y sin comisiones por pago.
 
 ## Datos y seguridad
 
