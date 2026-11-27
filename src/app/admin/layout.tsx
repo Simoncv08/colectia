@@ -32,11 +32,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-screen bg-fondo">
       <header className="sticky top-0 z-30 border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 px-4 py-2 sm:px-6">
-          <Link href="/admin/instituciones" className="flex items-center gap-3 py-2">
+          <Link href="/inicio" className="flex items-center gap-3 py-2">
             <Marca />
             <span className="hidden text-[13px] text-gray-600 sm:inline">Administración de la plataforma</span>
           </Link>
-          <MenuCuenta nombre={sesion.nombre} correo={sesion.correo} hrefCuenta="/admin/cuenta" soloIcono />
+          <MenuCuenta nombre={sesion.nombre} correo={sesion.correo} hrefCuenta="/cuenta" soloIcono />
         </div>
         <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
           <NavAdmin />

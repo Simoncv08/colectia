@@ -9,6 +9,7 @@ import {
   History,
   House,
   Layers,
+  LayoutGrid,
   Palette,
   Users,
   type LucideIcon,
@@ -26,6 +27,7 @@ const PESTANAS: Pestana[] = [
   { href: '/admin/personal', etiqueta: 'Personal', Icono: Users, soloAdmin: true },
   { href: '/admin/actividad', etiqueta: 'Actividad', Icono: History, soloAdmin: true },
   { href: '/admin/personalizacion', etiqueta: 'Personalización', Icono: Palette, soloAdmin: true },
+  { href: '/admin/modulos', etiqueta: 'Módulos', Icono: LayoutGrid, soloAdmin: true },
 ]
 
 // Navegación del personal, en columna: en la barra lateral y en el menú del celular.

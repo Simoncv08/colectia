@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: 'Verificación en dos pasos', robots:
 export default async function VerificacionPage() {
   const { esSuperAdmin, dosPasos } = await obtenerAccesoSuperAdmin()
   if (!esSuperAdmin) redirect('/')
-  if (dosPasos.paso === 'listo') redirect('/admin/instituciones')
+  if (dosPasos.paso === 'listo') redirect('/inicio')
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-fondo px-4 py-10">

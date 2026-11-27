@@ -43,7 +43,8 @@ export function leerZona(hostname: string): Zona {
 
 // Ruta pública → carpeta de src/app que la atiende, según la zona; null si ahí no existe (404).
 // En un colegio: /inicio y /cuenta son de las familias y /admin/… es el panel del personal
-// (carpetas acudiente/ e institucion/). Esas carpetas no se pueden abrir con su nombre real.
+// (carpetas acudiente/ e institucion/). En admin.colectia.co: /inicio, /legal y /cuenta (carpeta
+// admin/). Las carpetas no se pueden abrir con su nombre real.
 export function rutaInterna(zona: Zona, pathname: string): string | null {
   const bajo = (prefijo: string) => pathname === prefijo || pathname.startsWith(`${prefijo}/`)
   if (bajo('/institucion') || bajo('/acudiente')) return null
@@ -54,8 +55,14 @@ export function rutaInterna(zona: Zona, pathname: string): string | null {
     if (pathname === '/cuenta') return '/acudiente/cuenta'
     return pathname
   }
-  if (bajo('/inicio') || bajo('/cuenta')) return null
-  if (zona.tipo === 'sitio' && bajo('/admin')) return null
+  if (zona.tipo === 'admin') {
+    if (bajo('/admin')) return null
+    if (pathname === '/inicio') return '/admin/instituciones'
+    if (pathname === '/legal') return '/admin/legal'
+    if (pathname === '/cuenta') return '/admin/cuenta'
+    return pathname
+  }
+  if (bajo('/inicio') || bajo('/cuenta') || bajo('/admin')) return null
   return pathname
 }
 

@@ -499,6 +499,57 @@ export type Database = {
           },
         ]
       }
+      institucion_modulos: {
+        Row: {
+          activo: boolean
+          cambiado_en: string
+          desactivado_en: string | null
+          institucion_id: string
+          modulo: string
+        }
+        Insert: {
+          activo?: boolean
+          cambiado_en?: string
+          desactivado_en?: string | null
+          institucion_id: string
+          modulo: string
+        }
+        Update: {
+          activo?: boolean
+          cambiado_en?: string
+          desactivado_en?: string | null
+          institucion_id?: string
+          modulo?: string
+        }
+        Relationships: []
+      }
+      modulos: {
+        Row: {
+          clave: string
+          descripcion: string
+          estado: string
+          nombre: string
+          orden: number
+          siempre_activo: boolean
+        }
+        Insert: {
+          clave: string
+          descripcion: string
+          estado: string
+          nombre: string
+          orden?: number
+          siempre_activo?: boolean
+        }
+        Update: {
+          clave?: string
+          descripcion?: string
+          estado?: string
+          nombre?: string
+          orden?: number
+          siempre_activo?: boolean
+        }
+        Relationships: []
+      }
       personas: {
         Row: {
           apellidos: string | null
@@ -722,6 +773,10 @@ export type Database = {
         Args: { p_correo: string }
         Returns: string
       }
+      cambiar_modulo: {
+        Args: { p_activo: boolean; p_institucion_id: string; p_modulo: string }
+        Returns: undefined
+      }
       colegio_publico: {
         Args: { p_subdominio: string }
         Returns: {
@@ -782,6 +837,10 @@ export type Database = {
       liberar_cuenta: {
         Args: { p_persona_id?: string }
         Returns: undefined
+      }
+      modulo_activo: {
+        Args: { p_institucion_id: string; p_modulo: string }
+        Returns: boolean
       }
       marcar_devuelta_entregada: {
         Args: { p_grupo_pago_id: string }

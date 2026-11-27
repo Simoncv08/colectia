@@ -7,8 +7,8 @@ import { iconoGrande } from '@/lib/iconos'
 import { ui } from '@/lib/ui'
 
 const PESTANAS = [
-  { href: '/admin/instituciones', etiqueta: 'Instituciones', Icono: Building2 },
-  { href: '/admin/legal', etiqueta: 'Términos y privacidad', Icono: FileText },
+  { href: '/inicio', etiqueta: 'Instituciones', Icono: Building2 },
+  { href: '/legal', etiqueta: 'Términos y privacidad', Icono: FileText },
 ]
 
 // Pestañas del super administrador, debajo de la barra superior.

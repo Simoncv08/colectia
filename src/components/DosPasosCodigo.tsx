@@ -45,7 +45,7 @@ export default function DosPasosCodigo({
       return
     }
     // refresh() para que el servidor lea la sesión nueva; el botón sigue deshabilitado mientras tanto.
-    router.replace('/admin/instituciones')
+    router.replace('/inicio')
     router.refresh()
   }
 

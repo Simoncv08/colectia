@@ -46,7 +46,7 @@ export default async function LegalAdminPage({ searchParams }: Params) {
         {TIPOS_LEGALES.map((t) => (
           <Link
             key={t}
-            href={`/admin/legal?doc=${t}`}
+            href={`/legal?doc=${t}`}
             aria-current={t === tipo ? 'page' : undefined}
             className={`-mb-px inline-flex min-h-11 shrink-0 items-center whitespace-nowrap border-b-2 px-4 text-sm ${
               t === tipo ? 'border-primario font-semibold text-primario' : 'border-transparent text-gray-700 hover:text-gray-900'

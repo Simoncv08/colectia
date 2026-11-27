@@ -29,7 +29,7 @@ export default async function Inicio() {
   } = await supabase.auth.getUser()
 
   if (tipo === 'admin') {
-    redirect(user ? '/admin/instituciones' : '/login')
+    redirect(user ? '/inicio' : '/login')
   }
 
   if (!colegio) {
