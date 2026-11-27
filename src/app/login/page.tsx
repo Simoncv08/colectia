@@ -6,14 +6,12 @@ import FormularioLogin from './FormularioLogin'
 import Marca from '@/components/Marca'
 import { ui } from '@/lib/ui'
 import { CORREO_CONTACTO } from '@/lib/contacto'
+import { estiloPaleta } from '@/lib/paletas'
+import { zonaActual } from '@/lib/zonaServidor'
+import { SIN_INDEXAR } from '@/lib/sitio'
 
-export const metadata: Metadata = {
-  title: 'Entrar o crear cuenta',
-  description:
-    'Entra a Colectia o crea tu cuenta gratis para ver las actividades del colegio de tus estudiantes y los pagos registrados.',
-  // /login?modo=registro es la misma página.
-  alternates: { canonical: '/login' },
-}
+// Se entra por la dirección de cada colegio; esta página no va a buscadores.
+export const metadata: Metadata = { title: 'Entrar', robots: SIN_INDEXAR }
 
 // /login?modo=registro abre directamente "Crear cuenta" (lo usa la página de inicio).
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ modo?: string }> }) {
@@ -27,8 +25,19 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     redirect('/')
   }
 
+  // En la dirección de un colegio se ve su nombre y sus colores, y ahí se crean las cuentas.
+  const { tipo, colegio } = await zonaActual()
+  const subtitulo = colegio
+    ? `Pagos escolares de ${colegio.nombre}`
+    : tipo === 'admin'
+      ? 'Administración de Colectia'
+      : 'Pagos escolares claros para familias y colegios.'
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-fondo px-4 py-10">
+    <main
+      className="flex min-h-screen items-center justify-center bg-fondo px-4 py-10"
+      style={colegio ? estiloPaleta(colegio.paleta, colegio.fondo) : undefined}
+    >
       <div className="w-full max-w-[400px]">
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <h1>
@@ -36,10 +45,13 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               <Marca tamano="grande" />
             </Link>
           </h1>
-          <p className={ui.textoSecundario}>Pagos escolares claros para familias y colegios.</p>
+          <p className={ui.textoSecundario}>{subtitulo}</p>
         </div>
         <div className={ui.tarjeta}>
-          <FormularioLogin modoInicial={modo === 'registro' ? 'registro' : 'entrar'} />
+          <FormularioLogin
+            modoInicial={modo === 'registro' ? 'registro' : 'entrar'}
+            permitirRegistro={Boolean(colegio)}
+          />
         </div>
         <p className="mt-4 text-center text-[13px] text-gray-600">
           Al usar Colectia aceptas los{' '}

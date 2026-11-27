@@ -1,14 +1,38 @@
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from './tipos'
+import {
+  ENCABEZADO_COLEGIO,
+  ENCABEZADO_ZONA,
+  codificarColegio,
+  leerZona,
+  rutaPermitida,
+  urlDeZona,
+} from '@/lib/zona'
 
-// Corre en cada solicitud (proxy.ts en la raíz) para refrescar la sesión de Supabase.
+type CookieNueva = { name: string; value: string; options: CookieOptions }
+
+// Corre en cada solicitud (proxy.ts en la raíz): refresca la sesión de Supabase y resuelve qué
+// zona y qué colegio pide la dirección. La app lo lee de los encabezados x-colectia-*, que se
+// reemplazan siempre: los que mande el navegador no cuentan.
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  const url = request.nextUrl
+  const host = request.headers.get('host') ?? url.host
+  const zona = leerZona(url.hostname)
 
+  if (zona.tipo === 'raiz') {
+    return NextResponse.redirect(urlDeZona(host, 'www', url.pathname + url.search), 308)
+  }
+
+  // Si un correo llega sin dirección de regreso, Supabase usa el Site URL: "/?token_hash=…".
+  if (url.pathname === '/' && url.searchParams.has('token_hash')) {
+    const destino = url.clone()
+    destino.pathname = '/auth/confirmar'
+    return NextResponse.redirect(destino)
+  }
+
+  const cookiesNuevas: CookieNueva[] = []
   const supabase: SupabaseClient<Database> = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
@@ -19,12 +43,7 @@ export async function updateSession(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
+          cookiesNuevas.push(...cookiesToSet)
         },
       },
     }
@@ -34,5 +53,41 @@ export async function updateSession(request: NextRequest) {
   // puede hacer que se pierda la sesión de los usuarios de forma aleatoria.
   await supabase.auth.getClaims()
 
-  return supabaseResponse
+  const responder = (respuesta: NextResponse) => {
+    cookiesNuevas.forEach(({ name, value, options }) => respuesta.cookies.set(name, value, options))
+    return respuesta
+  }
+
+  if (!rutaPermitida(zona, url.pathname)) {
+    return responder(NextResponse.rewrite(new URL('/__no-encontrado', url), { status: 404 }))
+  }
+
+  // request.headers ya trae las cookies renovadas (request.cookies.set las escribe ahí).
+  const encabezados = new Headers(request.headers)
+  encabezados.delete(ENCABEZADO_COLEGIO)
+  encabezados.set(ENCABEZADO_ZONA, zona.tipo)
+
+  if (zona.tipo === 'colegio') {
+    const { data } = await supabase.rpc('colegio_publico', { p_subdominio: zona.subdominio })
+    const colegio = data?.[0]
+    if (!colegio) {
+      return responder(NextResponse.rewrite(new URL('/colegio-no-encontrado', url), { status: 404 }))
+    }
+    if (colegio.redirigir_a) {
+      return responder(NextResponse.redirect(urlDeZona(host, colegio.redirigir_a, url.pathname + url.search), 301))
+    }
+    encabezados.set(
+      ENCABEZADO_COLEGIO,
+      codificarColegio({
+        id: colegio.id,
+        nombre: colegio.nombre,
+        subdominio: colegio.subdominio,
+        estado: colegio.estado,
+        paleta: colegio.paleta,
+        fondo: colegio.fondo,
+      })
+    )
+  }
+
+  return responder(NextResponse.next({ request: { headers: encabezados } }))
 }

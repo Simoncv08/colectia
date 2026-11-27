@@ -22,7 +22,7 @@ Los enlaces llevan a la página `/auth/confirmar` de la app con `{{ .TokenHash }
 - Los escáneres de correo (por ejemplo, Outlook con "Vínculos seguros") abren el enlace sin gastarlo, porque no tocan botones.
 - El enlace funciona aunque se abra en otro navegador o celular distinto al que lo pidió.
 
-`{{ .SiteURL }}` es el "Site URL" de **Authentication → URL Configuration**, que debe ser `https://www.colectia.co`. No borres las partes entre `{{ }}`: Supabase las reemplaza por el enlace, el correo o el código. El inicio de sesión con Google sigue usando `/auth/callback`.
+`{{ .RedirectTo }}` es la dirección `/auth/confirmar` del colegio donde la persona pidió el correo (por ejemplo `https://lcp.colectia.co/auth/confirmar`), así la sesión queda en ese colegio. Debe estar permitida en **Authentication → URL Configuration → Redirect URLs** (`https://*.colectia.co/**`). Si un correo sale sin ella (por ejemplo, una invitación desde el panel de Supabase), Supabase usa el Site URL (`https://www.colectia.co`) y la app la reenvía a `/auth/confirmar`. No borres las partes entre `{{ }}`: Supabase las reemplaza por el enlace, el correo o el código. El inicio de sesión con Google sigue usando `/auth/callback`.
 
 ## 2. Servicio de correo propio con Resend
 

@@ -143,7 +143,7 @@ const PREGUNTAS: { pregunta: string; respuesta: string }[] = [
   {
     pregunta: '¿Cómo vinculo a mi estudiante?',
     respuesta:
-      'Crea tu cuenta, toca "Vincular estudiante" y escribe el código o el número de documento que te dio el colegio. Desde ese momento ves las actividades de su curso y los pagos registrados.',
+      'Entra con el enlace que te envió el colegio, crea tu cuenta, toca "Vincular estudiante" y escribe el código o el número de documento que te dio el colegio. Desde ese momento ves las actividades de su curso y los pagos registrados.',
   },
   {
     pregunta: '¿Los estudiantes necesitan una cuenta?',
@@ -219,8 +219,6 @@ const COLORES_MARCA = {
   '--fondo': '#fffdf5',
 } as CSSProperties
 
-const botonMiel =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-miel px-5 py-2 text-sm font-semibold text-tinta transition-colors duration-[120ms] ease-colectia hover:bg-miel-hover'
 const botonClaro =
   'inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-tinta/20 bg-white px-5 py-2 text-sm font-semibold text-tinta transition-colors duration-[120ms] ease-colectia hover:bg-miel-claro'
 
@@ -294,11 +292,9 @@ export default function PaginaInicio() {
             <Marca />
           </Link>
           <nav aria-label="Cuenta" className="flex items-center gap-1 sm:gap-2">
+            {/* Las familias y el personal entran por la dirección de su colegio. */}
             <Link href="/login" className={`${ui.botonFantasma} px-3 text-tinta hover:bg-miel-claro`}>
-              Entrar
-            </Link>
-            <Link href="/login?modo=registro" className={`${botonMiel} px-4`}>
-              Crear cuenta
+              Ya registré mi colegio
             </Link>
           </nav>
         </div>
@@ -324,14 +320,13 @@ export default function PaginaInicio() {
                 pagó y las familias ven sus actividades y lo que pagaron, sin listas en papel.
               </p>
               <div className="flex flex-col gap-2 sm:flex-row">
-                <Link href="/login?modo=registro" className={`${ui.botonPrimario} w-full sm:w-auto`}>
-                  Crear mi cuenta
-                </Link>
-                <Link href="/login" className={`${botonClaro} w-full sm:w-auto`}>
-                  Ya tengo cuenta
-                </Link>
+                <a href={`mailto:${CORREO_CONTACTO}`} className={`${ui.botonPrimario} w-full sm:w-auto`}>
+                  Escríbenos para tu colegio
+                </a>
               </div>
-              <p className="text-[13px] font-medium text-tinta/85">Para las familias, Colectia es gratis.</p>
+              <p className="text-[13px] font-medium text-tinta/85">
+                ¿Eres familia? Entra con el enlace que te envió tu colegio. Para las familias, Colectia es gratis.
+              </p>
             </div>
             <Vistazo />
           </div>
@@ -460,12 +455,10 @@ export default function PaginaInicio() {
             <div className="flex flex-col gap-1">
               <h2 className="text-2xl font-bold">¿Tu colegio ya usa Colectia?</h2>
               <p className="text-[15px] text-tinta/85">
-                Crea tu cuenta y vincula a tus estudiantes con el código o el documento que te dio el colegio.
+                Entra con el enlace que te envió el colegio, crea tu cuenta y vincula a tus estudiantes con
+                el código o el documento que te dio.
               </p>
             </div>
-            <Link href="/login?modo=registro" className={ui.botonPrimario}>
-              Crear mi cuenta
-            </Link>
           </div>
           {CORREO_CONTACTO && (
             <div className={`${ui.tarjeta} mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between`}>

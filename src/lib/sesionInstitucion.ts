@@ -2,6 +2,7 @@ import { cache } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { nombrePersona } from '@/lib/formato'
+import { asegurarCuentaDelColegio, irAMiZona, zonaActual } from '@/lib/zonaServidor'
 
 export type SesionInstitucion = {
   supabase: Awaited<ReturnType<typeof createClient>>
@@ -21,8 +22,8 @@ export type SesionInstitucion = {
   }
 }
 
-// Sin sesión manda a /login; sin membresía de personal devuelve null. cache() evita repetir la
-// consulta en la misma visita. Si la persona es personal de varias instituciones, usa la más antigua.
+// Sin sesión manda a /login; sin membresía de personal en el colegio de la dirección devuelve
+// null. cache() evita repetir la consulta en la misma visita.
 export const obtenerSesionInstitucion = cache(async (): Promise<SesionInstitucion | null> => {
   const supabase = await createClient()
 
@@ -34,11 +35,16 @@ export const obtenerSesionInstitucion = cache(async (): Promise<SesionInstitucio
     redirect('/login')
   }
 
+  const { colegio } = await zonaActual()
+  if (!colegio) await irAMiZona(supabase, user.id)
+  await asegurarCuentaDelColegio(supabase, user.id, colegio!)
+
   const [{ data: membresias }, { data: persona }] = await Promise.all([
     supabase
       .from('membresias')
       .select('id, institucion_id, rol, instituciones(nombre, estado, paleta, fondo)')
       .eq('persona_id', user.id)
+      .eq('institucion_id', colegio!.id)
       .in('rol', ['admin_institucion', 'recaudador'])
       .order('created_at', { ascending: true }),
     supabase.from('personas').select('nombres, apellidos, correo, telefono').eq('id', user.id).maybeSingle(),
@@ -46,10 +52,8 @@ export const obtenerSesionInstitucion = cache(async (): Promise<SesionInstitucio
 
   // La consulta ya filtra por esos dos roles.
   const todas = (membresias ?? []).map((x) => ({ ...x, rol: x.rol as 'admin_institucion' | 'recaudador' }))
-  // En la institución más antigua, el rol de administrador gana si la persona tiene los dos.
-  const m =
-    todas.find((x) => x.institucion_id === todas[0]?.institucion_id && x.rol === 'admin_institucion') ??
-    todas[0]
+  // Si quedara más de una fila, el rol de administrador gana.
+  const m = todas.find((x) => x.rol === 'admin_institucion') ?? todas[0]
 
   if (!m?.institucion_id) return null
 

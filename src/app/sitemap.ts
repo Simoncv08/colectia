@@ -14,7 +14,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     { url: URL_SITIO },
-    { url: `${URL_SITIO}/login` },
     ...TIPOS_LEGALES.map((tipo) => ({
       url: `${URL_SITIO}${DOCUMENTOS_LEGALES[tipo].ruta}`,
       lastModified: versiones?.find((v) => v.tipo === tipo)?.publicado_en,

@@ -9,7 +9,7 @@ import { esTipoLegal } from '@/lib/legal'
 export async function cerrarSesion() {
   const supabase = await createClient()
   await supabase.auth.signOut()
-  redirect('/login')
+  redirect('/')
 }
 
 // El correo no se cambia aquí: es con el que se inicia sesión.

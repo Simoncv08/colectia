@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import type { Tables } from '@/lib/supabase/tipos'
 import { ROLES_PERSONAL, esRolPersonal, type RolPersonal } from '@/lib/membresias'
+import { asegurarCuentaDelColegio, irAMiZona, zonaActual } from '@/lib/zonaServidor'
 
 export type EstudianteVinculado = Pick<
   Tables<'estudiantes'>,
@@ -28,6 +29,11 @@ export const obtenerSesionAcudiente = cache(async () => {
     redirect('/login')
   }
 
+  // Una cuenta, un colegio: los estudiantes y el personal solo pueden ser de este.
+  const { colegio } = await zonaActual()
+  if (!colegio) await irAMiZona(supabase, user.id)
+  await asegurarCuentaDelColegio(supabase, user.id, colegio!)
+
   const [{ data: persona }, { data: vinculosCrudos }, { data: membresias }] = await Promise.all([
     supabase
       .from('personas')
@@ -44,6 +50,7 @@ export const obtenerSesionAcudiente = cache(async () => {
       .from('membresias')
       .select('institucion_id, rol, instituciones(nombre)')
       .eq('persona_id', user.id)
+      .eq('institucion_id', colegio!.id)
       .in('rol', Object.keys(ROLES_PERSONAL)),
   ])
 

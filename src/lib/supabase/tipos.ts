@@ -505,6 +505,7 @@ export type Database = {
           correo: string | null
           created_at: string
           id: string
+          institucion_id: string | null
           nombres: string | null
           telefono: string | null
         }
@@ -513,6 +514,7 @@ export type Database = {
           correo?: string | null
           created_at?: string
           id: string
+          institucion_id?: string | null
           nombres?: string | null
           telefono?: string | null
         }
@@ -521,10 +523,19 @@ export type Database = {
           correo?: string | null
           created_at?: string
           id?: string
+          institucion_id?: string | null
           nombres?: string | null
           telefono?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "personas_institucion_id_fkey"
+            columns: ["institucion_id"]
+            isOneToOne: false
+            referencedRelation: "instituciones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       productos: {
         Row: {
@@ -768,6 +779,10 @@ export type Database = {
         Returns: boolean
       }
       jwt_membresias: { Args: never; Returns: Json }
+      liberar_cuenta: {
+        Args: { p_persona_id?: string }
+        Returns: undefined
+      }
       marcar_devuelta_entregada: {
         Args: { p_grupo_pago_id: string }
         Returns: undefined
@@ -804,6 +819,10 @@ export type Database = {
       tiene_rol_en_institucion: {
         Args: { p_institucion_id: string; p_roles: string[] }
         Returns: boolean
+      }
+      unirse_a_colegio: {
+        Args: { p_institucion_id: string }
+        Returns: string
       }
       vincular_estudiante: {
         Args: {

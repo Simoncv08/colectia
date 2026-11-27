@@ -49,14 +49,22 @@ function traducirError(error: AuthError): string {
   return 'No se pudo completar. Intenta de nuevo en un momento.'
 }
 
-export default function FormularioLogin({ modoInicial = 'entrar' }: { modoInicial?: 'entrar' | 'registro' }) {
+// Sin permitirRegistro (www y admin) solo se entra con una cuenta existente: las cuentas nuevas se
+// crean en la dirección de cada colegio.
+export default function FormularioLogin({
+  modoInicial = 'entrar',
+  permitirRegistro = true,
+}: {
+  modoInicial?: 'entrar' | 'registro'
+  permitirRegistro?: boolean
+}) {
   const router = useRouter()
   // refresh() para que el servidor vuelva a leer las cookies de la sesión nueva.
   function irAlInicio() {
     router.replace('/')
     router.refresh()
   }
-  const [modo, setModo] = useState<Modo>(modoInicial)
+  const [modo, setModo] = useState<Modo>(permitirRegistro ? modoInicial : 'entrar')
   const [correo, setCorreo] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [mensaje, setMensaje] = useState<Mensaje>(null)
@@ -70,9 +78,15 @@ export default function FormularioLogin({ modoInicial = 'entrar' }: { modoInicia
     setMensaje(null)
   }
 
-  function urlRegreso(siguiente?: string) {
-    const base = `${window.location.origin}/auth/callback`
-    return siguiente ? `${base}?next=${encodeURIComponent(siguiente)}` : base
+  // Google vuelve a /auth/callback de esta misma dirección.
+  function urlRegreso() {
+    return `${window.location.origin}/auth/callback`
+  }
+
+  // Los correos llevan a /auth/confirmar de esta misma dirección ({{ .RedirectTo }} en las
+  // plantillas), así la sesión queda en el colegio donde se pidió.
+  function urlConfirmar() {
+    return `${window.location.origin}/auth/confirmar`
   }
 
   async function entrarConGoogle() {
@@ -129,7 +143,7 @@ export default function FormularioLogin({ modoInicial = 'entrar' }: { modoInicia
           email,
           password: contrasena,
           options: {
-            emailRedirectTo: urlRegreso(),
+            emailRedirectTo: urlConfirmar(),
             captchaToken,
             data: { nombres, apellidos, full_name: `${nombres} ${apellidos}`.trim() },
           },
@@ -160,7 +174,7 @@ export default function FormularioLogin({ modoInicial = 'entrar' }: { modoInicia
       if (modo === 'enlace') {
         const { error } = await supabase.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: urlRegreso(), shouldCreateUser: true, captchaToken },
+          options: { emailRedirectTo: urlConfirmar(), shouldCreateUser: permitirRegistro, captchaToken },
         })
         if (error) {
           setMensaje({ tipo: 'error', texto: traducirError(error) })
@@ -174,7 +188,7 @@ export default function FormularioLogin({ modoInicial = 'entrar' }: { modoInicia
       }
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: urlRegreso('/restablecer'),
+        redirectTo: urlConfirmar(),
         captchaToken,
       })
       if (error) {
@@ -365,14 +379,14 @@ export default function FormularioLogin({ modoInicial = 'entrar' }: { modoInicia
           <button type="button" onClick={() => cambiarModo('entrar')} className={ui.enlace}>
             ← Volver a iniciar sesión
           </button>
-        ) : (
+        ) : permitirRegistro ? (
           <>
             ¿No tienes cuenta?{' '}
             <button type="button" onClick={() => cambiarModo('registro')} className={ui.enlace}>
               Crea una con tu correo
             </button>
           </>
-        )}
+        ) : null}
       </p>
     </div>
   )

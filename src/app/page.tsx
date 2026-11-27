@@ -1,40 +1,52 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import type { Metadata } from 'next'
 import PaginaInicio from '@/components/PaginaInicio'
-import { DESCRIPCION_SITIO, OPEN_GRAPH_BASE, TITULO_SITIO } from '@/lib/sitio'
+import InicioColegio from '@/components/InicioColegio'
+import { DESCRIPCION_SITIO, OPEN_GRAPH_BASE, SIN_INDEXAR, TITULO_SITIO } from '@/lib/sitio'
+import { asegurarCuentaDelColegio, irAMiZona, zonaActual } from '@/lib/zonaServidor'
 
-export const metadata: Metadata = {
-  title: { absolute: TITULO_SITIO },
-  description: DESCRIPCION_SITIO,
-  alternates: { canonical: '/' },
-  openGraph: { ...OPEN_GRAPH_BASE, url: '/', title: TITULO_SITIO, description: DESCRIPCION_SITIO },
+// La entrada de un colegio no se indexa: cada colegio difunde su propia dirección.
+export async function generateMetadata(): Promise<Metadata> {
+  const { tipo, colegio } = await zonaActual()
+  if (colegio) return { title: { absolute: `${colegio.nombre} · Colectia` }, robots: SIN_INDEXAR }
+  if (tipo === 'admin') return { title: { absolute: 'Administración · Colectia' }, robots: SIN_INDEXAR }
+  return {
+    title: { absolute: TITULO_SITIO },
+    description: DESCRIPCION_SITIO,
+    alternates: { canonical: '/' },
+    openGraph: { ...OPEN_GRAPH_BASE, url: '/', title: TITULO_SITIO, description: DESCRIPCION_SITIO },
+  }
 }
 
-// Sin sesión: la página de inicio pública. Con sesión: el panel de cada rol. Si alguien es
-// personal y super_admin a la vez, entra al panel de institución.
+// www: la página para colegios; con sesión, cada cuenta va a su colegio (o el super admin a
+// admin.colectia.co). Dirección de un colegio: su entrada, o el panel según el rol.
 export default async function Inicio() {
+  const { tipo, colegio } = await zonaActual()
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) {
-    return <PaginaInicio />
+  if (tipo === 'admin') {
+    redirect(user ? '/admin/instituciones' : '/login')
   }
 
-  const { data: membresias } = await supabase
+  if (!colegio) {
+    if (!user) return <PaginaInicio />
+    return irAMiZona(supabase, user.id)
+  }
+
+  if (!user) return <InicioColegio colegio={colegio} />
+
+  await asegurarCuentaDelColegio(supabase, user.id, colegio)
+  const { data: personal } = await supabase
     .from('membresias')
-    .select('rol')
+    .select('id')
     .eq('persona_id', user.id)
+    .eq('institucion_id', colegio.id)
+    .in('rol', ['admin_institucion', 'recaudador'])
+    .limit(1)
 
-  const roles = new Set((membresias ?? []).map((m) => m.rol))
-
-  if (roles.has('admin_institucion') || roles.has('recaudador')) {
-    redirect('/institucion')
-  }
-  if (roles.has('super_admin')) {
-    redirect('/admin/instituciones')
-  }
-  redirect('/acudiente')
+  redirect(personal?.length ? '/institucion' : '/acudiente')
 }

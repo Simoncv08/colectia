@@ -7,6 +7,7 @@ Colectia no recibe ni guarda el dinero: el dinero de las actividades es del cole
 ## Para familias y acudientes
 
 - La cuenta es del padre, madre o acudiente; los estudiantes no tienen cuenta.
+- Cada colegio tiene su propia dirección (por ejemplo, lcp.colectia.co) y la comparte con sus familias; ahí se crea la cuenta.
 - Se vincula a cada estudiante con el código o el número de documento que entrega el colegio, aunque estudien en colegios distintos.
 - Se entra con correo y contraseña, con un enlace enviado al correo o con una cuenta de Google.
 
@@ -27,7 +28,6 @@ Colectia no recibe ni guarda el dinero: el dinero de las actividades es del cole
 ## Páginas
 
 - [Inicio](https://www.colectia.co/): qué es Colectia, cómo funciona y preguntas frecuentes.
-- [Entrar o crear cuenta](https://www.colectia.co/login)
 - [Términos y condiciones](https://www.colectia.co/terminos)
 - [Política de privacidad](https://www.colectia.co/privacidad)
 
