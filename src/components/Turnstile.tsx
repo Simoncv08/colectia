@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 
 // Llave pública del widget de Cloudflare Turnstile (la secreta solo está en Supabase).
-const LLAVE_SITIO = '0x4AAAAAAGTg6TMOXDQtU-qT'
+const LLAVE_SITIO = '0x4AAAAAAGVPHP1fNnojWbD2'
 const SCRIPT = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
 
 type OpcionesTurnstile = {
