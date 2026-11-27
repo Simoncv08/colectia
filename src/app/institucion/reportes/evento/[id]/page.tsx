@@ -71,7 +71,7 @@ export default async function InformeEventoPage({ params, searchParams }: Params
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-3">
         <Link
-          href={`/institucion/reportes?${filtrosAParametros(f, { evento: '' })}`}
+          href={`/admin/reportes?${filtrosAParametros(f, { evento: '' })}`}
           className={`${ui.enlace} self-start text-sm`}
         >
           ← Reportes
@@ -86,7 +86,7 @@ export default async function InformeEventoPage({ params, searchParams }: Params
             </div>
           </div>
           <div className={ui.accionesPagina}>
-            <Link href={`/institucion/eventos/${id}/pagos`} className={ui.botonSecundario}>
+            <Link href={`/admin/eventos/${id}/pagos`} className={ui.botonSecundario}>
               Ver pagos del evento
             </Link>
             <BotonDescargarExcel parametros={filtrosAParametros(f)} />
@@ -134,7 +134,7 @@ export default async function InformeEventoPage({ params, searchParams }: Params
           <p className={ui.avisoAmbar}>
             Hay {r.devueltasPendientes === 1 ? '1 devuelta' : `${r.devueltasPendientes} devueltas`} por
             entregar por {pesos(r.valorDevueltasPendientes)}.{' '}
-            <Link href={`/institucion/eventos/${id}/pagos?devueltas=1`} className={ui.enlace}>
+            <Link href={`/admin/eventos/${id}/pagos?devueltas=1`} className={ui.enlace}>
               Ver devueltas
             </Link>
           </p>

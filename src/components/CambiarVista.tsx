@@ -4,8 +4,8 @@ import { iconoGrande } from '@/lib/iconos'
 import { ui } from '@/lib/ui'
 
 const VISTAS = {
-  acudiente: { href: '/acudiente', texto: 'Mis estudiantes', corto: 'Estudiantes', Icono: UsersRound },
-  institucion: { href: '/institucion', texto: 'Panel del colegio', corto: 'Colegio', Icono: School },
+  acudiente: { href: '/inicio', texto: 'Mis estudiantes', corto: 'Estudiantes', Icono: UsersRound },
+  institucion: { href: '/admin', texto: 'Panel del colegio', corto: 'Colegio', Icono: School },
 } as const
 
 // Para quien es personal de un colegio y además acudiente: pasa de un panel al otro.

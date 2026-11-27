@@ -81,7 +81,7 @@ export async function aceptarInvitacion(membresiaId: string, _formData: FormData
     return { tipo: 'error', texto: error.message.includes('ya no está disponible') ? 'Esa invitación ya no está disponible.' : mensajeBD(error) }
   }
   revalidatePath('/', 'layout')
-  redirect('/institucion')
+  redirect('/admin')
 }
 
 export async function rechazarInvitacion(membresiaId: string, _formData: FormData): Promise<Resultado> {

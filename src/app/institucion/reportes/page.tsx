@@ -64,7 +64,7 @@ export default async function ReportesPage({ searchParams }: Params) {
   const vistaActual = VISTAS.find((v) => v.valor === f.vista)!
   const filtrosActivos = etiquetasFiltros(datos, f).map((x) => ({
     etiqueta: x.etiqueta,
-    hrefQuitar: `/institucion/reportes?${filtrosAParametros(deLaUrl, { [x.campo]: '' })}`,
+    hrefQuitar: `/admin/reportes?${filtrosAParametros(deLaUrl, { [x.campo]: '' })}`,
   }))
 
   return (
@@ -78,7 +78,7 @@ export default async function ReportesPage({ searchParams }: Params) {
         {VISTAS.map((v) => (
           <Link
             key={v.valor}
-            href={`/institucion/reportes?${filtrosAParametros(deLaUrl, { vista: v.valor })}`}
+            href={`/admin/reportes?${filtrosAParametros(deLaUrl, { vista: v.valor })}`}
             aria-current={f.vista === v.valor ? 'page' : undefined}
             className={`-mb-px inline-flex min-h-11 shrink-0 items-center whitespace-nowrap border-b-2 px-4 text-sm ${
               f.vista === v.valor
@@ -151,7 +151,7 @@ export default async function ReportesPage({ searchParams }: Params) {
         <div className="-mt-3 mb-6">
           <FiltrosActivos
             filtros={filtrosActivos}
-            hrefLimpiar={`/institucion/reportes${f.vista !== 'eventos' ? `?vista=${f.vista}` : ''}`}
+            hrefLimpiar={`/admin/reportes${f.vista !== 'eventos' ? `?vista=${f.vista}` : ''}`}
           />
         </div>
       )}

@@ -55,7 +55,7 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
     const sinPago = cambios.sin_pago ?? mostrarSinPago
     const devueltas = cambios.devueltas ?? soloDevueltas
     const partes = [sinPago && 'sin_pago=1', devueltas && 'devueltas=1'].filter(Boolean)
-    return `/institucion/eventos/${id}/pagos${partes.length ? `?${partes.join('&')}` : ''}`
+    return `/admin/eventos/${id}/pagos${partes.length ? `?${partes.join('&')}` : ''}`
   }
 
   const sesion = await obtenerSesionInstitucion()
@@ -151,7 +151,7 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <Link href="/institucion/eventos" className={`${ui.enlace} text-sm`}>
+          <Link href="/admin/eventos" className={`${ui.enlace} text-sm`}>
             ← Eventos
           </Link>
           <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -164,7 +164,7 @@ export default async function PagosEventoPage({ params, searchParams }: Params) 
           </p>
         </div>
         <div className={ui.accionesPagina}>
-          <Link href={`/institucion/eventos/${evento.id}/pagos/rapido`} className={ui.botonPrimario}>
+          <Link href={`/admin/eventos/${evento.id}/pagos/rapido`} className={ui.botonPrimario}>
             Cobro por salón
           </Link>
         </div>

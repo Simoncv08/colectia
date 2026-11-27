@@ -93,7 +93,7 @@ export default async function AcudientePage() {
           </span>
           <p className="font-semibold text-gray-900">Aún no tienes estudiantes vinculados</p>
           <p className={ui.textoSecundario}>Vincúlalo con el código o el documento que te dio el colegio.</p>
-          <Link href="/acudiente/cuenta#estudiantes" className={`${ui.botonPrimario} w-full sm:w-auto`}>
+          <Link href="/cuenta#estudiantes" className={`${ui.botonPrimario} w-full sm:w-auto`}>
             <Plus {...iconoGrande} />
             Vincular estudiante
           </Link>
@@ -180,7 +180,7 @@ export default async function AcudientePage() {
               <h2 id="titulo-estudiantes" className={ui.subtitulo}>
                 Mis estudiantes
               </h2>
-              <Link href="/acudiente/cuenta#estudiantes" className={`${ui.botonSecundario} shrink-0 px-3`}>
+              <Link href="/cuenta#estudiantes" className={`${ui.botonSecundario} shrink-0 px-3`}>
                 <Plus {...iconoGrande} />
                 <span className="sm:hidden">Vincular</span>
                 <span className="hidden sm:inline">Vincular estudiante</span>

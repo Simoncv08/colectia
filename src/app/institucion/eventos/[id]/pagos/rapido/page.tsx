@@ -92,7 +92,7 @@ export default async function CobroRapidoPage({ params }: Params) {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <Link href={`/institucion/eventos/${evento.id}/pagos`} className={`${ui.enlace} text-sm`}>
+        <Link href={`/admin/eventos/${evento.id}/pagos`} className={`${ui.enlace} text-sm`}>
           ← Pagos de {evento.nombre}
         </Link>
         <h1 className={`${ui.titulo} mt-1`}>Cobro por salón</h1>

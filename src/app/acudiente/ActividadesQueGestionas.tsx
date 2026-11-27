@@ -54,8 +54,8 @@ export default function ActividadesQueGestionas({
                   href={
                     // El recaudador trabaja en los pagos; el administrador, en la configuración.
                     rolPorInstitucion.get(ev.institucion_id) === 'recaudador'
-                      ? `/institucion/eventos/${ev.id}/pagos`
-                      : `/institucion/eventos/${ev.id}`
+                      ? `/admin/eventos/${ev.id}/pagos`
+                      : `/admin/eventos/${ev.id}`
                   }
                   className="flex min-h-11 items-center gap-3 px-4 py-3 hover:bg-gray-50 sm:px-5"
                 >

@@ -185,7 +185,7 @@ export function Pendientes({
                 {total === 1 ? 'Un estudiante' : `${total} estudiantes`} sin ningún pago en este evento.
               </p>
               {cobroAbierto && (
-                <Link href={`/institucion/eventos/${eventoId}/pagos/rapido`} className={ui.botonCompacto}>
+                <Link href={`/admin/eventos/${eventoId}/pagos/rapido`} className={ui.botonCompacto}>
                   Cobro por salón
                 </Link>
               )}

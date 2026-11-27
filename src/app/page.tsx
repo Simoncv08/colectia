@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PaginaInicio from '@/components/PaginaInicio'
-import InicioColegio from '@/components/InicioColegio'
 import { DESCRIPCION_SITIO, OPEN_GRAPH_BASE, SIN_INDEXAR, TITULO_SITIO } from '@/lib/sitio'
 import { asegurarCuentaDelColegio, irAMiZona, zonaActual } from '@/lib/zonaServidor'
 
@@ -20,7 +19,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // www: la página para colegios; con sesión, cada cuenta va a su colegio (o el super admin a
-// admin.colectia.co). Dirección de un colegio: su entrada, o el panel según el rol.
+// admin.colectia.co). Dirección de un colegio: sin sesión, a entrar; con sesión, el personal a
+// /admin y las familias a /inicio.
 export default async function Inicio() {
   const { tipo, colegio } = await zonaActual()
   const supabase = await createClient()
@@ -37,7 +37,7 @@ export default async function Inicio() {
     return irAMiZona(supabase, user.id)
   }
 
-  if (!user) return <InicioColegio colegio={colegio} />
+  if (!user) redirect('/login')
 
   await asegurarCuentaDelColegio(supabase, user.id, colegio)
   const { data: personal } = await supabase
@@ -48,5 +48,5 @@ export default async function Inicio() {
     .in('rol', ['admin_institucion', 'recaudador'])
     .limit(1)
 
-  redirect(personal?.length ? '/institucion' : '/acudiente')
+  redirect(personal?.length ? '/admin' : '/inicio')
 }

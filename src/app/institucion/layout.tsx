@@ -28,7 +28,7 @@ export default async function InstitucionLayout({ children }: { children: React.
         <h1 className={ui.subtitulo}>No tienes permiso para ver el panel de institución</h1>
         <p className={ui.textoSecundario}>
           Esta cuenta no es parte del personal de ninguna institución. Si eres acudiente,{' '}
-          <Link href="/acudiente" className={ui.enlace}>
+          <Link href="/inicio" className={ui.enlace}>
             ve a tus estudiantes
           </Link>
           .
@@ -51,7 +51,7 @@ export default async function InstitucionLayout({ children }: { children: React.
       style={estiloPaleta(sesion.institucion.paleta, sesion.institucion.fondo)}
     >
       <aside className="hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-60 lg:shrink-0 lg:flex-col lg:border-r lg:border-gray-200 lg:bg-white">
-        <Link href="/institucion" className="px-5 py-5">
+        <Link href="/admin" className="px-5 py-5">
           <Marca />
         </Link>
         <div className="flex-1 overflow-y-auto px-3 pb-4">
@@ -64,7 +64,7 @@ export default async function InstitucionLayout({ children }: { children: React.
             la institución con su estado y rol, y la cuenta. */}
         <header className="sticky top-0 z-30 border-b border-gray-200 bg-white">
           <div className="flex items-center justify-between gap-2 px-4 py-2 sm:px-6">
-            <Link href="/institucion" className="py-2 lg:hidden">
+            <Link href="/admin" className="py-2 lg:hidden">
               <Marca />
             </Link>
             <div className="hidden min-w-0 flex-wrap items-center gap-x-3 gap-y-1 lg:flex">
@@ -74,7 +74,7 @@ export default async function InstitucionLayout({ children }: { children: React.
             </div>
             <div className="flex items-center gap-1">
               <CambiarVista a="acudiente" />
-              <MenuCuenta nombre={sesion.nombre} correo={sesion.correo} hrefCuenta="/institucion/cuenta" soloIcono />
+              <MenuCuenta nombre={sesion.nombre} correo={sesion.correo} hrefCuenta="/admin/cuenta" soloIcono />
               <div className="lg:hidden">
                 <MenuDesplegable
                   boton={

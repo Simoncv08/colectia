@@ -41,19 +41,22 @@ export function leerZona(hostname: string): Zona {
   return { tipo: 'sitio' }
 }
 
-// Rutas que no existen en cada zona: /admin solo en admin.colectia.co, y los paneles del colegio
-// solo en la dirección de un colegio.
-export function rutaPermitida(zona: Zona, pathname: string) {
-  const empieza = (prefijo: string) => pathname === prefijo || pathname.startsWith(`${prefijo}/`)
-  const panelesColegio = empieza('/institucion') || empieza('/acudiente')
-  switch (zona.tipo) {
-    case 'admin':
-      return !panelesColegio
-    case 'colegio':
-      return !empieza('/admin')
-    default:
-      return !panelesColegio && !empieza('/admin')
+// Ruta pública → carpeta de src/app que la atiende, según la zona; null si ahí no existe (404).
+// En un colegio: /inicio y /cuenta son de las familias y /admin/… es el panel del personal
+// (carpetas acudiente/ e institucion/). Esas carpetas no se pueden abrir con su nombre real.
+export function rutaInterna(zona: Zona, pathname: string): string | null {
+  const bajo = (prefijo: string) => pathname === prefijo || pathname.startsWith(`${prefijo}/`)
+  if (bajo('/institucion') || bajo('/acudiente')) return null
+
+  if (zona.tipo === 'colegio') {
+    if (bajo('/admin')) return `/institucion${pathname.slice('/admin'.length)}`
+    if (pathname === '/inicio') return '/acudiente'
+    if (pathname === '/cuenta') return '/acudiente/cuenta'
+    return pathname
   }
+  if (bajo('/inicio') || bajo('/cuenta')) return null
+  if (zona.tipo === 'sitio' && bajo('/admin')) return null
+  return pathname
 }
 
 export function codificarColegio(colegio: ColegioDeLaDireccion) {

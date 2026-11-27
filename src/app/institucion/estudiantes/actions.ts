@@ -69,7 +69,7 @@ export async function actualizarEstudiante(id: string, formData: FormData) {
     if (!data?.length) throw new Error('Ese estudiante ya no existe.')
 
     revalidatePath('/institucion', 'layout')
-    redirect('/institucion/estudiantes')
+    redirect('/admin/estudiantes')
   })
 }
 
@@ -88,7 +88,7 @@ export async function eliminarEstudiante(id: string, _formData: FormData) {
     }
 
     revalidatePath('/institucion', 'layout')
-    redirect('/institucion/estudiantes')
+    redirect('/admin/estudiantes')
   })
 }
 

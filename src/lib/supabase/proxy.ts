@@ -8,7 +8,7 @@ import {
   codificarColegio,
   hostDeLaSolicitud,
   leerZona,
-  rutaPermitida,
+  rutaInterna,
   urlDeZona,
 } from '@/lib/zona'
 
@@ -60,7 +60,8 @@ export async function updateSession(request: NextRequest) {
     return respuesta
   }
 
-  if (!rutaPermitida(zona, url.pathname)) {
+  const interna = rutaInterna(zona, url.pathname)
+  if (!interna) {
     return responder(NextResponse.rewrite(new URL('/__no-encontrado', url), { status: 404 }))
   }
 
@@ -91,5 +92,10 @@ export async function updateSession(request: NextRequest) {
     )
   }
 
-  return responder(NextResponse.next({ request: { headers: encabezados } }))
+  if (interna === url.pathname) {
+    return responder(NextResponse.next({ request: { headers: encabezados } }))
+  }
+  const destino = url.clone()
+  destino.pathname = interna
+  return responder(NextResponse.rewrite(destino, { request: { headers: encabezados } }))
 }

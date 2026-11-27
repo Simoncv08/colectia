@@ -21,7 +21,7 @@ export default async function EditarEstudiantePage({ params }: Params) {
     return (
       <p className="text-gray-700">
         Solo el administrador de la institución puede editar estudiantes.{' '}
-        <Link href="/institucion/estudiantes" className={ui.enlace}>
+        <Link href="/admin/estudiantes" className={ui.enlace}>
           Volver a estudiantes
         </Link>
       </p>
@@ -61,7 +61,7 @@ export default async function EditarEstudiantePage({ params }: Params) {
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
       <div>
-        <Link href="/institucion/estudiantes" className={`${ui.enlace} text-sm`}>
+        <Link href="/admin/estudiantes" className={`${ui.enlace} text-sm`}>
           ← Estudiantes
         </Link>
         <h1 className={`${ui.titulo} mt-1`}>

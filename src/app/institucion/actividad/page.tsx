@@ -180,7 +180,7 @@ export default async function ActividadPage({ searchParams }: Params) {
     const valores = { categoria, persona, ...cambios }
     for (const [k, v] of Object.entries(valores)) if (v) p.set(k, v)
     const qs = p.toString()
-    return `/institucion/actividad${qs ? `?${qs}` : ''}`
+    return `/admin/actividad${qs ? `?${qs}` : ''}`
   }
 
   return (
@@ -234,7 +234,7 @@ export default async function ActividadPage({ searchParams }: Params) {
       </form>
 
       <FiltrosActivos
-        hrefLimpiar="/institucion/actividad"
+        hrefLimpiar="/admin/actividad"
         filtros={[
           ...(categoria
             ? [{ etiqueta: `Tipo: ${CATEGORIAS[categoria].etiqueta}`, hrefQuitar: urlCon({ categoria: '' }) }]

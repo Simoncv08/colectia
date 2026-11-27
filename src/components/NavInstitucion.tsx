@@ -18,14 +18,14 @@ import { iconoGrande } from '@/lib/iconos'
 type Pestana = { href: string; etiqueta: string; Icono: LucideIcon; soloAdmin?: boolean }
 
 const PESTANAS: Pestana[] = [
-  { href: '/institucion', etiqueta: 'Inicio', Icono: House },
-  { href: '/institucion/eventos', etiqueta: 'Eventos', Icono: CalendarDays },
-  { href: '/institucion/estudiantes', etiqueta: 'Estudiantes', Icono: GraduationCap },
-  { href: '/institucion/grados', etiqueta: 'Cursos', Icono: Layers },
-  { href: '/institucion/reportes', etiqueta: 'Reportes', Icono: ChartColumn, soloAdmin: true },
-  { href: '/institucion/personal', etiqueta: 'Personal', Icono: Users, soloAdmin: true },
-  { href: '/institucion/actividad', etiqueta: 'Actividad', Icono: History, soloAdmin: true },
-  { href: '/institucion/personalizacion', etiqueta: 'Personalización', Icono: Palette, soloAdmin: true },
+  { href: '/admin', etiqueta: 'Inicio', Icono: House },
+  { href: '/admin/eventos', etiqueta: 'Eventos', Icono: CalendarDays },
+  { href: '/admin/estudiantes', etiqueta: 'Estudiantes', Icono: GraduationCap },
+  { href: '/admin/grados', etiqueta: 'Cursos', Icono: Layers },
+  { href: '/admin/reportes', etiqueta: 'Reportes', Icono: ChartColumn, soloAdmin: true },
+  { href: '/admin/personal', etiqueta: 'Personal', Icono: Users, soloAdmin: true },
+  { href: '/admin/actividad', etiqueta: 'Actividad', Icono: History, soloAdmin: true },
+  { href: '/admin/personalizacion', etiqueta: 'Personalización', Icono: Palette, soloAdmin: true },
 ]
 
 // Navegación del personal, en columna: en la barra lateral y en el menú del celular.
@@ -33,7 +33,7 @@ export default function NavInstitucion({ esAdmin }: { esAdmin: boolean }) {
   const ruta = usePathname()
 
   function activa(href: string) {
-    return href === '/institucion' ? ruta === href : ruta === href || ruta.startsWith(`${href}/`)
+    return href === '/admin' ? ruta === href : ruta === href || ruta.startsWith(`${href}/`)
   }
 
   return (

@@ -224,7 +224,7 @@ export function VistaPendientes({ datos, f }: PropsVista) {
               {g.evento.nombre} <span className="font-normal text-gray-600">({g.total})</span>
             </p>
             {g.evento.estado !== 'finalizado' && (
-              <Link href={`/institucion/eventos/${g.evento.id}/pagos/rapido`} className={ui.botonCompacto}>
+              <Link href={`/admin/eventos/${g.evento.id}/pagos/rapido`} className={ui.botonCompacto}>
                 Cobro por salón
               </Link>
             )}

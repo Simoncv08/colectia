@@ -76,7 +76,7 @@ export default async function ConfigurarEventoPage({ params }: Params) {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Link href="/institucion/eventos" className={`${ui.enlace} text-sm`}>
+        <Link href="/admin/eventos" className={`${ui.enlace} text-sm`}>
           ← Eventos
         </Link>
         <div className="mt-1 flex flex-wrap items-center gap-2">

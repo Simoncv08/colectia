@@ -80,7 +80,7 @@ export default async function EstudiantesPage({ searchParams }: Params) {
     if (valores.curso) p.set('curso', valores.curso)
     if (valores.pagina > 1) p.set('pagina', String(valores.pagina))
     const texto = p.toString()
-    return `/institucion/estudiantes${texto ? `?${texto}` : ''}`
+    return `/admin/estudiantes${texto ? `?${texto}` : ''}`
   }
   const filtrosActivos = [
     ...(q ? [{ etiqueta: `Búsqueda: ${q}`, hrefQuitar: url({ q: '' }) }] : []),
@@ -187,7 +187,7 @@ export default async function EstudiantesPage({ searchParams }: Params) {
               ) : (
                 <p className={ui.textoSecundario}>
                   Primero crea al menos un curso en la pestaña{' '}
-                  <Link href="/institucion/grados" className={ui.enlace}>
+                  <Link href="/admin/grados" className={ui.enlace}>
                     Cursos
                   </Link>
                   .
@@ -225,7 +225,7 @@ export default async function EstudiantesPage({ searchParams }: Params) {
         </button>
       </form>
 
-      <FiltrosActivos filtros={filtrosActivos} hrefLimpiar="/institucion/estudiantes" />
+      <FiltrosActivos filtros={filtrosActivos} hrefLimpiar="/admin/estudiantes" />
 
       {error && <p className={ui.avisoRojo}>No se pudieron cargar los estudiantes. Recarga la página para intentar de nuevo.</p>}
 
@@ -266,7 +266,7 @@ export default async function EstudiantesPage({ searchParams }: Params) {
                   {esAdmin && (
                     <td className={ui.celdaFinal}>
                       <Link
-                        href={`/institucion/estudiantes/${e.id}`}
+                        href={`/admin/estudiantes/${e.id}`}
                         aria-label={`Editar a ${e.apellidos} ${e.nombres}`}
                         className={ui.enlaceFila}
                       >

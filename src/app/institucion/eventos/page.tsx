@@ -61,10 +61,10 @@ export default async function EventosPage() {
           )}
         </div>
         <div className="grid shrink-0 grid-cols-2 gap-2 sm:flex">
-          <Link href={`/institucion/eventos/${ev.id}`} className={ui.botonSecundario}>
+          <Link href={`/admin/eventos/${ev.id}`} className={ui.botonSecundario}>
             Configurar
           </Link>
-          <Link href={`/institucion/eventos/${ev.id}/pagos`} className={ui.botonSecundario}>
+          <Link href={`/admin/eventos/${ev.id}/pagos`} className={ui.botonSecundario}>
             Ver pagos
           </Link>
         </div>

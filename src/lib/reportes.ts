@@ -61,7 +61,7 @@ export function filtrosAParametros(f: FiltrosReporte, cambios: Partial<FiltrosRe
 // El informe completo siempre es de la vista de eventos; el evento va en la ruta.
 export function hrefInforme(eventoId: string, f: FiltrosReporte, cambios: Partial<FiltrosReporte> = {}) {
   const parametros = filtrosAParametros({ ...f, vista: 'eventos', evento: '' }, cambios)
-  return `/institucion/reportes/evento/${eventoId}${parametros ? `?${parametros}` : ''}`
+  return `/admin/reportes/evento/${eventoId}${parametros ? `?${parametros}` : ''}`
 }
 
 // Fechas y quién recibió cambian los valores en dinero, no quién pagó.

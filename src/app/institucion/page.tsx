@@ -35,11 +35,11 @@ export default async function InicioInstitucionPage() {
           <p className={ui.textoSecundario}>Cómo va el recaudo de los eventos abiertos.</p>
         </div>
         <div className={ui.accionesPagina}>
-          <Link href="/institucion/eventos" className={ui.botonSecundario}>
+          <Link href="/admin/eventos" className={ui.botonSecundario}>
             <Banknote {...iconoGrande} />
             Registrar pago en efectivo
           </Link>
-          <Link href="/institucion/eventos" className={ui.botonPrimario}>
+          <Link href="/admin/eventos" className={ui.botonPrimario}>
             <CalendarPlus {...iconoGrande} />
             Crear evento
           </Link>
@@ -111,10 +111,10 @@ export default async function InicioInstitucionPage() {
               )}
 
               <div className="mt-auto grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-                <Link href={`/institucion/eventos/${x.evento.id}/pagos`} className={ui.botonSecundario}>
+                <Link href={`/admin/eventos/${x.evento.id}/pagos`} className={ui.botonSecundario}>
                   Ver pagos
                 </Link>
-                <Link href={`/institucion/eventos/${x.evento.id}/pagos/rapido`} className={ui.botonSecundario}>
+                <Link href={`/admin/eventos/${x.evento.id}/pagos/rapido`} className={ui.botonSecundario}>
                   Cobro por salón
                 </Link>
               </div>

@@ -137,7 +137,7 @@ export async function eliminarEvento(id: string, _formData: FormData) {
 
     await borrarImagenSubida(sesion, anterior.imagen_url)
     revalidarEvento()
-    redirect('/institucion/eventos')
+    redirect('/admin/eventos')
   })
 }
 
