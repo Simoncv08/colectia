@@ -7,6 +7,11 @@ import { accion, mensajeBD, type Resultado } from '@/lib/resultado'
 const MENSAJES: Record<string, Resultado> = {
   ok: { tipo: 'ok', texto: 'Listo, el estudiante quedó vinculado a tu cuenta.' },
   ya_vinculado: { tipo: 'error', texto: 'Ya tienes vinculado a este estudiante.' },
+  otro_colegio: {
+    tipo: 'error',
+    texto:
+      'Tu cuenta es de otro colegio. En Colectia cada cuenta es de un solo colegio: para este usa otro correo.',
+  },
   no_encontrado: {
     tipo: 'error',
     texto:
